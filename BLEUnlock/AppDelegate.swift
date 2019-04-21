@@ -1,5 +1,6 @@
 import Cocoa
 import Quartz
+import LaunchAtLogin
 
 var appDelegate: AppDelegate? = nil
 
@@ -236,6 +237,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         ble.proximityRSSI = value
     }
     
+    @objc func toggleLaunchAtLogin(_ menuItem: NSMenuItem) {
+        LaunchAtLogin.isEnabled = !LaunchAtLogin.isEnabled
+        menuItem.state = LaunchAtLogin.isEnabled ? .on : .off
+    }
+    
     func constructMenu() {
         monitorMenuItem = mainMenu.addItem(withTitle: "Not detected", action: nil, keyEquivalent: "")
         monitorMenuItem?.isHidden = true
@@ -261,6 +267,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             item.state = .on
         }
         mainMenu.addItem(withTitle: "Set password...", action: #selector(askPassword), keyEquivalent: "")
+
+        item = mainMenu.addItem(withTitle: "Launch at login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        item.state = LaunchAtLogin.isEnabled ? .on : .off
 
         mainMenu.addItem(withTitle: "Quit BLEUnlock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         statusItem.menu = mainMenu
