@@ -211,9 +211,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     @objc func askPassword() {
         let msg = NSAlert()
         msg.addButton(withTitle: "OK")
-        msg.addButton(withTitle: "Cancel")
-        msg.messageText = "Enter password to unlock the lock screen"
-        msg.informativeText = "Your password will be securely stored in KeyChain"
+        msg.addButton(withTitle: NSLocalizedString("Cancel", comment:""))
+        msg.messageText = NSLocalizedString("enter password", comment:"")
+        msg.informativeText = NSLocalizedString("password is safe", comment:"")
         
         let txt = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 20))
         msg.accessoryView = txt
@@ -243,35 +243,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
     
     func constructMenu() {
-        monitorMenuItem = mainMenu.addItem(withTitle: "Not detected", action: nil, keyEquivalent: "")
+        monitorMenuItem = mainMenu.addItem(withTitle: NSLocalizedString("Not detected", comment: ""), action: nil, keyEquivalent: "")
         monitorMenuItem?.isHidden = true
         
         var item: NSMenuItem
-        item = mainMenu.addItem(withTitle: "Device", action: nil, keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: NSLocalizedString("Device", comment: ""), action: nil, keyEquivalent: "")
         item.submenu = deviceMenu
         deviceMenu.delegate = self
-        deviceMenu.addItem(withTitle: "Scanning...", action: nil, keyEquivalent: "")
+        deviceMenu.addItem(withTitle: NSLocalizedString("Scanning...", comment: ""), action: nil, keyEquivalent: "")
         
-        let proximityItem = mainMenu.addItem(withTitle: "Proximity RSSI", action: nil, keyEquivalent: "")
+        let proximityItem = mainMenu.addItem(withTitle: NSLocalizedString("Proximity RSSI", comment: ""), action: nil, keyEquivalent: "")
         proximityItem.submenu = proximityMenu
-        proximityMenu.addItem(withTitle: "⬆Closer", action: nil, keyEquivalent: "")
+        proximityMenu.addItem(withTitle: NSLocalizedString("⬆Closer", comment:""), action: nil, keyEquivalent: "")
         for proximity in stride(from: -50, to: -100, by: -10) {
             let item = proximityMenu.addItem(withTitle: String(format: "%ddBm", proximity), action: #selector(setProximity), keyEquivalent: "")
             item.tag = proximity
         }
-        proximityMenu.addItem(withTitle: "⬇Farther", action: nil, keyEquivalent: "")
+        proximityMenu.addItem(withTitle: NSLocalizedString("⬇Farther", comment:""), action: nil, keyEquivalent: "")
         proximityMenu.delegate = self
         
-        item = mainMenu.addItem(withTitle: "Wake on proximity", action: #selector(toggleWakeOnProximity), keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: NSLocalizedString("Wake on proximity", comment:""), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
         if pref.bool(forKey: "wakeOnProximity") {
             item.state = .on
         }
-        mainMenu.addItem(withTitle: "Set password...", action: #selector(askPassword), keyEquivalent: "")
+        mainMenu.addItem(withTitle: NSLocalizedString("Set password...", comment:""), action: #selector(askPassword), keyEquivalent: "")
 
-        item = mainMenu.addItem(withTitle: "Launch at login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: NSLocalizedString("Launch at login", comment:""), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         item.state = LaunchAtLogin.isEnabled ? .on : .off
 
-        mainMenu.addItem(withTitle: "Quit BLEUnlock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        mainMenu.addItem(withTitle: NSLocalizedString("Quit BLEUnlock", comment:""), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         statusItem.menu = mainMenu
     }
 

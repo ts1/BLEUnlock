@@ -1,0 +1,13 @@
+"Device" = "デバイス";
+"Not detected" = "未検出";
+"Scanning..." = "スキャン中...";
+"Proximity RSSI" = "信号強度";
+"⬆Closer" = "⬆近い";
+"⬇Farther" = "⬇遠い";
+"Wake on proximity" = "スリープから復帰させる";
+"Set password..." = "パスワードを設定...";
+"Launch at login" = "ログイン時に起動";
+"Quit BLEUnlock" = "BLEUnlockを終了";
+"enter password" = "ロック画面を解除するためのパスワードを入力してください。";
+"password is safe" = "パスワードはキーチェーンに安全に保存されます。";
+"Cancel" = "キャンセル";
