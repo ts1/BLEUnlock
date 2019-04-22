@@ -290,13 +290,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             constructMenu()
         }
         ble.delegate = self
-        let maybe_str = pref.object(forKey: "device") as? String
-        if let str = maybe_str {
+        if let str = pref.string(forKey: "device") {
             if let uuid = UUID(uuidString: str) {
                 monitorDevice(uuid: uuid)
             }
         }
-        if let proximity = pref.object(forKey: "proximity") as? Int {
+        let proximity = pref.integer(forKey: "proximity")
+        if proximity != 0 {
             ble.proximityRSSI = proximity
         }
         appDelegate = self;
