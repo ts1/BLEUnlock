@@ -6,6 +6,7 @@ class Device: NSObject {
     var peripheral : CBPeripheral?
     var manufacture : String?
     var model : String?
+    var advData: Data?
     var rssi: Int = 0
     var scanTimer: Timer?
     
@@ -25,9 +26,27 @@ class Device: NSObject {
                 } else {
                     return manu
                 }
-            } else {
-                if let mod = model {
-                    return mod
+            } else if let mod = model {
+                return mod
+            } else if let adv = advData {
+                var iBeaconPrefix : [uint16] = [0x004c, 0x01502]
+                if adv[0...3] == Data(bytes: &iBeaconPrefix, count: 4) {
+                    let uuidArray: [String] = [
+                        adv[4...7].map {String(format: "%02X", $0)}.joined(),
+                        adv[8...9].map {String(format: "%02X", $0)}.joined(),
+                        adv[10...11].map {String(format: "%02X", $0)}.joined(),
+                        adv[12...14].map {String(format: "%02X", $0)}.joined(),
+                        adv[14...19].map {String(format: "%02X", $0)}.joined()
+                    ]
+                    let uuid = uuidArray.joined(separator: "-")
+                    var major = adv[21]
+                    major = major << 8 | adv[20]
+                    var minor = adv[23]
+                    minor = minor << 8 | adv[22]
+                    let tx = Int8(bitPattern: adv[24])
+                    let distance = pow(10, Double(Int(tx) - rssi)/20.0)
+                    let d = String(format:"%.1f", distance)
+                    return "iBeacon \(uuid)[\(major),\(minor)]@\(d)m"
                 }
             }
             return uuid.description
@@ -142,6 +161,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 device = Device(uuid: peripheral.identifier)
                 device.peripheral = peripheral
                 device.rssi = rssi
+                device.advData = advertisementData["kCBAdvDataManufacturerData"] as? Data
                 devices[peripheral.identifier] = device
                 central.connect(peripheral, options: nil)
                 delegate?.newDevice(device: device)
