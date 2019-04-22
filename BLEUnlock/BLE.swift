@@ -12,11 +12,6 @@ class Device: NSObject {
     
     override var description: String {
         get {
-            if let name = peripheral?.name {
-                if name.trimmingCharacters(in: .whitespaces).count != 0 {
-                    return name
-                }
-            }
             if let manu = manufacture {
                 if let mod = model {
                     if manu == "Apple Inc." && appleDeviceNames[mod] != nil {
@@ -26,27 +21,24 @@ class Device: NSObject {
                 } else {
                     return manu
                 }
-            } else if let mod = model {
+            }
+            if let name = peripheral?.name {
+                if name.trimmingCharacters(in: .whitespaces).count != 0 {
+                    return name
+                }
+            }
+            if let mod = model {
                 return mod
-            } else if let adv = advData {
+            }
+            if let adv = advData {
                 var iBeaconPrefix : [uint16] = [0x004c, 0x01502]
                 if adv[0...3] == Data(bytes: &iBeaconPrefix, count: 4) {
-                    let uuidArray: [String] = [
-                        adv[4...7].map {String(format: "%02X", $0)}.joined(),
-                        adv[8...9].map {String(format: "%02X", $0)}.joined(),
-                        adv[10...11].map {String(format: "%02X", $0)}.joined(),
-                        adv[12...14].map {String(format: "%02X", $0)}.joined(),
-                        adv[14...19].map {String(format: "%02X", $0)}.joined()
-                    ]
-                    let uuid = uuidArray.joined(separator: "-")
-                    var major = adv[21]
-                    major = major << 8 | adv[20]
-                    var minor = adv[23]
-                    minor = minor << 8 | adv[22]
+                    let major = uint16(adv[20]) << 8 | uint16(adv[21])
+                    let minor = uint16(adv[22]) << 8 | uint16(adv[23])
                     let tx = Int8(bitPattern: adv[24])
                     let distance = pow(10, Double(Int(tx) - rssi)/20.0)
                     let d = String(format:"%.1f", distance)
-                    return "iBeacon \(uuid)[\(major),\(minor)]@\(d)m"
+                    return "iBeacon [\(major), \(minor)] \(d)m"
                 }
             }
             return uuid.description
@@ -80,7 +72,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var lastStableTime = Date().timeIntervalSince1970
     var presence = false
     var proximityRSSI = -70
-    var proximityDelay = 10.0
+    var proximityDelay = 5.0
     var signalTimeout = 30.0
     
     func startScanning() {
