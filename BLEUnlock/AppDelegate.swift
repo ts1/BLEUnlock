@@ -27,6 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var sleeping = false
     let keychainService = "BLEUnlock"
     let keychainAccount = "BLEUnlock"
+    var connected = false
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -76,10 +77,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func updateRSSI(rssi: Int?) {
         if let r = rssi {
             monitorMenuItem?.title = String(format:"%ddBm", r)
-            statusItem.button?.image = NSImage(named: "StatusBarConnected")
+            if (!connected) {
+                connected = true
+                statusItem.button?.image = NSImage(named: "StatusBarConnected")
+            }
         } else {
             monitorMenuItem?.title = NSLocalizedString("Not detected", comment:"")
-            statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
+            if (connected) {
+                connected = false
+                statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
+            }
         }
     }
 
@@ -154,7 +161,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func monitorDevice(uuid: UUID) {
         monitorMenuItem?.isHidden = false
         ble.startMonitor(uuid: uuid)
-        statusItem.button?.image = NSImage(named: "StatusBarConnected")
     }
     
     func storePassword(_ password: String) {

@@ -124,7 +124,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     {
         let rssi = RSSI.intValue > 0 ? 0 : RSSI.intValue
         if let uuid = monitorUUID {
-            if peripheral.identifier == uuid {
+            if peripheral.identifier.description == uuid.description {
                 delegate?.updateRSSI(rssi: rssi)
                 let now = Date().timeIntervalSince1970
                 if (rssi > proximityRSSI) {
