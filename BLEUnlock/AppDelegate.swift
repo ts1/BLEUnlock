@@ -83,7 +83,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
 
     func updatePresence(presence: Bool) {
         if presence {
-            if pref.bool(forKey: "wakeOnProximity") {
+            if pref.bool(forKey: "wakeOnProximity") && sleeping {
+                print("Waking display")
                 wakeDisplay()
             }
             unlockScreen()
@@ -120,7 +121,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             }
         }
     }
-    
+
     func onWake() {
         print("awake")
         sleeping = false
@@ -174,7 +175,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             }
         }
     }
-    
+
     func fetchPassword() -> String {
         let query: [String: Any] = [
             String(kSecClass): kSecClassGenericPassword,

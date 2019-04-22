@@ -12,7 +12,9 @@ class Device: NSObject {
     override var description: String {
         get {
             if let name = peripheral?.name {
-                return name
+                if name.trimmingCharacters(in: .whitespaces).count != 0 {
+                    return name
+                }
             }
             if let manu = manufacture {
                 if let mod = model {
@@ -59,8 +61,8 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var lastStableTime = Date().timeIntervalSince1970
     var presence = false
     var proximityRSSI = -70
-    var proximityDelay = 3.0
-    var signalTimeout = 20.0
+    var proximityDelay = 10.0
+    var signalTimeout = 30.0
     
     func startScanning() {
         scanMode = true
@@ -86,7 +88,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func resetSignalTimer() {
         signalTimer?.invalidate()
         signalTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { _ in
-            print("Signal timer expired")
+            print("Device is lost")
             self.delegate?.updateRSSI(rssi: nil)
             if self.presence {
                 self.presence = false
@@ -114,20 +116,25 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             if peripheral.identifier == uuid {
                 delegate?.updateRSSI(rssi: rssi)
                 let now = Date().timeIntervalSince1970
-                if (rssi > proximityRSSI && presence) || (rssi <= proximityRSSI && !presence) {
+                if (rssi > proximityRSSI) {
+                    if (!presence) {
+                        print("Device is close")
+                        presence = true
+                        delegate?.updatePresence(presence: presence)
+                    }
                     lastStableTime = now
-                } else {
+                } else if (presence) {
                     print("Proximity changing")
                     if now - lastStableTime > proximityDelay {
-                        print("Change presence")
-                        presence = !presence
+                        print("Device is away")
+                        presence = false
                         delegate?.updatePresence(presence: presence)
-                        lastStableTime = now
                     }
                 }
                 resetSignalTimer()
             }
         }
+
         if (scanMode) {
             let dev = devices[peripheral.identifier]
             var device: Device
