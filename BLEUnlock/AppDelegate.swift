@@ -76,8 +76,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func updateRSSI(rssi: Int?) {
         if let r = rssi {
             monitorMenuItem?.title = String(format:"%ddBm", r)
+            statusItem.button?.image = NSImage(named: "StatusBarConnected")
         } else {
-            monitorMenuItem?.title = "Not detected"
+            monitorMenuItem?.title = NSLocalizedString("Not detected", comment:"")
+            statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
         }
     }
 
@@ -152,6 +154,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func monitorDevice(uuid: UUID) {
         monitorMenuItem?.isHidden = false
         ble.startMonitor(uuid: uuid)
+        statusItem.button?.image = NSImage(named: "StatusBarConnected")
     }
     
     func storePassword(_ password: String) {
@@ -283,7 +286,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
-            button.image = NSImage(named: "StatusBarIcon")
+            button.image = NSImage(named: "StatusBarDisconnected")
             constructMenu()
         }
         ble.delegate = self
