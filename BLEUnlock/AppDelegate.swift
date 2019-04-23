@@ -22,8 +22,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     let deviceMenu = NSMenu()
     let proximityMenu = NSMenu()
     var deviceDict: [UUID: NSMenuItem] = [:]
-    var monitorMenuItem : NSMenuItem? = nil
-    let pref = UserDefaults.standard
+    var monitorMenuItem : NSMenuItem?
+    let prefs = UserDefaults.standard
     var sleeping = false
     let keychainService = "BLEUnlock"
     let keychainAccount = "BLEUnlock"
@@ -92,7 +92,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
 
     func updatePresence(presence: Bool) {
         if presence {
-            if pref.bool(forKey: "wakeOnProximity") && sleeping {
+            if prefs.bool(forKey: "wakeOnProximity") && sleeping {
                 print("Waking display")
                 wakeDisplay()
             }
@@ -150,7 +150,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         for (uuid, menuItem) in deviceDict {
             if menuItem == item {
                 monitorDevice(uuid: uuid)
-                pref.set(uuid.uuidString, forKey: "device")
+                prefs.set(uuid.uuidString, forKey: "device")
                 menuItem.state = .on
             } else {
                 menuItem.state = .off
@@ -236,14 +236,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
 
     @objc func toggleWakeOnProximity(_ menuItem: NSMenuItem) {
-        let value = !pref.bool(forKey: "wakeOnProximity")
+        let value = !prefs.bool(forKey: "wakeOnProximity")
         menuItem.state = value ? .on : .off
-        pref.setValue(value, forKey: "wakeOnProximity")
+        prefs.set(value, forKey: "wakeOnProximity")
     }
 
     @objc func setProximity(_ menuItem: NSMenuItem) {
         let value = menuItem.tag
-        pref.setValue(value, forKey: "proximity")
+        prefs.set(value, forKey: "proximity")
         ble.proximityRSSI = value
     }
     
@@ -273,7 +273,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         proximityMenu.delegate = self
         
         item = mainMenu.addItem(withTitle: NSLocalizedString("Wake on proximity", comment:""), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
-        if pref.bool(forKey: "wakeOnProximity") {
+        if prefs.bool(forKey: "wakeOnProximity") {
             item.state = .on
         }
         mainMenu.addItem(withTitle: NSLocalizedString("Set password...", comment:""), action: #selector(askPassword), keyEquivalent: "")
@@ -296,12 +296,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             constructMenu()
         }
         ble.delegate = self
-        if let str = pref.string(forKey: "device") {
+        if let str = prefs.string(forKey: "device") {
             if let uuid = UUID(uuidString: str) {
                 monitorDevice(uuid: uuid)
             }
         }
-        let proximity = pref.integer(forKey: "proximity")
+        let proximity = prefs.integer(forKey: "proximity")
         if proximity != 0 {
             ble.proximityRSSI = proximity
         }
@@ -315,6 +315,5 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
     }
 }

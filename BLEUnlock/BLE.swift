@@ -239,9 +239,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral,
                     didModifyServices invalidatedServices: [CBService])
     {
-        peripheral.discoverServices(nil)
+        peripheral.discoverServices([DeviceInformation])
     }
-    
+
     override init() {
         super.init()
         centralMgr = CBCentralManager(delegate: self, queue: nil)
