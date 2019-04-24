@@ -29,8 +29,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var monitorMenuItem : NSMenuItem?
     let prefs = UserDefaults.standard
     var sleeping = false
-    let keychainService = "BLEUnlock"
-    let keychainAccount = "BLEUnlock"
     var connected = false
     var userNotification: NSUserNotification?
     
@@ -108,7 +106,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
     }
-
     
     func updatePresence(presence: Bool, reason: String) {
         if presence {
@@ -193,8 +190,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         
         let query: [String: Any] = [
             String(kSecClass): kSecClassGenericPassword,
-            String(kSecAttrAccount): keychainAccount,
-            String(kSecAttrService): keychainService,
+            String(kSecAttrAccount): NSUserName(),
+            String(kSecAttrService): Bundle.main.bundleIdentifier ?? "BLEUnlock",
+            String(kSecAttrLabel): "BLEUnlock",
             String(kSecValueData): pw,
         ]
         SecItemDelete(query as CFDictionary)
@@ -213,8 +211,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func fetchPassword() -> String {
         let query: [String: Any] = [
             String(kSecClass): kSecClassGenericPassword,
-            String(kSecAttrAccount): keychainAccount,
-            String(kSecAttrService): keychainService,
+            String(kSecAttrAccount): NSUserName(),
+            String(kSecAttrService): Bundle.main.bundleIdentifier ?? "BLEUnlock",
             String(kSecReturnData): kCFBooleanTrue!,
             String(kSecMatchLimit): kSecMatchLimitOne,
         ]
