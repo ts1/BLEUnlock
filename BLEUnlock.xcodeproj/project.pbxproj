@@ -12,11 +12,6 @@
 		3D600A4322701A5B0068FB7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D600A4222701A5B0068FB7B /* AppDelegate.swift */; };
 		3D600A4522701A5C0068FB7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4422701A5C0068FB7B /* Assets.xcassets */; };
 		3D600A4822701A5C0068FB7B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4622701A5C0068FB7B /* MainMenu.xib */; };
-		3D600A5222701CBD0068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
-		3D600A5522701CD00068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
-		3D600A5622701CDC0068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
-		3D600A5722701CE20068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
-		3D600A5822701CEB0068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
 		3D600A5A22701E740068FB7B /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3D79FD7D226C335100A373C0 /* appleDeviceNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D79FD7C226C335100A373C0 /* appleDeviceNames.swift */; };
 		3DD4B654226C1C3200451B7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD4B653226C1C3200451B7B /* AppDelegate.swift */; };
@@ -25,16 +20,6 @@
 		3DD4B666226C1DF200451B7B /* BLE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD4B665226C1DF200451B7B /* BLE.swift */; };
 		3DD4B669226C1E3700451B7B /* login.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DD4B668226C1E3700451B7B /* login.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		3D600A5322701CBD0068FB7B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3DD4B648226C1C3200451B7B /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3D600A3F22701A5A0068FB7B;
-			remoteInfo = Launcher;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		3D600A5922701E5D0068FB7B /* CopyFiles */ = {
@@ -102,6 +87,7 @@
 			);
 			path = Launcher;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		3DD4B647226C1C3200451B7B = {
 			isa = PBXGroup;
@@ -180,7 +166,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				3D600A5422701CBD0068FB7B /* PBXTargetDependency */,
 			);
 			name = BLEUnlock;
 			productName = BLEUnlock;
@@ -260,13 +245,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				3D2FCF08226C99CB007A06E7 /* Images.xcassets in Resources */,
-				3D600A5622701CDC0068FB7B /* Launcher.app in Resources */,
-				3D600A5222701CBD0068FB7B /* Launcher.app in Resources */,
 				3D600A37226CC1A40068FB7B /* Localizable.strings in Resources */,
-				3D600A5522701CD00068FB7B /* Launcher.app in Resources */,
-				3D600A5822701CEB0068FB7B /* Launcher.app in Resources */,
 				3DD4B659226C1C3400451B7B /* MainMenu.xib in Resources */,
-				3D600A5722701CE20068FB7B /* Launcher.app in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -293,14 +273,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		3D600A5422701CBD0068FB7B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 3D600A3F22701A5A0068FB7B /* Launcher */;
-			targetProxy = 3D600A5322701CBD0068FB7B /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		3D600A35226CC1A40068FB7B /* Localizable.strings */ = {

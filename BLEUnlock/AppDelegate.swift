@@ -32,6 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     let keychainService = "BLEUnlock"
     let keychainAccount = "BLEUnlock"
     var connected = false
+    var userNotification: NSUserNotification?
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -103,6 +104,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             un.subtitle = t("notification_lock_reason_device_away")
         }
         un.informativeText = t("notification_title_locked")
+        userNotification = un
 
         NSUserNotificationCenter.default.deliver(un)
     }
@@ -110,6 +112,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     
     func updatePresence(presence: Bool, reason: String) {
         if presence {
+            if let un = userNotification {
+                NSUserNotificationCenter.default.removeDeliveredNotification(un)
+                userNotification = nil
+            }
             if prefs.bool(forKey: "wakeOnProximity") && sleeping {
                 print("Waking display")
                 wakeDisplay()
