@@ -9,7 +9,15 @@
 /* Begin PBXBuildFile section */
 		3D2FCF08226C99CB007A06E7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D2FCF07226C99CB007A06E7 /* Images.xcassets */; };
 		3D600A37226CC1A40068FB7B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A35226CC1A40068FB7B /* Localizable.strings */; };
-		3D600A3A226FE6650068FB7B /* LaunchAtLogin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D600A39226FE6650068FB7B /* LaunchAtLogin.framework */; };
+		3D600A4322701A5B0068FB7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D600A4222701A5B0068FB7B /* AppDelegate.swift */; };
+		3D600A4522701A5C0068FB7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4422701A5C0068FB7B /* Assets.xcassets */; };
+		3D600A4822701A5C0068FB7B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4622701A5C0068FB7B /* MainMenu.xib */; };
+		3D600A5222701CBD0068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
+		3D600A5522701CD00068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
+		3D600A5622701CDC0068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
+		3D600A5722701CE20068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
+		3D600A5822701CEB0068FB7B /* Launcher.app in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; };
+		3D600A5A22701E740068FB7B /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3D79FD7D226C335100A373C0 /* appleDeviceNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D79FD7C226C335100A373C0 /* appleDeviceNames.swift */; };
 		3DD4B654226C1C3200451B7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD4B653226C1C3200451B7B /* AppDelegate.swift */; };
 		3DD4B659226C1C3400451B7B /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3DD4B657226C1C3400451B7B /* MainMenu.xib */; };
@@ -18,11 +26,39 @@
 		3DD4B669226C1E3700451B7B /* login.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DD4B668226C1E3700451B7B /* login.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		3D600A5322701CBD0068FB7B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3DD4B648226C1C3200451B7B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3D600A3F22701A5A0068FB7B;
+			remoteInfo = Launcher;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3D600A5922701E5D0068FB7B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				3D600A5A22701E740068FB7B /* Launcher.app in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		3D2FCF07226C99CB007A06E7 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3D600A36226CC1A40068FB7B /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		3D600A38226CC1AA0068FB7B /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		3D600A39226FE6650068FB7B /* LaunchAtLogin.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LaunchAtLogin.framework; path = Carthage/Build/Mac/LaunchAtLogin.framework; sourceTree = "<group>"; };
+		3D600A4022701A5A0068FB7B /* Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D600A4222701A5B0068FB7B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3D600A4422701A5C0068FB7B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3D600A4722701A5C0068FB7B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		3D600A4922701A5C0068FB7B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3D600A4A22701A5C0068FB7B /* Launcher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Launcher.entitlements; sourceTree = "<group>"; };
 		3D79FD7C226C335100A373C0 /* appleDeviceNames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = appleDeviceNames.swift; sourceTree = "<group>"; };
 		3DD4B650226C1C3200451B7B /* BLEUnlock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BLEUnlock.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DD4B653226C1C3200451B7B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -37,11 +73,17 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3D600A3D22701A5A0068FB7B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3DD4B64D226C1C3200451B7B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3D600A3A226FE6650068FB7B /* LaunchAtLogin.framework in Frameworks */,
 				3DD4B669226C1E3700451B7B /* login.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,10 +91,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3D600A4122701A5B0068FB7B /* Launcher */ = {
+			isa = PBXGroup;
+			children = (
+				3D600A4222701A5B0068FB7B /* AppDelegate.swift */,
+				3D600A4422701A5C0068FB7B /* Assets.xcassets */,
+				3D600A4622701A5C0068FB7B /* MainMenu.xib */,
+				3D600A4922701A5C0068FB7B /* Info.plist */,
+				3D600A4A22701A5C0068FB7B /* Launcher.entitlements */,
+			);
+			path = Launcher;
+			sourceTree = "<group>";
+		};
 		3DD4B647226C1C3200451B7B = {
 			isa = PBXGroup;
 			children = (
 				3DD4B652226C1C3200451B7B /* BLEUnlock */,
+				3D600A4122701A5B0068FB7B /* Launcher */,
 				3DD4B651226C1C3200451B7B /* Products */,
 				3DD4B667226C1E3700451B7B /* Frameworks */,
 			);
@@ -62,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				3DD4B650226C1C3200451B7B /* BLEUnlock.app */,
+				3D600A4022701A5A0068FB7B /* Launcher.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +143,6 @@
 		3DD4B667226C1E3700451B7B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				3D600A39226FE6650068FB7B /* LaunchAtLogin.framework */,
 				3DD4B668226C1E3700451B7B /* login.framework */,
 			);
 			name = Frameworks;
@@ -96,6 +151,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3D600A3F22701A5A0068FB7B /* Launcher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3D600A4B22701A5C0068FB7B /* Build configuration list for PBXNativeTarget "Launcher" */;
+			buildPhases = (
+				3D600A3C22701A5A0068FB7B /* Sources */,
+				3D600A3D22701A5A0068FB7B /* Frameworks */,
+				3D600A3E22701A5A0068FB7B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Launcher;
+			productName = Launcher;
+			productReference = 3D600A4022701A5A0068FB7B /* Launcher.app */;
+			productType = "com.apple.product-type.application";
+		};
 		3DD4B64F226C1C3200451B7B /* BLEUnlock */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3DD4B65E226C1C3400451B7B /* Build configuration list for PBXNativeTarget "BLEUnlock" */;
@@ -103,12 +175,12 @@
 				3DD4B64C226C1C3200451B7B /* Sources */,
 				3DD4B64D226C1C3200451B7B /* Frameworks */,
 				3DD4B64E226C1C3200451B7B /* Resources */,
-				3DCB7435226CAE640046A983 /* ShellScript */,
-				3DCB7431226CACC30046A983 /* ShellScript */,
+				3D600A5922701E5D0068FB7B /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3D600A5422701CBD0068FB7B /* PBXTargetDependency */,
 			);
 			name = BLEUnlock;
 			productName = BLEUnlock;
@@ -125,6 +197,20 @@
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = "Takeshi Sone";
 				TargetAttributes = {
+					3D600A3F22701A5A0068FB7B = {
+						CreatedOnToolsVersion = 10.2.1;
+						SystemCapabilities = {
+							com.apple.GameCenter.Mac = {
+								enabled = 0;
+							};
+							com.apple.HardenedRuntime = {
+								enabled = 1;
+							};
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
+					};
 					3DD4B64F226C1C3200451B7B = {
 						CreatedOnToolsVersion = 10.2.1;
 						LastSwiftMigration = 1020;
@@ -154,62 +240,47 @@
 			projectRoot = "";
 			targets = (
 				3DD4B64F226C1C3200451B7B /* BLEUnlock */,
+				3D600A3F22701A5A0068FB7B /* Launcher */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3D600A3E22701A5A0068FB7B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D600A4522701A5C0068FB7B /* Assets.xcassets in Resources */,
+				3D600A4822701A5C0068FB7B /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3DD4B64E226C1C3200451B7B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				3D2FCF08226C99CB007A06E7 /* Images.xcassets in Resources */,
+				3D600A5622701CDC0068FB7B /* Launcher.app in Resources */,
+				3D600A5222701CBD0068FB7B /* Launcher.app in Resources */,
 				3D600A37226CC1A40068FB7B /* Localizable.strings in Resources */,
+				3D600A5522701CD00068FB7B /* Launcher.app in Resources */,
+				3D600A5822701CEB0068FB7B /* Launcher.app in Resources */,
 				3DD4B659226C1C3400451B7B /* MainMenu.xib in Resources */,
+				3D600A5722701CE20068FB7B /* Launcher.app in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		3DCB7431226CACC30046A983 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PROJECT_DIR}/Carthage/Build/Mac/LaunchAtLogin.framework/Resources/copy-helper.sh\"\n\n";
-		};
-		3DCB7435226CAE640046A983 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/Mac/LaunchAtLogin.framework",
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
+		3D600A3C22701A5A0068FB7B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D600A4322701A5B0068FB7B /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3DD4B64C226C1C3200451B7B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -223,6 +294,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		3D600A5422701CBD0068FB7B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3D600A3F22701A5A0068FB7B /* Launcher */;
+			targetProxy = 3D600A5322701CBD0068FB7B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		3D600A35226CC1A40068FB7B /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
@@ -231,6 +310,14 @@
 				3D600A38226CC1AA0068FB7B /* ja */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		3D600A4622701A5C0068FB7B /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3D600A4722701A5C0068FB7B /* Base */,
+			);
+			name = MainMenu.xib;
 			sourceTree = "<group>";
 		};
 		3DD4B657226C1C3400451B7B /* MainMenu.xib */ = {
@@ -244,6 +331,53 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		3D600A4C22701A5C0068FB7B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Launcher/Launcher.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 42LGPQYC7M;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Launcher/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.takeshi.BLEUnlock.Launcher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3D600A4D22701A5C0068FB7B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Launcher/Launcher.entitlements;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Launcher/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.takeshi.BLEUnlock.Launcher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		3DD4B65C226C1C3400451B7B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -340,7 +474,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "";
-				COPY_PHASE_STRIP = YES;
+				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -364,6 +498,7 @@
 		3DD4B65F226C1C3400451B7B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
@@ -371,10 +506,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 42LGPQYC7M;
 				ENABLE_HARDENED_RUNTIME = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BLEUnlock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -396,6 +528,7 @@
 		3DD4B660226C1C3400451B7B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -403,10 +536,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BLEUnlock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -427,6 +557,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3D600A4B22701A5C0068FB7B /* Build configuration list for PBXNativeTarget "Launcher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3D600A4C22701A5C0068FB7B /* Debug */,
+				3D600A4D22701A5C0068FB7B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3DD4B64B226C1C3200451B7B /* Build configuration list for PBXProject "BLEUnlock" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
