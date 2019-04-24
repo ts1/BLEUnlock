@@ -59,7 +59,7 @@ protocol BLEDelegate {
     func updateDevice(device: Device)
     func removeDevice(device: Device)
     func updateRSSI(rssi: Int?)
-    func updatePresence(presence: Bool)
+    func updatePresence(presence: Bool, reason: String)
 }
 
 class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
@@ -103,7 +103,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             self.delegate?.updateRSSI(rssi: nil)
             if self.presence {
                 self.presence = false
-                self.delegate?.updatePresence(presence: self.presence)
+                self.delegate?.updatePresence(presence: self.presence, reason: "lost")
             }
         })
         if let timer = signalTimer {
@@ -131,7 +131,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                     if (!presence) {
                         print("Device is close")
                         presence = true
-                        delegate?.updatePresence(presence: presence)
+                        delegate?.updatePresence(presence: presence, reason: "close")
                     }
                     lastStableTime = now
                 } else if (presence) {
@@ -139,7 +139,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                     if now - lastStableTime > proximityDelay {
                         print("Device is away")
                         presence = false
-                        delegate?.updatePresence(presence: presence)
+                        delegate?.updatePresence(presence: presence, reason: "away")
                     }
                 }
                 resetSignalTimer()

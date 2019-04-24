@@ -94,7 +94,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
-    func updatePresence(presence: Bool) {
+    func notifyUser(_ reason: String) {
+        let un = NSUserNotification()
+        un.title = "BLEUnlock"
+        if reason == "lost" {
+            un.subtitle = t("notification_lock_reason_lost_signal")
+        } else if reason == "away" {
+            un.subtitle = t("notification_lock_reason_device_away")
+        }
+        un.informativeText = t("notification_title_locked")
+
+        NSUserNotificationCenter.default.deliver(un)
+    }
+
+    
+    func updatePresence(presence: Bool, reason: String) {
         if presence {
             if prefs.bool(forKey: "wakeOnProximity") && sleeping {
                 print("Waking display")
@@ -103,6 +117,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             unlockScreen()
         } else {
             lockScreen()
+            Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in self.notifyUser(reason) })
         }
     }
 

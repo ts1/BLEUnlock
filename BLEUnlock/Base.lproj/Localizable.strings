@@ -1,2 +1,5 @@
 "enter password" = "Enter password to unlock the lock screen.";
 "password is safe" = "Your password will be securely stored in KeyChain.";
+"notification_title_locked" = "Your Mac has been locked by BLEUnlock";
+"notification_lock_reason_lost_signal" = "Signal is lost";
+"notification_lock_reason_device_away" = "Device is away";
