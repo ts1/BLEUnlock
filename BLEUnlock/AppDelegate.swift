@@ -104,9 +104,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             un.subtitle = t("notification_lock_reason_device_away")
         }
         un.informativeText = t("notification_title_locked")
+        un.deliveryDate = Date().addingTimeInterval(0.1)
+        NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
-
-        NSUserNotificationCenter.default.deliver(un)
     }
 
     
@@ -123,7 +123,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             unlockScreen()
         } else {
             lockScreen()
-            Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in self.notifyUser(reason) })
+            self.notifyUser(reason)
         }
     }
 
