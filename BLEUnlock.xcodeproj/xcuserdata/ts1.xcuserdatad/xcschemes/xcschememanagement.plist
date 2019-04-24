@@ -11,12 +11,19 @@
 		</dict>
 		<key>Launcher.xcscheme_^#shared#^_</key>
 		<dict>
+			<key>isShown</key>
+			<true/>
 			<key>orderHint</key>
 			<integer>1</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>3D600A3F22701A5A0068FB7B</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>3DD4B64F226C1C3200451B7B</key>
 		<dict>
 			<key>primary</key>
