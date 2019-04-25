@@ -102,7 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             un.subtitle = t("notification_lock_reason_device_away")
         }
         un.informativeText = t("notification_title_locked")
-        un.deliveryDate = Date().addingTimeInterval(2)
+        un.deliveryDate = Date().addingTimeInterval(1)
         NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
     }
