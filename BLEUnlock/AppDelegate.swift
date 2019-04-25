@@ -102,7 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             un.subtitle = t("notification_lock_reason_device_away")
         }
         un.informativeText = t("notification_title_locked")
-        un.deliveryDate = Date().addingTimeInterval(0.1)
+        un.deliveryDate = Date().addingTimeInterval(2)
         NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
     }
@@ -124,7 +124,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
-    func fakeKeyStrokes(string: String) {
+    func fakeKeyStrokes(_ string: String) {
         let src = CGEventSource(stateID: .hidSystemState)
         let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
         let len = string.count
@@ -141,13 +141,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     
     func unlockScreen() {
         if sleeping {
-            print("pending unlock")
+            print("Pending unlock")
             return
         }
-        if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
-            if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
-                if locked == 1 {
-                    fakeKeyStrokes(string: fetchPassword());
+        if let password = fetchPassword() { // Fetch password beforehand, as it may ask for permission in modal
+            if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
+                if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
+                    if locked == 1 {
+                        print("Entering password")
+                        fakeKeyStrokes(password)
+                    }
                 }
             }
         }
@@ -184,6 +187,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         monitorMenuItem?.isHidden = false
         ble.startMonitor(uuid: uuid)
     }
+
+    func errorModal(_ msg: String, info: String? = nil) {
+        let alert = NSAlert()
+        alert.messageText = msg
+        alert.informativeText = info ?? ""
+        alert.runModal()
+    }
     
     func storePassword(_ password: String) {
         let pw = password.data(using: .utf8)!
@@ -197,18 +207,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         ]
         SecItemDelete(query as CFDictionary)
         let status = SecItemAdd(query as CFDictionary, nil)
-        if (status != errSecSuccess) {
-            if let err = SecCopyErrorMessageString(status, nil) {
-                let alert = NSAlert()
-                alert.messageText = String("Failed to store password to KeyChain")
-                alert.informativeText = err as String
-                alert.runModal()
-                return
-            }
+        guard status == errSecSuccess else {
+            let err = SecCopyErrorMessageString(status, nil)
+            errorModal("Failed to store password to KeyChain", info: err as String? ?? "Status \(status)")
+            return
         }
     }
 
-    func fetchPassword() -> String {
+    func fetchPassword() -> String? {
         let query: [String: Any] = [
             String(kSecClass): kSecClassGenericPassword,
             String(kSecAttrAccount): NSUserName(),
@@ -220,25 +226,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         var item: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         if (status == errSecItemNotFound) {
-            print("Password int not stored!")
-            return ""
+            print("Password is not stored")
+            return nil
         }
-        if (status != errSecSuccess) {
-            if let err = SecCopyErrorMessageString(status, nil) {
-                let msg = NSAlert()
-                msg.messageText = "Failed to retrieve password: \(err)"
-                msg.runModal()
-            }
-            return ""
+        guard status == errSecSuccess else {
+            let info = SecCopyErrorMessageString(status, nil)
+            errorModal("Failed to retrieve password", info: info as String? ?? "Status \(status)")
+            return nil
         }
-        if let data = item as? Data {
-            print("fetch password success")
-            return String(data: data, encoding: .utf8)!
+        guard let data = item as? Data else {
+            errorModal("Failed to convert password")
+            return nil
         }
-        let msg = NSAlert()
-        msg.messageText = "Failed to convert password"
-        msg.runModal()
-        return ""
+        return String(data: data, encoding: .utf8)!
     }
     
     @objc func askPassword() {
@@ -334,7 +334,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         appDelegate = self;
         setSleepNotification()
         
-        if (fetchPassword() == "") {
+        if (fetchPassword() == nil) {
             askPassword()
         }
         checkAccessibility()
