@@ -68,12 +68,12 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var delegate: BLEDelegate?
     var scanMode = false
     var monitorUUID: UUID?
+    var proximityTimer : Timer?
     var signalTimer: Timer?
-    var lastStableTime = Date().timeIntervalSince1970
     var presence = false
     var proximityRSSI = -70
-    var proximityDelay = 10.0
-    var signalTimeout = 30.0
+    var proximityTimeout = 10.0
+    var signalTimeout = 31.0
     
     func startScanning() {
         scanMode = true
@@ -91,7 +91,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     
     func startMonitor(uuid: UUID) {
         monitorUUID = uuid
-        lastStableTime = Date().timeIntervalSince1970
+        proximityTimer?.invalidate()
         resetSignalTimer()
         presence = false
     }
@@ -126,20 +126,29 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         if let uuid = monitorUUID {
             if peripheral.identifier.description == uuid.description {
                 delegate?.updateRSSI(rssi: rssi)
-                let now = Date().timeIntervalSince1970
                 if (rssi > proximityRSSI) {
                     if (!presence) {
                         print("Device is close")
                         presence = true
                         delegate?.updatePresence(presence: presence, reason: "close")
                     }
-                    lastStableTime = now
+                    if let timer = proximityTimer {
+                        timer.invalidate()
+                        print("Proximity timer canceled")
+                        proximityTimer = nil
+                    }
                 } else if (presence) {
-                    print("Proximity changing")
-                    if now - lastStableTime > proximityDelay {
-                        print("Device is away")
-                        presence = false
-                        delegate?.updatePresence(presence: presence, reason: "away")
+                    if proximityTimer == nil {
+                        proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { _ in
+                            print("Device is away")
+                            self.presence = false
+                            self.delegate?.updatePresence(presence: self.presence, reason: "away")
+                            self.proximityTimer = nil
+                        })
+                        if let timer = proximityTimer {
+                            RunLoop.main.add(timer, forMode: .common)
+                            print("Proximity timer started")
+                        }
                     }
                 }
                 resetSignalTimer()
@@ -169,7 +178,6 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func resetScanTimer(device: Device) {
         device.scanTimer?.invalidate()
         device.scanTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: { _ in
-            print("\(String(describing: device.uuid)) timeout")
             self.delegate?.removeDevice(device: device)
             if let p = device.peripheral {
                 self.centralMgr.cancelPeripheralConnection(p)
