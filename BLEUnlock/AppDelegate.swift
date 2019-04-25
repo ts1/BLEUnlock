@@ -138,7 +138,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: true)?.post(tap: .cghidEventTap)
         CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: false)?.post(tap: .cghidEventTap)
     }
-    
+
     func unlockScreen() {
         if sleeping {
             print("Pending unlock")
@@ -209,7 +209,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
             let err = SecCopyErrorMessageString(status, nil)
-            errorModal("Failed to store password to KeyChain", info: err as String? ?? "Status \(status)")
+            errorModal("Failed to store password to Keychain", info: err as String? ?? "Status \(status)")
             return
         }
     }
