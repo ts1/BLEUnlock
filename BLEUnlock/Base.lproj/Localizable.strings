@@ -6,3 +6,4 @@
 "error_get_permission" = "Failed to get permission to lock screen";
 "not_permitted" = "Not permitted";
 "error_lock_screen" = "Failed to lock screen";
+"error_unlock_screen" = "Failed to unlock screen";

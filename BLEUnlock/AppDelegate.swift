@@ -31,6 +31,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var sleeping = false
     var connected = false
     var userNotification: NSUserNotification?
+    var lockScript: NSAppleScript?
+    var unlockScript: NSAppleScript?
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -102,7 +104,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             un.subtitle = t("notification_lock_reason_device_away")
         }
         un.informativeText = t("notification_title_locked")
-        un.deliveryDate = Date().addingTimeInterval(1)
+        un.deliveryDate = Date().addingTimeInterval(0.5)
         NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
     }
@@ -125,12 +127,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
-    func fakeKeyStrokes(_ string: String) {
+    func prepareUnlockScript(_ password: String) {
         let script = """
             activate application "SystemUIServer"
             tell application "System Events"
                 tell process "SystemUIServer"
-                    keystroke "\(string)"
+                    keystroke "\(password)"
                     key code 52
                 end tell
             end tell
@@ -138,23 +140,46 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         
         if let scriptObject = NSAppleScript(source: script) {
             var error: NSDictionary?
-            scriptObject.executeAndReturnError(&error)
+            scriptObject.compileAndReturnError(&error)
             if let e = error {
-                errorModal(t("error_lock_screen"), info: e.object(forKey: "NSAppleScriptErrorMessage") as? String)
-                return
+                print(e)
+            } else {
+                unlockScript = scriptObject
             }
         }
     }
 
-    func lockScreen() -> Bool {
+    func enterPassword() {
+        if let scriptObject = unlockScript {
+            var error: NSDictionary?
+            scriptObject.executeAndReturnError(&error)
+            if let e = error {
+                errorModal(t("error_unlock_screen"), info: e.object(forKey: "NSAppleScriptErrorMessage") as? String)
+                return
+            }
+        }
+    }
+    
+    func prepareLockScript() {
         let script = """
             activate application "SystemUIServer"
             tell application "System Events"
                 tell process "SystemUIServer" to keystroke "q" using {command down, control down}
             end tell
             """
-        
         if let scriptObject = NSAppleScript(source: script) {
+            var error: NSDictionary?
+            scriptObject.compileAndReturnError(&error)
+            if let e = error {
+                print(e)
+            } else {
+                lockScript = scriptObject
+            }
+        }
+    }
+
+    func lockScreen() -> Bool {
+        if let scriptObject = lockScript {
             var error: NSDictionary?
             scriptObject.executeAndReturnError(&error)
             if let e = error {
@@ -172,13 +197,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             print("Pending unlock")
             return
         }
-        if let password = fetchPassword() { // Fetch password beforehand, as it may ask for permission in modal
-            if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
-                if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
-                    if locked == 1 {
-                        print("Entering password")
-                        fakeKeyStrokes(password)
-                    }
+        if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
+            if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
+                if locked == 1 {
+                    print("Entering password")
+                    enterPassword()
                 }
             }
         }
@@ -188,9 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         print("awake")
         sleeping = false
         if ble.presence {
-            Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
-                self.unlockScreen()
-            })
+            self.unlockScreen()
         }
     }
     
@@ -282,7 +303,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let response = msg.runModal()
         
         if (response == .alertFirstButtonReturn) {
-            storePassword(txt.stringValue)
+            let pw = txt.stringValue
+            storePassword(pw)
+            prepareUnlockScript(pw)
         }
     }
 
@@ -339,6 +362,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         statusItem.menu = mainMenu
     }
 
+    func checkAccessibility() {
+        let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
+        AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
+    }
+
     func checkAutomation(_ bundle: String) {
         let desc = NSAppleEventDescriptor(bundleIdentifier: bundle)
         if #available(macOS 10.14, *) {
@@ -355,7 +383,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             }
         }
     }
-    
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = NSImage(named: "StatusBarDisconnected")
@@ -374,10 +402,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         appDelegate = self;
         setSleepNotification()
         
-        if (fetchPassword() == nil) {
+        let password = fetchPassword()
+        if let pw = password {
+            prepareUnlockScript(pw)
+        } else {
             askPassword()
         }
         checkAutomation("com.apple.systemevents")
+        checkAccessibility()
+        prepareLockScript()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
