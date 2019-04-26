@@ -14,3 +14,6 @@
 "notification_title_locked" = "MacはBLEUnlockによってロックされました";
 "notification_lock_reason_lost_signal" = "デバイスからの信号がありません";
 "notification_lock_reason_device_away" = "デバイスがMacから離れました";
+"error_get_permission" = "画面をロックする許可が得られませんでした";
+"not_permitted" = "許可がありません";
+"error_lock_screen" = "画面をロックできませんでした";

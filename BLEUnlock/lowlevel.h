@@ -1,9 +1,10 @@
 #ifndef lowlevel_h
 #define lowlevel_h
+#include <stdbool.h>
 
 void setSleepNotification(void);
 void wakeDisplay(void);
-void lockScreen(void);
+//bool lockScreen(void);
 
 // callback
 void onDisplaySleep(void);

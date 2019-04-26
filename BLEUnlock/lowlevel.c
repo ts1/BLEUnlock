@@ -44,18 +44,22 @@ void wakeDisplay(void)
     IOPMAssertionDeclareUserActivity(CFSTR(""), kIOPMUserActiveLocal, &assertionID);
 }
 
-void lockScreen(void)
+#if 0
+bool lockScreen(void)
 {
-#if 1
+#if 0
     // Go to lock screen by private API. Doesn't work in Sandbox.
-    extern void SACLockScreenImmediate(void);
-    SACLockScreenImmediate();
+    extern int SACLockScreenImmediate(void);
+    return SACLockScreenImmediate() == 0;
 #else
     // Go to display sleep. User must set lock screen immediately after sleep in order to lock.
     io_registry_entry_t reg = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/IOResources/IODisplayWrangler");
     if (reg) {
         IORegistryEntrySetCFProperty(reg, CFSTR("IORequestIdle"), kCFBooleanTrue);
         IOObjectRelease(reg);
+        return true;
     }
+    return false;
 #endif
 }
+#endif
