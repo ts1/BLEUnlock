@@ -31,8 +31,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var sleeping = false
     var connected = false
     var userNotification: NSUserNotification?
-    var lockScript: NSAppleScript?
-    var unlockScript: NSAppleScript?
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -104,7 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             un.subtitle = t("notification_lock_reason_device_away")
         }
         un.informativeText = t("notification_title_locked")
-        un.deliveryDate = Date().addingTimeInterval(0.5)
+        un.deliveryDate = Date().addingTimeInterval(1)
         NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
     }
@@ -128,41 +126,35 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
 
     func fakeKeyStrokes(_ string: String) {
-        let src = CGEventSource(stateID: .hidSystemState)
-        let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
-        let len = string.count
-        let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: len)
-        NSString(string:string).getCharacters(buffer)
-        pressEvent?.keyboardSetUnicodeString(stringLength: len, unicodeString: buffer)
-        pressEvent?.post(tap: .cghidEventTap)
-        CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: false)?.post(tap: .cghidEventTap)
+        let script = """
+            activate application "SystemUIServer"
+            tell application "System Events"
+                tell process "SystemUIServer"
+                    keystroke "\(string)"
+                    key code 52 # Return key
+                end tell
+            end tell
+            """
         
-        // Return key
-        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: true)?.post(tap: .cghidEventTap)
-        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: false)?.post(tap: .cghidEventTap)
+        if let scriptObject = NSAppleScript(source: script) {
+            var error: NSDictionary?
+            scriptObject.executeAndReturnError(&error)
+            if let e = error {
+                errorModal(t("error_lock_screen"), info: e.object(forKey: "NSAppleScriptErrorMessage") as? String)
+                return
+            }
+        }
     }
 
-    
-    func prepareLockScript() {
+    func lockScreen() -> Bool {
         let script = """
             activate application "SystemUIServer"
             tell application "System Events"
                 tell process "SystemUIServer" to keystroke "q" using {command down, control down}
             end tell
             """
+        
         if let scriptObject = NSAppleScript(source: script) {
-            var error: NSDictionary?
-            scriptObject.compileAndReturnError(&error)
-            if let e = error {
-                print(e)
-            } else {
-                lockScript = scriptObject
-            }
-        }
-    }
-
-    func lockScreen() -> Bool {
-        if let scriptObject = lockScript {
             var error: NSDictionary?
             scriptObject.executeAndReturnError(&error)
             if let e = error {
@@ -347,6 +339,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
 
     func checkAccessibility() {
+        // It's doubtful if this is working in Sandbox.
         let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
         AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
     }
@@ -391,7 +384,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
         checkAccessibility()
         askForPermission()
-        prepareLockScript()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
