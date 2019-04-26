@@ -218,7 +218,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
     
     func monitorDevice(uuid: UUID) {
-        monitorMenuItem?.isHidden = false
+        monitorMenuItem?.title = t("Not detected")
         ble.startMonitor(uuid: uuid)
     }
 
@@ -313,8 +313,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
 
     func constructMenu() {
-        monitorMenuItem = mainMenu.addItem(withTitle: t("Not detected"), action: nil, keyEquivalent: "")
-        monitorMenuItem?.isHidden = true
+        monitorMenuItem = mainMenu.addItem(withTitle: t("Device not set"), action: nil, keyEquivalent: "")
+        mainMenu.addItem(NSMenuItem.separator())
         
         var item: NSMenuItem
         item = mainMenu.addItem(withTitle: t("Device"), action: nil, keyEquivalent: "")
@@ -346,8 +346,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         statusItem.menu = mainMenu
     }
 
+    func checkAccessibility() {
+        let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
+        AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
+    }
+
     func askForPermission() {
-        // AXIsProcessTrustedWithOptions doesn't work in sandbox.
         // Run some dummy script to let system ask for permission.
         let script = """
             activate application "SystemUIServer"
@@ -385,6 +389,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         if fetchPassword() == nil {
             askPassword()
         }
+        checkAccessibility()
         askForPermission()
         prepareLockScript()
     }

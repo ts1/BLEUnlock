@@ -1,5 +1,5 @@
 "Device" = "デバイス";
-"Not detected" = "未検出";
+"Not detected" = "信号未検出";
 "Scanning..." = "スキャン中...";
 "Proximity RSSI" = "信号強度しきい値";
 "⬆Closer" = "⬆近い";
@@ -18,4 +18,4 @@
 "not_permitted" = "許可がありません";
 "error_lock_screen" = "画面をロックできませんでした";
 "error_unlock_screen" = "画面ロックを解除できませんでした";
-"Device not set" = "デバイス未設定";
+"Device not set" = "デバイス未選択";
