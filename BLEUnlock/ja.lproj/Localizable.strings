@@ -18,3 +18,4 @@
 "not_permitted" = "許可がありません";
 "error_lock_screen" = "画面をロックできませんでした";
 "error_unlock_screen" = "画面ロックを解除できませんでした";
+"Device not set" = "デバイス未設定";

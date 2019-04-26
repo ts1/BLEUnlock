@@ -127,38 +127,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
-    func prepareUnlockScript(_ password: String) {
-        let script = """
-            activate application "SystemUIServer"
-            tell application "System Events"
-                tell process "SystemUIServer"
-                    keystroke "\(password)"
-                    key code 52
-                end tell
-            end tell
-            """
+    func fakeKeyStrokes(_ string: String) {
+        let src = CGEventSource(stateID: .hidSystemState)
+        let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
+        let len = string.count
+        let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: len)
+        NSString(string:string).getCharacters(buffer)
+        pressEvent?.keyboardSetUnicodeString(stringLength: len, unicodeString: buffer)
+        pressEvent?.post(tap: .cghidEventTap)
+        CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: false)?.post(tap: .cghidEventTap)
         
-        if let scriptObject = NSAppleScript(source: script) {
-            var error: NSDictionary?
-            scriptObject.compileAndReturnError(&error)
-            if let e = error {
-                print(e)
-            } else {
-                unlockScript = scriptObject
-            }
-        }
+        // Return key
+        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: true)?.post(tap: .cghidEventTap)
+        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: false)?.post(tap: .cghidEventTap)
     }
 
-    func enterPassword() {
-        if let scriptObject = unlockScript {
-            var error: NSDictionary?
-            scriptObject.executeAndReturnError(&error)
-            if let e = error {
-                errorModal(t("error_unlock_screen"), info: e.object(forKey: "NSAppleScriptErrorMessage") as? String)
-                return
-            }
-        }
-    }
     
     func prepareLockScript() {
         let script = """
@@ -197,11 +180,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             print("Pending unlock")
             return
         }
-        if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
-            if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
-                if locked == 1 {
-                    print("Entering password")
-                    enterPassword()
+        if let password = fetchPassword() { // Fetch password beforehand, as it may ask for permission in modal
+            if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
+                if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
+                    if locked == 1 {
+                        print("Entering password")
+                        fakeKeyStrokes(password)
+                    }
                 }
             }
         }
@@ -305,7 +290,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         if (response == .alertFirstButtonReturn) {
             let pw = txt.stringValue
             storePassword(pw)
-            prepareUnlockScript(pw)
         }
     }
 
@@ -325,7 +309,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let launchAtLogin = !prefs.bool(forKey: "launchAtLogin")
         prefs.set(launchAtLogin, forKey: "launchAtLogin")
         menuItem.state = launchAtLogin ? .on : .off
-        SMLoginItemSetEnabled("jp.sone.takeshi.BLEUnlock.Launcher" as CFString, launchAtLogin)
+        SMLoginItemSetEnabled(Bundle.main.bundleIdentifier! + ".Launcher" as CFString, launchAtLogin)
     }
 
     func constructMenu() {
@@ -398,10 +382,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         appDelegate = self;
         setSleepNotification()
         
-        let password = fetchPassword()
-        if let pw = password {
-            prepareUnlockScript(pw)
-        } else {
+        if fetchPassword() == nil {
             askPassword()
         }
         askForPermission()
