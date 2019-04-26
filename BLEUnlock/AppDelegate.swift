@@ -362,24 +362,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         statusItem.menu = mainMenu
     }
 
-    func checkAccessibility() {
-        let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
-        AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
-    }
-
-    func checkAutomation(_ bundle: String) {
-        let desc = NSAppleEventDescriptor(bundleIdentifier: bundle)
-        if #available(macOS 10.14, *) {
-            let status: OSStatus = AEDeterminePermissionToAutomateTarget(desc.aeDesc, typeWildCard, typeWildCard, true)
-            switch (status) {
-            case OSStatus(noErr):
-                return
-            case OSStatus(errAEEventNotPermitted):
-                errorModal(t("error_get_permission"), info: t("not_permitted"))
-            case OSStatus(procNotFound): // Sometimes this happens, ignoring
-                return
-            default:
-                errorModal(t("error_get_permission"), info: "Status \(status)")
+    func askForPermission() {
+        // AXIsProcessTrustedWithOptions doesn't work in sandbox.
+        // Run some dummy script to let system ask for permission.
+        let script = """
+            activate application "SystemUIServer"
+            tell application "System Events"
+                tell process "SystemUIServer" to key code 56 # shift key
+            end tell
+            """
+        if let scriptObject = NSAppleScript(source: script) {
+            var error: NSDictionary?
+            scriptObject.executeAndReturnError(&error)
+            if let e = error {
+                print(e)
             }
         }
     }
@@ -408,8 +404,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         } else {
             askPassword()
         }
-        checkAutomation("com.apple.systemevents")
-        checkAccessibility()
+        askForPermission()
         prepareLockScript()
     }
     
