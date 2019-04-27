@@ -8,3 +8,5 @@
 "error_lock_screen" = "Failed to lock screen";
 "error_unlock_screen" = "Failed to unlock screen";
 "Not detected" = "Signal not detected";
+"no-accessibility" = "BLEUnlock uses Accessibility feature to unlock your Mac.";
+"allow-accessibility" = "Please allow BLEUnlock to access Accessibility.";

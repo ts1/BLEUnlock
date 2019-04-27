@@ -121,6 +121,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         } else {
             if lockScreen() {
                 self.notifyUser(reason)
+            } else {
+                debugPrint("Failed to lock")
             }
         }
     }
@@ -160,9 +162,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func onWake() {
         print("awake")
         sleeping = false
-        if ble.presence {
-            self.unlockScreen()
-        }
+        Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false, block: { _ in
+            if self.ble.presence {
+                self.unlockScreen()
+            }
+        })
     }
     
     func onSleep() {
@@ -311,9 +315,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         statusItem.menu = mainMenu
     }
 
-    func checkAccessibility() {
+    func checkAccessibility() -> Bool {
         let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
-        AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
+        if (!AXIsProcessTrustedWithOptions([key: true] as CFDictionary)) {
+            // Sometimes Prompt option above doesn't work.
+            // Actually trying to send key may open that dialog.
+            let src = CGEventSource(stateID: .hidSystemState)
+            // "Fn" key down and up
+            CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: true)?.post(tap: .cghidEventTap)
+            CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: false)?.post(tap: .cghidEventTap)
+            return false
+        }
+        return true
+
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -337,7 +351,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         if fetchPassword() == nil {
             askPassword()
         }
-        checkAccessibility()
+        if (!checkAccessibility()) {
+            errorModal(t("no-accessibility"), info: t("allow-accessibility"))
+        }
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
