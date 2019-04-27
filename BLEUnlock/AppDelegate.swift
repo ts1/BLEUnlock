@@ -146,27 +146,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
-    func lockScreen() -> Bool {
-        let script = """
-            activate application "SystemUIServer"
-            tell application "System Events"
-                tell process "SystemUIServer" to keystroke "q" using {command down, control down}
-            end tell
-            """
-        
-        if let scriptObject = NSAppleScript(source: script) {
-            var error: NSDictionary?
-            scriptObject.executeAndReturnError(&error)
-            if let e = error {
-                errorModal(t("error_lock_screen"), info: e.object(forKey: "NSAppleScriptErrorMessage") as? String)
-                return false
-            } else {
-                return true
-            }
-        }
-        return false
-    }
-
     func unlockScreen() {
         if sleeping {
             print("Pending unlock")

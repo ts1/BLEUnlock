@@ -44,10 +44,9 @@ void wakeDisplay(void)
     IOPMAssertionDeclareUserActivity(CFSTR(""), kIOPMUserActiveLocal, &assertionID);
 }
 
-#if 0
 bool lockScreen(void)
 {
-#if 0
+#if 1
     // Go to lock screen by private API. Doesn't work in Sandbox.
     extern int SACLockScreenImmediate(void);
     return SACLockScreenImmediate() == 0;
@@ -62,4 +61,3 @@ bool lockScreen(void)
     return false;
 #endif
 }
-#endif
