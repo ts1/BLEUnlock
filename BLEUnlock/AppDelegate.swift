@@ -126,24 +126,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
 
     func fakeKeyStrokes(_ string: String) {
-        let script = """
-            activate application "SystemUIServer"
-            tell application "System Events"
-                tell process "SystemUIServer"
-                    keystroke "\(string)"
-                    key code 52 # Return key
-                end tell
-            end tell
-            """
+        let src = CGEventSource(stateID: .hidSystemState)
+        let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
+        let len = string.count
+        let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: len)
+        NSString(string:string).getCharacters(buffer)
+        pressEvent?.keyboardSetUnicodeString(stringLength: len, unicodeString: buffer)
+        pressEvent?.post(tap: .cghidEventTap)
+        CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: false)?.post(tap: .cghidEventTap)
         
-        if let scriptObject = NSAppleScript(source: script) {
-            var error: NSDictionary?
-            scriptObject.executeAndReturnError(&error)
-            if let e = error {
-                errorModal(t("error_lock_screen"), info: e.object(forKey: "NSAppleScriptErrorMessage") as? String)
-                return
-            }
-        }
+        // Return key
+        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: true)?.post(tap: .cghidEventTap)
+        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: false)?.post(tap: .cghidEventTap)
     }
 
     func unlockScreen() {
@@ -318,26 +312,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
 
     func checkAccessibility() {
-        // It's doubtful if this is working in Sandbox.
         let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
         AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
-    }
-
-    func askForPermission() {
-        // Run some dummy script to let system ask for permission.
-        let script = """
-            activate application "SystemUIServer"
-            tell application "System Events"
-                tell process "SystemUIServer" to key code 56 # shift key
-            end tell
-            """
-        if let scriptObject = NSAppleScript(source: script) {
-            var error: NSDictionary?
-            scriptObject.executeAndReturnError(&error)
-            if let e = error {
-                print(e)
-            }
-        }
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -362,7 +338,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             askPassword()
         }
         checkAccessibility()
-        askForPermission()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
