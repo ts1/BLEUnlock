@@ -10,10 +10,11 @@ Lock/Unlock your Mac with your iPhone, Apple Watch, or any other Bluetooth LE de
 - Unlocks Mac for you when the device is near Mac, no need to enter password again
 - Optionally wakes from display sleep state
 - Password is securely stored in Keychain
+- Uses Hardened Runtime and notarized by Apple
 
 ## Installation
 
-Unzip and copy BLEUnlock to Applications folder.
+Download zip file from [releases](https://github.com/ts1/BLEUnlock/releases), unzip and copy BLEUnlock to Applications folder.
 
 On the first launch, it asks your login password,
 which is required to unlock the lock screen.
