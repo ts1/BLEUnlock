@@ -1,0 +1,68 @@
+#!/bin/bash -xe
+
+set -o pipefail
+
+USERNAME=apple@bounce-inc.jp
+TEAM=376NR42P9A
+APPNAME=BLEUnlock
+
+BASEDIR=$(cd $(dirname $0); pwd)
+BUILDDIR=$BASEDIR/build
+RELEASEDIR=$BUILDDIR/Release
+TMPDIR=$BUILDDIR/tmp
+
+extract_info() {
+    local app=$1
+    local key=$2
+    plutil -p $app/Contents/Info.plist |
+        awk "/$key/ {print \$3}" |
+        sed 's/"//g'
+}
+
+notarize() {
+    local app=$1
+    local id=$(extract_info $app CFBundleIdentifier)
+
+    rm -f $TMPDIR/upload.zip
+    ditto -c -k --keepParent $app $TMPDIR/upload.zip
+    xcrun altool --notarize-app --primary-bundle-id $id --username $USERNAME \
+        --password "@keychain:AC_PASSWORD" --file $TMPDIR/upload.zip \
+        --asc-provider $TEAM 2>&1 | tee $TMPDIR/altool.log
+    uuid=$(awk '/^RequestUUID/ { print $3 }' $TMPDIR/altool.log)
+    while true; do
+        sleep 10
+        xcrun altool --notarization-info $uuid  --username $USERNAME \
+            --password "@keychain:AC_PASSWORD" --asc-provider 376NR42P9A 2>&1 |
+            tee $TMPDIR/altool.log
+        status=$(grep Status: $TMPDIR/altool.log | sed 's/^.*Status: *//')
+        if [ "$status" != "in progress" ]; then
+            break
+        fi
+    done
+    if [ "$status" != "success" ]; then
+        exit 1
+    fi
+    xcrun stapler staple $app
+}
+
+#rm -rf $BUILDDIR
+
+test -d $TMPDIR || mkdir -p $TMPDIR
+
+xcodebuild \
+   -scheme $APPNAME \
+   -archivePath $RELEASEDIR/$APPNAME.xcarchive \
+   archive
+
+xcodebuild \
+   -exportArchive \
+   -archivePath $RELEASEDIR/$APPNAME.xcarchive \
+   -exportOptionsPlist $BASEDIR/ExportOptions.plist \
+   -exportPath $RELEASEDIR
+
+notarize $RELEASEDIR/$APPNAME.app/Contents/Library/LoginItems/Launcher.app
+notarize $RELEASEDIR/$APPNAME.app
+
+version=$(extract_info $RELEASEDIR/$APPNAME.app CFBundleShortVersionString)
+
+ditto -c -k --keepParent $RELEASEDIR/$APPNAME.app $RELEASEDIR/$APPNAME-$version.zip
