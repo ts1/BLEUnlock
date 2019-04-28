@@ -14,7 +14,8 @@ Lock/Unlock your Mac with your iPhone, Apple Watch, or any other Bluetooth LE de
 
 ## Installation
 
-Download zip file from [releases](https://github.com/ts1/BLEUnlock/releases), unzip and copy BLEUnlock to Applications folder.
+Download zip file from [releases](https://github.com/ts1/BLEUnlock/releases),
+unzip and copy to Applications folder.
 
 On the first launch, it asks your login password,
 which is required to unlock the lock screen.
@@ -23,6 +24,10 @@ It's safe because it's stored in Keychain.
 Then it asks for permission for Accessibility.
 In System Preferences unlock by clicking lock icon and turn BLEUnlock on.
 It is also required to unlock the lock screen.
+
+Finally, from the status bar icon, select "Device".
+It starts scanning nearby BLE devices.
+Select your device, and you're done.
 
 ## Troubleshooting
 
