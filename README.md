@@ -6,8 +6,8 @@ Lock/Unlock your Mac with your iPhone, Apple Watch, or any other Bluetooth LE de
 
 - No iPhone app is required
 - Works with any BLE devices that periodically send signal
-- Locks Mac when the specified device is away from Mac
 - Unlocks Mac for you when the device is near Mac, no need to enter password again
+- Locks Mac when the device is away from Mac
 - Optionally wakes from display sleep state
 - Optionally pauses/unpauses iTunes when you're away and back
 - Password is securely stored in Keychain
@@ -17,7 +17,7 @@ Lock/Unlock your Mac with your iPhone, Apple Watch, or any other Bluetooth LE de
 
 - Mac supporting Bluetooth 4.0 or later
 - macOS 10.13 (High Sierra) or later
-- iPhone 4s or later, Apple Watch (all), or other BLE device
+- iPhone 5s or later, Apple Watch (all), or other BLE device that transmits signal periodically
 
 ## Installation
 
@@ -42,6 +42,8 @@ If it fails to unlock, check BLEUnlock is turned on in "System Preferences" → 
 If it is already on, try turning it off and on again.
 
 If it asks for permission to access its own password, click "Always Allow", because it is needed while the screen is locked.
+
+If "Signal is lost" occurs frequently, turn Bluetooth of Mac off then on.
 
 ## Acknowledgement
 
