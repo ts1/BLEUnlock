@@ -10,7 +10,7 @@ Lock/Unlock your Mac with your iPhone, Apple Watch, or any other Bluetooth LE de
 - Unlocks Mac for you when the device is near Mac, no need to enter password again
 - Optionally wakes from display sleep state
 - Password is securely stored in Keychain
-- Uses Hardened Runtime and notarized by Apple
+- Uses Hardened Runtime and notarized by Apple ![](https://i.imgur.com/i9Rj44q.png)
 
 ## Requirements
 
