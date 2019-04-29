@@ -12,6 +12,12 @@ Lock/Unlock your Mac with your iPhone, Apple Watch, or any other Bluetooth LE de
 - Password is securely stored in Keychain
 - Uses Hardened Runtime and notarized by Apple
 
+## Requirements
+
+- Mac supporting Bluetooth 4.0 and up
+- macOS 10.13 (High Sierra) and up
+- iPhone 4s and up, Apple Watch (all), or other BLE device
+
 ## Installation
 
 Download zip file from [releases](https://github.com/ts1/BLEUnlock/releases),
