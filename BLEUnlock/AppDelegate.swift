@@ -31,6 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var sleeping = false
     var connected = false
     var userNotification: NSUserNotification?
+    var iTunesWasPlaying = false
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -106,7 +107,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
     }
+
+    func runAppleScript(_ script: String) -> NSAppleEventDescriptor? {
+        guard let scriptObject = NSAppleScript(source: script) else { return nil }
+        var error: NSDictionary?
+        let output = scriptObject.executeAndReturnError(&error)
+        if let e = error {
+            debugPrint(e)
+            return nil
+        }
+        return output
+    }
+
+    func isItunesPlaying() -> Bool {
+        let result = runAppleScript("tell application \"iTunes\" to return player state")
+        return result?.stringValue == "kPSP"
+    }
     
+    func pauseItunes() {
+        guard prefs.bool(forKey: "pauseItunes") else { return }
+        iTunesWasPlaying = isItunesPlaying()
+        if iTunesWasPlaying {
+            _ = runAppleScript("tell application \"iTunes\" to pause")
+        }
+    }
+    
+    func playItunes() {
+        guard prefs.bool(forKey: "pauseItunes") else { return }
+        if iTunesWasPlaying {
+            _ = runAppleScript("tell application \"iTunes\" to play")
+        }
+    }
+
     func updatePresence(presence: Bool, reason: String) {
         if presence {
             if let un = userNotification {
@@ -119,6 +151,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             }
             unlockScreen()
         } else {
+            pauseItunes()
             if lockScreen() {
                 self.notifyUser(reason)
             } else {
@@ -153,6 +186,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
                     if locked == 1 {
                         print("Entering password")
                         fakeKeyStrokes(password)
+                        playItunes()
                     }
                 }
             }
@@ -281,6 +315,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         SMLoginItemSetEnabled(Bundle.main.bundleIdentifier! + ".Launcher" as CFString, launchAtLogin)
     }
 
+    @objc func togglePauseItunes(_ menuItem: NSMenuItem) {
+        let pauseItunes = !prefs.bool(forKey: "pauseItunes")
+        prefs.set(pauseItunes, forKey: "pauseItunes")
+        menuItem.state = pauseItunes ? .on : .off
+        if pauseItunes {
+            _ = isItunesPlaying() // Show permission dialog
+        }
+    }
+    
     func constructMenu() {
         monitorMenuItem = mainMenu.addItem(withTitle: t("Device not set"), action: nil, keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
@@ -305,6 +348,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         if prefs.bool(forKey: "wakeOnProximity") {
             item.state = .on
         }
+
+        item = mainMenu.addItem(withTitle: t("Pause iTunes while locked"), action: #selector(togglePauseItunes), keyEquivalent: "")
+        if prefs.bool(forKey: "pauseItunes") {
+            item.state = .on
+        }
+        
         mainMenu.addItem(withTitle: t("Set password..."), action: #selector(askPassword), keyEquivalent: "")
 
         item = mainMenu.addItem(withTitle: t("Launch at login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")

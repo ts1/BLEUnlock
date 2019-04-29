@@ -9,14 +9,15 @@ Lock/Unlock your Mac with your iPhone, Apple Watch, or any other Bluetooth LE de
 - Locks Mac when the specified device is away from Mac
 - Unlocks Mac for you when the device is near Mac, no need to enter password again
 - Optionally wakes from display sleep state
+- Optionally pauses/unpauses iTunes when you're away and back
 - Password is securely stored in Keychain
 - Uses Hardened Runtime and notarized by Apple ![](https://i.imgur.com/i9Rj44q.png)
 
 ## Requirements
 
-- Mac supporting Bluetooth 4.0 and up
-- macOS 10.13 (High Sierra) and up
-- iPhone 4s and up, Apple Watch (all), or other BLE device
+- Mac supporting Bluetooth 4.0 or later
+- macOS 10.13 (High Sierra) or later
+- iPhone 4s or later, Apple Watch (all), or other BLE device
 
 ## Installation
 
