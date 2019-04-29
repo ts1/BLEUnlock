@@ -315,7 +315,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         statusItem.menu = mainMenu
     }
 
-    func checkAccessibility() -> Bool {
+    func checkAccessibility() {
         let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
         if (!AXIsProcessTrustedWithOptions([key: true] as CFDictionary)) {
             // Sometimes Prompt option above doesn't work.
@@ -324,10 +324,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             // "Fn" key down and up
             CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: true)?.post(tap: .cghidEventTap)
             CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: false)?.post(tap: .cghidEventTap)
-            return false
         }
-        return true
-
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -351,9 +348,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         if fetchPassword() == nil {
             askPassword()
         }
-        if (!checkAccessibility()) {
-            errorModal(t("no-accessibility"), info: t("allow-accessibility"))
-        }
+        checkAccessibility()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
