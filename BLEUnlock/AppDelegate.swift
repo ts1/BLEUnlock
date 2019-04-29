@@ -86,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
                 statusItem.button?.image = NSImage(named: "StatusBarConnected")
             }
         } else {
-            monitorMenuItem?.title = t("Not detected")
+            monitorMenuItem?.title = t("not_detected")
             if (connected) {
                 connected = false
                 statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
@@ -98,11 +98,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let un = NSUserNotification()
         un.title = "BLEUnlock"
         if reason == "lost" {
-            un.subtitle = t("notification_lock_reason_lost_signal")
+            un.subtitle = t("notification_lost_signal")
         } else if reason == "away" {
-            un.subtitle = t("notification_lock_reason_device_away")
+            un.subtitle = t("notification_device_away")
         }
-        un.informativeText = t("notification_title_locked")
+        un.informativeText = t("notification_locked")
         un.deliveryDate = Date().addingTimeInterval(1)
         NSUserNotificationCenter.default.scheduleNotification(un)
         userNotification = un
@@ -221,7 +221,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
     
     func monitorDevice(uuid: UUID) {
-        monitorMenuItem?.title = t("Not detected")
+        monitorMenuItem?.title = t("not_detected")
         ble.startMonitor(uuid: uuid)
     }
 
@@ -281,9 +281,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     @objc func askPassword() {
         let msg = NSAlert()
         msg.addButton(withTitle: "OK")
-        msg.addButton(withTitle: t("Cancel"))
-        msg.messageText = t("enter password")
-        msg.informativeText = t("password is safe")
+        msg.addButton(withTitle: t("cancel"))
+        msg.messageText = t("enter_password")
+        msg.informativeText = t("password_info")
         
         let txt = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 20))
         msg.accessoryView = txt
@@ -325,42 +325,42 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
     
     func constructMenu() {
-        monitorMenuItem = mainMenu.addItem(withTitle: t("Device not set"), action: nil, keyEquivalent: "")
+        monitorMenuItem = mainMenu.addItem(withTitle: t("device_not_set"), action: nil, keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
         
         var item: NSMenuItem
-        item = mainMenu.addItem(withTitle: t("Device"), action: nil, keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: t("device"), action: nil, keyEquivalent: "")
         item.submenu = deviceMenu
         deviceMenu.delegate = self
-        deviceMenu.addItem(withTitle: t("Scanning..."), action: nil, keyEquivalent: "")
+        deviceMenu.addItem(withTitle: t("scanning"), action: nil, keyEquivalent: "")
         
-        let proximityItem = mainMenu.addItem(withTitle: t("Proximity RSSI"), action: nil, keyEquivalent: "")
+        let proximityItem = mainMenu.addItem(withTitle: t("proximity_rssi"), action: nil, keyEquivalent: "")
         proximityItem.submenu = proximityMenu
-        proximityMenu.addItem(withTitle: t("⬆Closer"), action: nil, keyEquivalent: "")
+        proximityMenu.addItem(withTitle: t("closer"), action: nil, keyEquivalent: "")
         for proximity in stride(from: -50, to: -100, by: -10) {
             let item = proximityMenu.addItem(withTitle: String(format: "%ddBm", proximity), action: #selector(setProximity), keyEquivalent: "")
             item.tag = proximity
         }
-        proximityMenu.addItem(withTitle: t("⬇Farther"), action: nil, keyEquivalent: "")
+        proximityMenu.addItem(withTitle: t("farther"), action: nil, keyEquivalent: "")
         proximityMenu.delegate = self
         
-        item = mainMenu.addItem(withTitle: t("Wake on proximity"), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: t("wake_on_proximity"), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
         if prefs.bool(forKey: "wakeOnProximity") {
             item.state = .on
         }
 
-        item = mainMenu.addItem(withTitle: t("Pause iTunes while locked"), action: #selector(togglePauseItunes), keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: t("pause_itunes"), action: #selector(togglePauseItunes), keyEquivalent: "")
         if prefs.bool(forKey: "pauseItunes") {
             item.state = .on
         }
         
-        mainMenu.addItem(withTitle: t("Set password..."), action: #selector(askPassword), keyEquivalent: "")
+        mainMenu.addItem(withTitle: t("set_password"), action: #selector(askPassword), keyEquivalent: "")
 
-        item = mainMenu.addItem(withTitle: t("Launch at login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: t("launch_at_login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         item.state = prefs.bool(forKey: "launchAtLogin") ? .on : .off
 
         mainMenu.addItem(NSMenuItem.separator())
-        mainMenu.addItem(withTitle: t("Quit BLEUnlock"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        mainMenu.addItem(withTitle: t("quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         statusItem.menu = mainMenu
     }
 
