@@ -77,16 +77,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     
     func startScanning() {
         scanMode = true
-        for device in devices.values {
-            resetScanTimer(device: device)
-        }
     }
     
     func stopScanning() {
         scanMode = false
-        for device in devices.values {
-            device.scanTimer?.invalidate()
-        }
     }
     
     func startMonitor(uuid: UUID) {
@@ -177,7 +171,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     
     func resetScanTimer(device: Device) {
         device.scanTimer?.invalidate()
-        device.scanTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: { _ in
+        device.scanTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { _ in
             self.delegate?.removeDevice(device: device)
             if let p = device.peripheral {
                 self.centralMgr.cancelPeripheralConnection(p)
