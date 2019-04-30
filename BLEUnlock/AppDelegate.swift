@@ -136,6 +136,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         guard prefs.bool(forKey: "pauseItunes") else { return }
         if iTunesWasPlaying {
             _ = runAppleScript("tell application \"iTunes\" to play")
+            iTunesWasPlaying = false
         }
     }
 
@@ -151,11 +152,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             }
             unlockScreen()
         } else {
-            pauseItunes()
-            if lockScreen() {
-                self.notifyUser(reason)
-            } else {
-                debugPrint("Failed to lock")
+            if (!isScreenLocked()) {
+                pauseItunes()
+                if lockScreen() {
+                    self.notifyUser(reason)
+                } else {
+                    print("Failed to lock")
+                }
             }
         }
     }
@@ -175,20 +178,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: false)?.post(tap: .cghidEventTap)
     }
 
+    func isScreenLocked() -> Bool {
+        if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
+            if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
+                return locked == 1
+            }
+        }
+        return false
+    }
+    
     func unlockScreen() {
         if sleeping {
             print("Pending unlock")
             return
         }
         if let password = fetchPassword() { // Fetch password beforehand, as it may ask for permission in modal
-            if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
-                if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
-                    if locked == 1 {
-                        print("Entering password")
-                        fakeKeyStrokes(password)
-                        playItunes()
-                    }
-                }
+            if isScreenLocked() {
+                print("Entering password")
+                fakeKeyStrokes(password)
+                playItunes()
             }
         }
     }
@@ -324,11 +332,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
     
+    @objc func lockNow() {
+        guard !isScreenLocked() else { return }
+        pauseItunes()
+        lockScreen()
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
+            sleepDisplay()
+        })
+    }
+    
     func constructMenu() {
         monitorMenuItem = mainMenu.addItem(withTitle: t("device_not_set"), action: nil, keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
         
         var item: NSMenuItem
+
+        item = mainMenu.addItem(withTitle: t("lock_now"), action: #selector(lockNow), keyEquivalent: "")
+        mainMenu.addItem(NSMenuItem.separator())
+
         item = mainMenu.addItem(withTitle: t("device"), action: nil, keyEquivalent: "")
         item.submenu = deviceMenu
         deviceMenu.delegate = self

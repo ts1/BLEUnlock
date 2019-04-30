@@ -5,6 +5,7 @@
 void setSleepNotification(void);
 void wakeDisplay(void);
 bool lockScreen(void);
+void sleepDisplay(void);
 
 // callback
 void onDisplaySleep(void);
