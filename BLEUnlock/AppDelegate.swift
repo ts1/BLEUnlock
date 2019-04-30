@@ -32,6 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var connected = false
     var userNotification: NSUserNotification?
     var iTunesWasPlaying = false
+    var aboutBox: AboutBox? = nil
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -296,6 +297,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let txt = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 20))
         msg.accessoryView = txt
         txt.becomeFirstResponder()
+        NSApp.activate(ignoringOtherApps: true)
         let response = msg.runModal()
         
         if (response == .alertFirstButtonReturn) {
@@ -341,9 +343,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         })
     }
     
+    @objc func showAboutBox() {
+        AboutBox.showAboutBox()
+    }
+    
     func constructMenu() {
         monitorMenuItem = mainMenu.addItem(withTitle: t("device_not_set"), action: nil, keyEquivalent: "")
-        mainMenu.addItem(NSMenuItem.separator())
         
         var item: NSMenuItem
 
@@ -380,6 +385,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         item = mainMenu.addItem(withTitle: t("launch_at_login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         item.state = prefs.bool(forKey: "launchAtLogin") ? .on : .off
 
+        mainMenu.addItem(NSMenuItem.separator())
+        mainMenu.addItem(withTitle: t("about"), action: #selector(showAboutBox), keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
         mainMenu.addItem(withTitle: t("quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         statusItem.menu = mainMenu
