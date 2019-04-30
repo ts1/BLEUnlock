@@ -16,3 +16,4 @@
 "set_password" = "パスワードを設定…";
 "launch_at_login" = "ログイン時に起動";
 "quit" = "BLEUnlock を終了";
+"lock_now" = "今すぐロック";

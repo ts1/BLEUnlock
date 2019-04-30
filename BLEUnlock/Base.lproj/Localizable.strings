@@ -16,3 +16,4 @@
 "set_password" = "Set password…";
 "launch_at_login" = "Launch at login";
 "quit" = "Quit BLEUnlock";
+"lock_now" = "Lock now";
