@@ -11,10 +11,10 @@
 "proximity_rssi" = "Proximity Threshold";
 "closer" = "⬆Closer";
 "farther" = "⬇Farther";
-"wake_on_proximity" = "Wake on proximity";
-"pause_itunes" = "Pause iTunes while locked";
-"set_password" = "Set password…";
-"launch_at_login" = "Launch at login";
+"wake_on_proximity" = "Wake on Proximity";
+"pause_itunes" = "Pause iTunes while Locked";
+"set_password" = "Set Password…";
+"launch_at_login" = "Launch at Login";
 "quit" = "Quit BLEUnlock";
-"lock_now" = "Lock now";
+"lock_now" = "Lock Now";
 "about" = "About BLEUnlock";
