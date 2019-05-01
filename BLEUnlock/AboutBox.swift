@@ -13,7 +13,9 @@ class AboutBox: NSWindowController, NSWindowDelegate {
         super.windowDidLoad()
         if let info = Bundle.main.infoDictionary {
             if let version = info["CFBundleShortVersionString"] as? String {
-                versionLabel.stringValue = versionLabel.stringValue.replacingOccurrences(of: "#{version}", with: version)
+                if let build = info["CFBundleVersion"] as? String {
+                    versionLabel.stringValue = versionLabel.stringValue.replacingOccurrences(of: "#{version}", with: "\(version) (\(build))")
+                }
             }
         }
     }
