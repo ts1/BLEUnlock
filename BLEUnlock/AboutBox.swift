@@ -2,7 +2,7 @@ import Cocoa
 
 private var aboutBox: AboutBox? = nil
 
-class AboutBox: NSWindowController, NSWindowDelegate {
+class AboutBox: NSWindowController {
     @IBOutlet weak var versionLabel: NSTextField!
 
     convenience init() {
@@ -20,8 +20,8 @@ class AboutBox: NSWindowController, NSWindowDelegate {
         }
     }
 
-    func windowWillClose(_ notification: Notification) {
-        aboutBox = nil
+    override func cancelOperation(_ sender: Any?) {
+        close()
     }
 
     static func showAboutBox() {
@@ -33,5 +33,3 @@ class AboutBox: NSWindowController, NSWindowDelegate {
         aboutBox?.window?.orderFront(self)
     }
 }
-
-
