@@ -2,18 +2,6 @@ import Cocoa
 import Quartz
 import ServiceManagement
 
-var appDelegate: AppDelegate? = nil
-
-@_cdecl("onDisplayWake")
-func onDisplayWake() {
-    appDelegate?.onWake()
-}
-
-@_cdecl("onDisplaySleep")
-func onDisplaySleep() {
-    appDelegate?.onSleep()
-}
-
 func t(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
 }
@@ -61,7 +49,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func newDevice(device: Device) {
         let menuItem = deviceMenu.addItem(withTitle: menuItemTitle(device: device), action:#selector(selectDevice), keyEquivalent: "")
         deviceDict[device.uuid] = menuItem
-        if (device.uuid == ble.monitorUUID) {
+        if (device.uuid == ble.monitoredUUID) {
             menuItem.state = .on
         }
     }
@@ -202,21 +190,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
-    func onWake() {
-        print("awake")
+    @objc func onDisplayWake() {
+        print("display wake")
         sleeping = false
-        Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false, block: { _ in
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
             if self.ble.presence {
                 self.unlockScreen()
             }
         })
     }
-    
-    func onSleep() {
+
+    @objc func onDisplaySleep() {
         sleeping = true
-        print("sleep")
+        print("display sleep")
     }
-    
+
     @objc func selectDevice(item: NSMenuItem) {
         for (uuid, menuItem) in deviceDict {
             if menuItem == item {
@@ -419,9 +407,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         if proximity != 0 {
             ble.proximityRSSI = proximity
         }
-        appDelegate = self;
-        setSleepNotification()
-        
+
+        let nc = NSWorkspace.shared.notificationCenter;
+        nc.addObserver(self, selector: #selector(onDisplaySleep), name: NSWorkspace.screensDidSleepNotification, object: nil)
+        nc.addObserver(self, selector: #selector(onDisplayWake), name: NSWorkspace.screensDidWakeNotification, object: nil)
+
         if fetchPassword() == nil {
             askPassword()
         }
