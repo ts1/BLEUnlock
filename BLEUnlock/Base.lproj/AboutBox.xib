@@ -49,7 +49,7 @@
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <textView editable="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="wTr-M6-frY">
-                                    <rect key="frame" x="0.0" y="2" width="460" height="421"/>
+                                    <rect key="frame" x="0.0" y="3" width="460" height="421"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="textColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -437,6 +437,9 @@ Included icon is derived from lock-open.svg downloaded from materialdesignicons.
                     <constraint firstItem="zi4-VN-Z2O" firstAttribute="centerX" secondItem="xhw-xw-Rxl" secondAttribute="centerX" id="wzM-st-Cjk"/>
                 </constraints>
             </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="vVX-GT-nTx"/>
+            </connections>
             <point key="canvasLocation" x="150" y="224"/>
         </window>
     </objects>

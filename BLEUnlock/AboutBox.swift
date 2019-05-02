@@ -2,7 +2,7 @@ import Cocoa
 
 private var aboutBox: AboutBox? = nil
 
-class AboutBox: NSWindowController {
+class AboutBox: NSWindowController, NSWindowDelegate {
     @IBOutlet weak var versionLabel: NSTextField!
 
     convenience init() {
