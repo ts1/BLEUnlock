@@ -73,7 +73,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var presence = false
     var proximityRSSI = -70
     var proximityTimeout = 10.0
-    var signalTimeout = 31.0
+    var signalTimeout = 61.0
     
     func startScanning() {
         scanMode = true
