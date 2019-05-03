@@ -2,17 +2,7 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "lock-gray.pdf"
-    },
-    {
-      "idiom" : "universal",
-      "filename" : "lock-gray-1.pdf",
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ]
+      "filename" : "unlock-off.pdf"
     }
   ],
   "info" : {
@@ -20,7 +10,7 @@
     "author" : "xcode"
   },
   "properties" : {
-    "template-rendering-intent" : "original",
+    "template-rendering-intent" : "template",
     "preserves-vector-representation" : true
   }
 }

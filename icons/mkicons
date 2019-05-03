@@ -3,3 +3,6 @@ for s in 16 32 64 128 256 512 1024; do
     svg2png -w $s -h $s unlock-with-circle.svg app-$s.png
 done
 svg2png -w 1280 -h 800 unlock-with-circle.svg app-preview.png
+
+svg2pdf -w 18 -h -18 unlock.svg unlock-on.pdf
+svg2pdf -w 18 -h -18 unlock-outline.svg unlock-off.pdf

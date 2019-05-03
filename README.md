@@ -71,8 +71,8 @@ and BLEUnlock unlocks.
 
 ## Acknowledgement
 
-Icon is based on `lock-open.svg` downloaded from materialdesignicons.com,
-which is originally designed by Google LLC and licensed under Apache License
+Icons are based on SVGs downloaded from materialdesignicons.com.
+They are originally designed by Google LLC and licensed under Apache License
 version 2.0.
 
 ## License

@@ -60,7 +60,7 @@ BLEUnlockはiPhone, Apple Watchやその他のBluetooth Low Energyデバイス�
 
 ## クレジット
 
-アイコンはmaterialdesignicons.comからダウンロードしたlock-open.svgをもとにしています。これはGoogleによってデザインされApache License version 2.0でライセンスされています。
+アイコンはmaterialdesignicons.comからダウンロードしたSVGファイルをもとにしています。これらはGoogleによってデザインされApache License version 2.0でライセンスされています。
 
 ## ライセンス
 
