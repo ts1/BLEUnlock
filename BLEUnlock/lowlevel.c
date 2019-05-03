@@ -3,8 +3,8 @@
 
 void wakeDisplay(void)
 {
-    IOPMAssertionID assertionID;
-    IOPMAssertionDeclareUserActivity(CFSTR(""), kIOPMUserActiveLocal, &assertionID);
+    static IOPMAssertionID assertionID;
+    IOPMAssertionDeclareUserActivity(CFSTR("BLEUnlock"), kIOPMUserActiveLocal, &assertionID);
 }
 
 bool lockScreen(void)

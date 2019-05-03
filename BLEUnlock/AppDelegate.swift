@@ -16,12 +16,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var deviceDict: [UUID: NSMenuItem] = [:]
     var monitorMenuItem : NSMenuItem?
     let prefs = UserDefaults.standard
-    var sleeping = false
+    var displaySleep = false
+    var systemSleep = false
     var connected = false
     var userNotification: NSUserNotification?
     var iTunesWasPlaying = false
     var aboutBox: AboutBox? = nil
-    var unlockRequired = false
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -136,12 +136,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
                 NSUserNotificationCenter.default.removeDeliveredNotification(un)
                 userNotification = nil
             }
-            if prefs.bool(forKey: "wakeOnProximity") && sleeping {
+            if displaySleep && !systemSleep && prefs.bool(forKey: "wakeOnProximity") {
                 print("Waking display")
                 wakeDisplay()
             }
-            unlockRequired = true
-            unlockScreen()
+            tryUnlockScreen()
         } else {
             if (!isScreenLocked()) {
                 pauseItunes()
@@ -178,38 +177,40 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         return false
     }
     
-    func unlockScreen() {
-        guard unlockRequired else { return }
-        if sleeping {
-            print("Pending unlock")
-            return
-        }
-        if let password = fetchPassword() { // Fetch password beforehand, as it may ask for permission in modal
-            if isScreenLocked() {
-                print("Entering password")
-                fakeKeyStrokes(password)
-                playItunes()
-                unlockRequired = false
-            }
-        }
+    func tryUnlockScreen() {
+        guard ble.presence else { return }
+        guard !systemSleep else { return }
+        guard !displaySleep else { return }
+        guard isScreenLocked() else { return }
+        guard let password = fetchPassword() else { return }
+
+        print("Entering password")
+        fakeKeyStrokes(password)
+        playItunes()
     }
 
     @objc func onDisplayWake() {
         print("display wake")
-        sleeping = false
-        unlockRequired = true
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
-            if self.ble.presence {
-                self.unlockScreen()
-            }
-        })
+        displaySleep = false
+        tryUnlockScreen()
     }
 
     @objc func onDisplaySleep() {
-        sleeping = true
         print("display sleep")
+        displaySleep = true
     }
 
+    @objc func onSystemWake() {
+        print("system wake")
+        systemSleep = false
+        tryUnlockScreen()
+    }
+    
+    @objc func onSystemSleep() {
+        print("system sleep")
+        systemSleep = true
+    }
+    
     @objc func selectDevice(item: NSMenuItem) {
         for (uuid, menuItem) in deviceDict {
             if menuItem == item {
@@ -416,6 +417,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let nc = NSWorkspace.shared.notificationCenter;
         nc.addObserver(self, selector: #selector(onDisplaySleep), name: NSWorkspace.screensDidSleepNotification, object: nil)
         nc.addObserver(self, selector: #selector(onDisplayWake), name: NSWorkspace.screensDidWakeNotification, object: nil)
+        nc.addObserver(self, selector: #selector(onSystemSleep), name: NSWorkspace.willSleepNotification, object: nil)
+        nc.addObserver(self, selector: #selector(onSystemWake), name: NSWorkspace.didWakeNotification, object: nil)
 
         if fetchPassword() == nil {
             askPassword()
