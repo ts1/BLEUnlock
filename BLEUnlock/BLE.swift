@@ -86,6 +86,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func startMonitor(uuid: UUID) {
+        if let p = monitoredPeripheral {
+            centralMgr.cancelPeripheralConnection(p)
+        }
         monitoredUUID = uuid
         proximityTimer?.invalidate()
         resetSignalTimer()
