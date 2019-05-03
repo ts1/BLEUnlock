@@ -222,8 +222,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             }
         }
     }
-    
+
     func monitorDevice(uuid: UUID) {
+        connected = false
+        statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
         monitorMenuItem?.title = t("not_detected")
         ble.startMonitor(uuid: uuid)
     }
