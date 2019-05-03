@@ -21,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var userNotification: NSUserNotification?
     var iTunesWasPlaying = false
     var aboutBox: AboutBox? = nil
+    var unlockRequired = false
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -139,6 +140,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
                 print("Waking display")
                 wakeDisplay()
             }
+            unlockRequired = true
             unlockScreen()
         } else {
             if (!isScreenLocked()) {
@@ -177,6 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
     
     func unlockScreen() {
+        guard unlockRequired else { return }
         if sleeping {
             print("Pending unlock")
             return
@@ -186,6 +189,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
                 print("Entering password")
                 fakeKeyStrokes(password)
                 playItunes()
+                unlockRequired = false
             }
         }
     }
@@ -193,6 +197,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     @objc func onDisplayWake() {
         print("display wake")
         sleeping = false
+        unlockRequired = true
         Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
             if self.ble.presence {
                 self.unlockScreen()

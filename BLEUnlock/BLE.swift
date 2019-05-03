@@ -118,7 +118,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             }
         case .poweredOff:
             print("central powered off")
-            //presence = false
+            presence = false
         default:
             break
         }
