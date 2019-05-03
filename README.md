@@ -52,6 +52,23 @@ because it is needed while the screen is locked.
 If "Signal is lost" occurs frequently, turn Bluetooth of Mac off then on.
 Or use a device that sends signal more frequently.
 
+### Why does it sometimes take long time to unlock?
+
+Short answer: wake your iPhone.
+
+From version 1.4.1, BLEUnlock assumes the device is away
+when Mac enters system sleep and Bluetooth hardware is powered off
+(typically 15-30 seconds after the lid is closed).
+This is required for security.
+Consequently, it sometimes takes up to several seconds to unlock when Mac wakes
+from system sleep.
+
+This is because BLEUnlock has lost connection to the device and has to wait
+for the device to send signal.
+Usually, devices send signal less frequently when it is in sleep mode.
+Thus, if you wake the device, in most cases it sends signal promptly,
+and BLEUnlock unlocks.
+
 ## Acknowledgement
 
 Icon is based on `lock-open.svg` downloaded from materialdesignicons.com,
