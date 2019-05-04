@@ -84,6 +84,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
+    func bluetoothPowerWarn() {
+        errorModal(t("bluetooth_power_warn"))
+    }
+
     func notifyUser(_ reason: String) {
         let un = NSUserNotification()
         un.title = "BLEUnlock"
@@ -234,6 +238,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let alert = NSAlert()
         alert.messageText = msg
         alert.informativeText = info ?? ""
+        alert.window.title = "BLEUnlock"
+        NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
     }
     
@@ -289,7 +295,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         msg.addButton(withTitle: t("cancel"))
         msg.messageText = t("enter_password")
         msg.informativeText = t("password_info")
-        
+        msg.window.title = "BLEUnlock"
+
         let txt = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 20))
         msg.accessoryView = txt
         txt.becomeFirstResponder()

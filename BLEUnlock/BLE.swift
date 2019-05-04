@@ -60,6 +60,7 @@ protocol BLEDelegate {
     func removeDevice(device: Device)
     func updateRSSI(rssi: Int?)
     func updatePresence(presence: Bool, reason: String)
+    func bluetoothPowerWarn()
 }
 
 class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
@@ -76,6 +77,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var proximityTimeout = 8.5
     var signalTimeout = 31.0
     var lastReadAt = 0.0
+    var powerWarn = true
 
     func startScanning() {
         scanMode = true
@@ -114,16 +116,21 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            print("central powered on")
+            print("Bluetooth powered on")
             centralMgr.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
             if let p = monitoredPeripheral {
                 central.cancelPeripheralConnection(p)
             }
+            powerWarn = false
         case .poweredOff:
-            print("central powered off")
+            print("Bluetooth powered off")
             presence = false
             signalTimer?.invalidate()
             signalTimer = nil
+            if powerWarn {
+                powerWarn = false
+                delegate?.bluetoothPowerWarn()
+            }
         default:
             break
         }
