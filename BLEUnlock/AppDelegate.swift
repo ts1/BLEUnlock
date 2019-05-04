@@ -186,7 +186,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         guard !systemSleep else { return }
         guard !displaySleep else { return }
         guard isScreenLocked() else { return }
-        guard let password = fetchPassword() else { return }
+        guard let password = fetchPassword(warn: true) else { return }
 
         print("Entering password")
         fakeKeyStrokes(password)
@@ -262,7 +262,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         }
     }
 
-    func fetchPassword() -> String? {
+    func fetchPassword(warn: Bool = false) -> String? {
         let query: [String: Any] = [
             String(kSecClass): kSecClassGenericPassword,
             String(kSecAttrAccount): NSUserName(),
@@ -275,6 +275,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         if (status == errSecItemNotFound) {
             print("Password is not stored")
+            if warn {
+                errorModal(t("password_not_set"))
+            }
             return nil
         }
         guard status == errSecSuccess else {

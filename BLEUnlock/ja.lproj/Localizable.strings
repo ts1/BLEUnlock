@@ -19,3 +19,4 @@
 "lock_now" = "今すぐロック";
 "about" = "BLEUnlock について";
 "bluetooth_power_warn" = "Bluetooth がオフになっています。 BLEUnlock を動作させるためにはオンにしてください。";
+"password_not_set" = "パスワードが設定されていません。";
