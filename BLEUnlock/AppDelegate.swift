@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var userNotification: NSUserNotification?
     var iTunesWasPlaying = false
     var aboutBox: AboutBox? = nil
+    var wakeTimer: Timer?
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -143,6 +144,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
             if displaySleep && !systemSleep && prefs.bool(forKey: "wakeOnProximity") {
                 print("Waking display")
                 wakeDisplay()
+                wakeTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
+                    print("Retrying waking display")
+                    wakeDisplay()
+                })
             }
             tryUnlockScreen()
         } else {
@@ -196,6 +201,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     @objc func onDisplayWake() {
         print("display wake")
         displaySleep = false
+        wakeTimer?.invalidate()
+        wakeTimer = nil
         tryUnlockScreen()
     }
 
