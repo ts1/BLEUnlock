@@ -213,8 +213,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
 
     @objc func onSystemWake() {
         print("system wake")
-        systemSleep = false
-        tryUnlockScreen()
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
+            print("delayed system wake job")
+            self.systemSleep = false
+            self.tryUnlockScreen()
+        })
     }
     
     @objc func onSystemSleep() {
