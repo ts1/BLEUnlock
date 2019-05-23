@@ -23,6 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     var iTunesWasPlaying = false
     var aboutBox: AboutBox? = nil
     var wakeTimer: Timer?
+    var manualLock = false
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -159,6 +160,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
                     print("Failed to lock")
                 }
             }
+            manualLock = false
         }
     }
 
@@ -190,6 +192,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         guard ble.presence else { return }
         guard !systemSleep else { return }
         guard !displaySleep else { return }
+        guard !manualLock else { return }
         guard isScreenLocked() else { return }
         guard let password = fetchPassword(warn: true) else { return }
 
@@ -224,7 +227,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         print("system sleep")
         systemSleep = true
     }
-    
+
+    @objc func onUnlock() {
+        manualLock = false
+        print("unlock")
+    }
+
     @objc func selectDevice(item: NSMenuItem) {
         for (uuid, menuItem) in deviceDict {
             if menuItem == item {
@@ -352,11 +360,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
+        manualLock = true
         pauseItunes()
         lockScreen()
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
-            sleepDisplay()
-        })
     }
     
     @objc func showAboutBox() {
@@ -441,6 +447,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         nc.addObserver(self, selector: #selector(onDisplayWake), name: NSWorkspace.screensDidWakeNotification, object: nil)
         nc.addObserver(self, selector: #selector(onSystemSleep), name: NSWorkspace.willSleepNotification, object: nil)
         nc.addObserver(self, selector: #selector(onSystemWake), name: NSWorkspace.didWakeNotification, object: nil)
+
+        DistributedNotificationCenter.default().addObserver(self, selector: #selector(onUnlock), name: NSNotification.Name(rawValue: "com.apple.screenIsUnlocked"), object: nil)
 
         if fetchPassword() == nil {
             askPassword()
