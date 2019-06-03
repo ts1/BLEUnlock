@@ -30,7 +30,7 @@ notarize() {
         --asc-provider $TEAM 2>&1 | tee $TMPDIR/altool.log
     uuid=$(awk '/^RequestUUID/ { print $3 }' $TMPDIR/altool.log)
     while true; do
-        sleep 10
+        sleep 15
         xcrun altool --notarization-info $uuid  --username $USERNAME \
             --password "@keychain:AC_PASSWORD" --asc-provider 376NR42P9A 2>&1 |
             tee $TMPDIR/altool.log
