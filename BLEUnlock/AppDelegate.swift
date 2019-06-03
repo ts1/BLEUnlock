@@ -189,16 +189,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     }
     
     func tryUnlockScreen() {
+        guard !manualLock else { return }
         guard ble.presence else { return }
         guard !systemSleep else { return }
         guard !displaySleep else { return }
-        guard !manualLock else { return }
-        guard isScreenLocked() else { return }
-        guard let password = fetchPassword(warn: true) else { return }
-
-        print("Entering password")
-        fakeKeyStrokes(password)
-        playItunes()
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
+            guard self.isScreenLocked() else { return }
+            guard let password = self.fetchPassword(warn: true) else { return }
+            
+            print("Entering password")
+            self.fakeKeyStrokes(password)
+            self.playItunes()
+        })
     }
 
     @objc func onDisplayWake() {
@@ -216,11 +218,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
 
     @objc func onSystemWake() {
         print("system wake")
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
-            print("delayed system wake job")
-            self.systemSleep = false
-            self.tryUnlockScreen()
-        })
+        self.systemSleep = false
+        self.tryUnlockScreen()
     }
     
     @objc func onSystemSleep() {
