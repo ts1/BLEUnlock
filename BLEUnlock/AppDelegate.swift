@@ -7,12 +7,13 @@ func t(_ key: String) -> String {
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, BLEDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     let ble = BLE()
     let mainMenu = NSMenu()
     let deviceMenu = NSMenu()
-    let proximityMenu = NSMenu()
+    let lockRSSIMenu = NSMenu()
+    let unlockRSSIMenu = NSMenu()
     var deviceDict: [UUID: NSMenuItem] = [:]
     var monitorMenuItem : NSMenuItem?
     let prefs = UserDefaults.standard
@@ -28,15 +29,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
             ble.startScanning()
-        } else if menu == proximityMenu {
+        } else if menu == lockRSSIMenu {
             for item in menu.items {
-                if item.tag == ble.proximityRSSI {
+                if item.tag == ble.lockRSSI {
+                    item.state = .on
+                } else {
+                    item.state = .off
+                }
+            }
+        } else if menu == unlockRSSIMenu {
+            for item in menu.items {
+                if item.tag == ble.unlockRSSI {
                     item.state = .on
                 } else {
                     item.state = .off
                 }
             }
         }
+    }
+
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.menu == lockRSSIMenu {
+            return menuItem.tag <= ble.unlockRSSI
+        } else if menuItem.menu == unlockRSSIMenu {
+            return menuItem.tag >= ble.lockRSSI
+        }
+        return true
     }
     
     func menuDidClose(_ menu: NSMenu) {
@@ -335,10 +353,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         prefs.set(value, forKey: "wakeOnProximity")
     }
 
-    @objc func setProximity(_ menuItem: NSMenuItem) {
+    @objc func setLockRSSI(_ menuItem: NSMenuItem) {
         let value = menuItem.tag
-        prefs.set(value, forKey: "proximity")
-        ble.proximityRSSI = value
+        prefs.set(value, forKey: "lockRSSI")
+        ble.lockRSSI = value
+    }
+    
+    @objc func setUnlockRSSI(_ menuItem: NSMenuItem) {
+        let value = menuItem.tag
+        prefs.set(value, forKey: "unlockRSSI")
+        ble.unlockRSSI = value
     }
 
     @objc func toggleLaunchAtLogin(_ menuItem: NSMenuItem) {
@@ -367,6 +391,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
     @objc func showAboutBox() {
         AboutBox.showAboutBox()
     }
+
+    func constructRSSIMenu(_ menu: NSMenu, _ action: Selector) {
+        menu.addItem(withTitle: t("closer"), action: nil, keyEquivalent: "")
+        for proximity in stride(from: -50, to: -100, by: -10) {
+            let item = menu.addItem(withTitle: String(format: "%ddBm", proximity), action: action, keyEquivalent: "")
+            item.tag = proximity
+        }
+        menu.addItem(withTitle: t("farther"), action: nil, keyEquivalent: "")
+        menu.delegate = self
+    }
     
     func constructMenu() {
         monitorMenuItem = mainMenu.addItem(withTitle: t("device_not_set"), action: nil, keyEquivalent: "")
@@ -380,17 +414,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
         item.submenu = deviceMenu
         deviceMenu.delegate = self
         deviceMenu.addItem(withTitle: t("scanning"), action: nil, keyEquivalent: "")
-        
-        let proximityItem = mainMenu.addItem(withTitle: t("proximity_rssi"), action: nil, keyEquivalent: "")
-        proximityItem.submenu = proximityMenu
-        proximityMenu.addItem(withTitle: t("closer"), action: nil, keyEquivalent: "")
-        for proximity in stride(from: -50, to: -100, by: -10) {
-            let item = proximityMenu.addItem(withTitle: String(format: "%ddBm", proximity), action: #selector(setProximity), keyEquivalent: "")
-            item.tag = proximity
-        }
-        proximityMenu.addItem(withTitle: t("farther"), action: nil, keyEquivalent: "")
-        proximityMenu.delegate = self
-        
+
+        let unlockRSSIItem = mainMenu.addItem(withTitle: t("unlock_rssi"), action: nil, keyEquivalent: "")
+        unlockRSSIItem.submenu = unlockRSSIMenu
+        constructRSSIMenu(unlockRSSIMenu, #selector(setUnlockRSSI))
+
+        let lockRSSIItem = mainMenu.addItem(withTitle: t("lock_rssi"), action: nil, keyEquivalent: "")
+        lockRSSIItem.submenu = lockRSSIMenu
+        constructRSSIMenu(lockRSSIMenu, #selector(setLockRSSI))
+
         item = mainMenu.addItem(withTitle: t("wake_on_proximity"), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
         if prefs.bool(forKey: "wakeOnProximity") {
             item.state = .on
@@ -436,9 +468,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, BLEDelegate 
                 monitorDevice(uuid: uuid)
             }
         }
-        let proximity = prefs.integer(forKey: "proximity")
-        if proximity != 0 {
-            ble.proximityRSSI = proximity
+        let lockRSSI = prefs.integer(forKey: "lockRSSI")
+        if lockRSSI != 0 {
+            ble.lockRSSI = lockRSSI
+        }
+        let unlockRSSI = prefs.integer(forKey: "unlockRSSI")
+        if unlockRSSI != 0 {
+            ble.unlockRSSI = unlockRSSI
         }
 
         let nc = NSWorkspace.shared.notificationCenter;

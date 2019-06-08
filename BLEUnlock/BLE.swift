@@ -73,8 +73,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var proximityTimer : Timer?
     var signalTimer: Timer?
     var presence = false
-    var proximityRSSI = -70
-    var proximityTimeout = 8.5
+    var lockRSSI = -80
+    var unlockRSSI = -60
+    var proximityTimeout = 4.5
     var signalTimeout = 31.0
     var lastReadAt = 0.0
     var powerWarn = true
@@ -143,8 +144,8 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             }
         }
         delegate?.updateRSSI(rssi: rssi)
-        if (rssi > proximityRSSI) {
-            if (!presence) {
+        if rssi > lockRSSI {
+            if rssi > unlockRSSI && !presence {
                 print("Device is close")
                 presence = true
                 delegate?.updatePresence(presence: presence, reason: "close")
@@ -154,18 +155,16 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 print("Proximity timer canceled")
                 proximityTimer = nil
             }
-        } else if (presence) {
-            if proximityTimer == nil {
-                proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { _ in
-                    print("Device is away")
-                    self.presence = false
-                    self.delegate?.updatePresence(presence: self.presence, reason: "away")
-                    self.proximityTimer = nil
-                })
-                if let timer = proximityTimer {
-                    RunLoop.main.add(timer, forMode: .common)
-                    print("Proximity timer started")
-                }
+        } else if presence && proximityTimer == nil {
+            proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { _ in
+                print("Device is away")
+                self.presence = false
+                self.delegate?.updatePresence(presence: self.presence, reason: "away")
+                self.proximityTimer = nil
+            })
+            if let timer = proximityTimer {
+                RunLoop.main.add(timer, forMode: .common)
+                print("Proximity timer started")
             }
         }
         resetSignalTimer()

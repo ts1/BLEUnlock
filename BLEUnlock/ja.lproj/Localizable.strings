@@ -8,7 +8,8 @@
 "device_not_set" = "デバイス未選択";
 "device" = "デバイス";
 "scanning" = "スキャン中…";
-"proximity_rssi" = "信号強度しきい値";
+"lock_rssi" = "ロック信号強度";
+"unlock_rssi" = "アンロック信号強度";
 "closer" = "⬆近い";
 "farther" = "⬇遠い";
 "wake_on_proximity" = "画面スリープから復帰";
