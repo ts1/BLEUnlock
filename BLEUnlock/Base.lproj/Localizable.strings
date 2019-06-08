@@ -8,7 +8,8 @@
 "device_not_set" = "Device not selected";
 "device" = "Device";
 "scanning" = "Scanning…";
-"proximity_rssi" = "Proximity Threshold";
+"lock_rssi" = "Lock RSSI";
+"unlock_rssi" = "Unlock RSSI";
 "closer" = "⬆Closer";
 "farther" = "⬇Farther";
 "wake_on_proximity" = "Wake on Proximity";
