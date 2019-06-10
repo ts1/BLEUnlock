@@ -7,7 +7,7 @@ func t(_ key: String) -> String {
 }
 
 @NSApplicationMain
-class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, BLEDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, NSUserNotificationCenterDelegate, BLEDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     let ble = BLE()
     let mainMenu = NSMenu()
@@ -122,6 +122,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         userNotification = un
     }
 
+    func userNotificationCenter(_ center: NSUserNotificationCenter,
+                                shouldPresent notification: NSUserNotification) -> Bool {
+        return true
+    }
+
+    func userNotificationCenter(_ center: NSUserNotificationCenter,
+                                didActivate notification: NSUserNotification) {
+        if notification != userNotification {
+            NSWorkspace.shared.open(URL(string: "https://github.com/ts1/BLEUnlock/releases")!)
+            NSUserNotificationCenter.default.removeDeliveredNotification(notification)
+        }
+    }
+
     func runAppleScript(_ script: String) -> NSAppleEventDescriptor? {
         guard let scriptObject = NSAppleScript(source: script) else { return nil }
         var error: NSDictionary?
@@ -227,6 +240,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         wakeTimer?.invalidate()
         wakeTimer = nil
         tryUnlockScreen()
+        Timer.scheduledTimer(withTimeInterval: 60, repeats: false, block: { _ in
+            if self.displaySleep == false {
+                checkUpdate()
+            }
+        })
     }
 
     @objc func onDisplaySleep() {
@@ -236,8 +254,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     @objc func onSystemWake() {
         print("system wake")
-        self.systemSleep = false
-        self.tryUnlockScreen()
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
+            print("delayed system wake job")
+            self.systemSleep = false
+            self.tryUnlockScreen()
+        })
     }
     
     @objc func onSystemSleep() {
@@ -477,6 +498,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             ble.unlockRSSI = unlockRSSI
         }
 
+        NSUserNotificationCenter.default.delegate = self
+
         let nc = NSWorkspace.shared.notificationCenter;
         nc.addObserver(self, selector: #selector(onDisplaySleep), name: NSWorkspace.screensDidSleepNotification, object: nil)
         nc.addObserver(self, selector: #selector(onDisplayWake), name: NSWorkspace.screensDidWakeNotification, object: nil)
@@ -489,6 +512,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             askPassword()
         }
         checkAccessibility()
+
+        Timer.scheduledTimer(withTimeInterval: 60*60, repeats: true, block: { _ in
+            if self.displaySleep == false {
+                checkUpdate()
+            }
+        })
+        checkUpdate()
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
