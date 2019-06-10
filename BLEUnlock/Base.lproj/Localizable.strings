@@ -21,3 +21,4 @@
 "about" = "About BLEUnlock";
 "bluetooth_power_warn" = "Bluetooth is turned off. For BLEUnlock to work, turn it on.";
 "password_not_set" = "Password is not set.";
+"notification_update_available" = "Update is available.";
