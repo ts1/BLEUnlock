@@ -224,7 +224,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         guard ble.presence else { return }
         guard !systemSleep else { return }
         guard !displaySleep else { return }
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
             guard self.isScreenLocked() else { return }
             guard let password = self.fetchPassword(warn: true) else { return }
             
@@ -240,11 +240,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         wakeTimer?.invalidate()
         wakeTimer = nil
         tryUnlockScreen()
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: false, block: { _ in
-            if self.displaySleep == false {
-                checkUpdate()
-            }
-        })
     }
 
     @objc func onDisplaySleep() {
@@ -254,7 +249,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     @objc func onSystemWake() {
         print("system wake")
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
             print("delayed system wake job")
             self.systemSleep = false
             self.tryUnlockScreen()
@@ -268,7 +263,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     @objc func onUnlock() {
         manualLock = false
-        print("unlock")
+        Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
+            checkUpdate()
+        })
     }
 
     @objc func selectDevice(item: NSMenuItem) {
@@ -512,12 +509,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             askPassword()
         }
         checkAccessibility()
-
-        Timer.scheduledTimer(withTimeInterval: 60*60, repeats: true, block: { _ in
-            if self.displaySleep == false {
-                checkUpdate()
-            }
-        })
         checkUpdate()
     }
     

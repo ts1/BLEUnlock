@@ -43,6 +43,6 @@ private func compareVersionsAndNotify(_ latestVersion: String) {
 private func notify() {
     let un = NSUserNotification()
     un.title = "BLEUnlock"
-    un.informativeText = t("notification_update_available")
+    un.subtitle = t("notification_update_available")
     NSUserNotificationCenter.default.deliver(un)
 }
