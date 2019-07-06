@@ -79,6 +79,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var signalTimeout = 31.0
     var lastReadAt = 0.0
     var powerWarn = true
+    var passiveMode = false
 
     func startScanning() {
         scanMode = true
@@ -139,7 +140,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     func updateMonitoredPeripheral(_ rssi: Int) {
         if let p = monitoredPeripheral {
-            if (!scanMode && p.state == .disconnected) {
+            if !scanMode && p.state == .disconnected && !passiveMode {
                 centralMgr.connect(p, options: nil)
             }
         }
@@ -227,7 +228,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     {
         peripheral.delegate = self
         peripheral.discoverServices([DeviceInformation])
-        if peripheral == monitoredPeripheral {
+        if peripheral == monitoredPeripheral && !passiveMode {
             peripheral.readRSSI()
             lastReadAt = Date().timeIntervalSince1970
         }
@@ -235,11 +236,13 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         guard peripheral == monitoredPeripheral else { return }
+        guard !passiveMode else { return }
         central.connect(peripheral, options: nil)
     }
 
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         guard peripheral == monitoredPeripheral else { return }
+        guard !passiveMode else { return }
         central.connect(peripheral, options: nil)
     }
 

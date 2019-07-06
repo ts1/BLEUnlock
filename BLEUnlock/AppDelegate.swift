@@ -399,6 +399,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
     
+    @objc func togglePassiveMode(_ menuItem: NSMenuItem) {
+        let passiveMode = !prefs.bool(forKey: "passiveMode")
+        prefs.set(passiveMode, forKey: "passiveMode")
+        menuItem.state = passiveMode ? .on : .off
+        ble.passiveMode = passiveMode
+    }
+
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
         manualLock = true
@@ -453,6 +460,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         
         mainMenu.addItem(withTitle: t("set_password"), action: #selector(askPassword), keyEquivalent: "")
 
+        item = mainMenu.addItem(withTitle: t("passive_mode"), action: #selector(togglePassiveMode), keyEquivalent: "")
+        item.state = prefs.bool(forKey: "passiveMode") ? .on : .off
+        
         item = mainMenu.addItem(withTitle: t("launch_at_login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         item.state = prefs.bool(forKey: "launchAtLogin") ? .on : .off
 
@@ -494,6 +504,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         if unlockRSSI != 0 {
             ble.unlockRSSI = unlockRSSI
         }
+        ble.passiveMode = prefs.bool(forKey: "passiveMode")
 
         NSUserNotificationCenter.default.delegate = self
 
