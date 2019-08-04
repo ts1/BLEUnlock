@@ -223,6 +223,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
     }
 
+    //MARK:- CBCentralManagerDelegate start
     func centralManager(_ central: CBCentralManager,
                         didConnect peripheral: CBPeripheral)
     {
@@ -246,6 +247,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         central.connect(peripheral, options: nil)
     }
 
+    //MARK:CBCentralManagerDelegate end -
+    
+    //MARK:- CBPeripheralDelegate start
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         guard peripheral == monitoredPeripheral else { return }
         let rssi = RSSI.intValue > 0 ? 0 : RSSI.intValue
@@ -323,6 +327,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     {
         peripheral.discoverServices([DeviceInformation])
     }
+    //MARK:CBPeripheralDelegate end -
 
     override init() {
         super.init()
