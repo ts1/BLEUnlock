@@ -66,6 +66,10 @@
 		3DD4B663226C1CF000451B7B /* lowlevel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = lowlevel.c; sourceTree = "<group>"; };
 		3DD4B665226C1DF200451B7B /* BLE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLE.swift; sourceTree = "<group>"; };
 		3DD4B668226C1E3700451B7B /* login.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = login.framework; path = ../../../../System/Library/PrivateFrameworks/login.framework; sourceTree = "<group>"; };
+		B1EFF91422E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/AboutBox.strings"; sourceTree = "<group>"; };
+		B1EFF91522E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/MainMenu.strings"; sourceTree = "<group>"; };
+		B1EFF91622E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		B1EFF91722E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -236,6 +240,7 @@
 				en,
 				Base,
 				ja,
+				"zh-Hans",
 			);
 			mainGroup = 3DD4B647226C1C3200451B7B;
 			productRefGroup = 3DD4B651226C1C3200451B7B /* Products */;
@@ -322,6 +327,7 @@
 			children = (
 				3D600A36226CC1A40068FB7B /* Base */,
 				3D600A38226CC1AA0068FB7B /* ja */,
+				B1EFF91622E010F50010DB0A /* zh-Hans */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -331,6 +337,7 @@
 			children = (
 				3D953798227853E20017D8B9 /* Base */,
 				3D95379B227853EC0017D8B9 /* ja */,
+				B1EFF91422E010F50010DB0A /* zh-Hans */,
 			);
 			name = AboutBox.xib;
 			sourceTree = "<group>";
@@ -340,6 +347,7 @@
 			children = (
 				3DC0BC6E22729050001145EC /* ja */,
 				3D1B377B22772B740024E2E0 /* Base */,
+				B1EFF91722E010F50010DB0A /* zh-Hans */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -348,6 +356,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				3DD4B658226C1C3400451B7B /* Base */,
+				B1EFF91522E010F50010DB0A /* zh-Hans */,
 			);
 			name = MainMenu.xib;
 			sourceTree = "<group>";
