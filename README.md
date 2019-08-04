@@ -84,11 +84,13 @@ That does not interfere with Bluetooth Internet Sharing.
 If you use Bluetooth Internet Sharing on the same device, turn Passive Mode on.
 If you don't, turn it off.
 
-## Acknowledgement
+## Credits
 
 Icons are based on SVGs downloaded from materialdesignicons.com.
 They are originally designed by Google LLC and licensed under Apache License
 version 2.0.
+
+Chinese translation by @peiit.
 
 ## License
 

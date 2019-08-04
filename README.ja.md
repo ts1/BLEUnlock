@@ -74,6 +74,8 @@ Bluetoothインターネット共有を使う場合、パッシブモードを�
 
 アイコンはmaterialdesignicons.comからダウンロードしたSVGファイルをもとにしています。これらはGoogleによってデザインされApache License version 2.0でライセンスされています。
 
+中国語の翻訳は @peiit さんによって行われました。
+
 ## ライセンス
 
 MIT
