@@ -14,6 +14,7 @@
 "farther" = "⬇Farther";
 "wake_on_proximity" = "Wake on Proximity";
 "pause_itunes" = "Pause iTunes while Locked";
+"pause_music" = "Pause Music while Locked";
 "set_password" = "Set Password…";
 "launch_at_login" = "Launch at Login";
 "quit" = "Quit BLEUnlock";

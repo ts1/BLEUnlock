@@ -14,6 +14,7 @@
 "farther" = "⬇远离";
 "wake_on_proximity" = "靠近唤醒";
 "pause_itunes" = "锁定时暂停iTunes";
+"pause_music" = "锁定时暂停Music";
 "set_password" = "设置密码…";
 "launch_at_login" = "开机启动";
 "quit" = "退出BLEUnlock";
