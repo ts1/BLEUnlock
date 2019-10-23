@@ -146,8 +146,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         return output
     }
 
+    func iTunesName() -> String {
+        if #available(OSX 10.15, *) {
+            return "Music"
+        } else {
+            return "iTunes"
+        }
+    }
+    
     func isItunesPlaying() -> Bool {
-        let result = runAppleScript("tell application \"iTunes\" to return player state")
+        let result = runAppleScript("tell application \"\(iTunesName())\" to return player state")
         return result?.stringValue == "kPSP"
     }
     
@@ -155,14 +163,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         guard prefs.bool(forKey: "pauseItunes") else { return }
         iTunesWasPlaying = isItunesPlaying()
         if iTunesWasPlaying {
-            _ = runAppleScript("tell application \"iTunes\" to pause")
+            _ = runAppleScript("tell application \"\(iTunesName())\" to pause")
         }
     }
     
     func playItunes() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
         if iTunesWasPlaying {
-            _ = runAppleScript("tell application \"iTunes\" to play")
+            _ = runAppleScript("tell application \"\(iTunesName())\" to play")
             iTunesWasPlaying = false
         }
     }
@@ -453,7 +461,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             item.state = .on
         }
 
-        item = mainMenu.addItem(withTitle: t("pause_itunes"), action: #selector(togglePauseItunes), keyEquivalent: "")
+        var pause_itunes = "pause_itunes"
+        if #available(OSX 10.15, *) {
+            pause_itunes = "pause_music"
+        }
+        item = mainMenu.addItem(withTitle: t(pause_itunes), action: #selector(togglePauseItunes), keyEquivalent: "")
         if prefs.bool(forKey: "pauseItunes") {
             item.state = .on
         }
