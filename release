@@ -30,12 +30,12 @@ notarize() {
         --asc-provider $TEAM 2>&1 | tee $TMPDIR/altool.log
     uuid=$(awk '/^RequestUUID/ { print $3 }' $TMPDIR/altool.log)
     while true; do
-        sleep 15
+        sleep 5
         xcrun altool --notarization-info $uuid  --username $USERNAME \
             --password "@keychain:AC_PASSWORD" --asc-provider 376NR42P9A 2>&1 |
-            tee $TMPDIR/altool.log
+            tee $TMPDIR/altool.log || true
         status=$(grep Status: $TMPDIR/altool.log | sed 's/^.*Status: *//')
-        if [ "$status" != "in progress" ]; then
+        if [ "$status" ] && [ "$status" != "in progress" ]; then
             break
         fi
     done
