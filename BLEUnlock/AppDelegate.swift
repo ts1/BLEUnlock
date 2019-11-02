@@ -355,7 +355,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     
     @objc func askPassword() {
         let msg = NSAlert()
-        msg.addButton(withTitle: "OK")
+        msg.addButton(withTitle: t("ok"))
         msg.addButton(withTitle: t("cancel"))
         msg.messageText = t("enter_password")
         msg.informativeText = t("password_info")
@@ -370,6 +370,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         if (response == .alertFirstButtonReturn) {
             let pw = txt.stringValue
             storePassword(pw)
+        }
+    }
+    
+    @objc func setRSSIThreshold() {
+        let msg = NSAlert()
+        msg.addButton(withTitle: t("ok"))
+        msg.addButton(withTitle: t("cancel"))
+        msg.messageText = t("enter_rssi_threshold")
+        msg.informativeText = t("enter_rssi_threshold_info")
+        msg.window.title = "BLEUnlock"
+        
+        let txt = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 20))
+        txt.placeholderString = String(ble.thresholdRSSI)
+        msg.accessoryView = txt
+        txt.becomeFirstResponder()
+        NSApp.activate(ignoringOtherApps: true)
+        let response = msg.runModal()
+        
+        if (response == .alertFirstButtonReturn) {
+            let val = txt.intValue
+            ble.thresholdRSSI = Int(val)
+            prefs.set(val, forKey: "thresholdRSSI")
         }
     }
 
@@ -427,7 +449,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func constructRSSIMenu(_ menu: NSMenu, _ action: Selector) {
         menu.addItem(withTitle: t("closer"), action: nil, keyEquivalent: "")
-        for proximity in stride(from: -50, to: -100, by: -10) {
+        for proximity in stride(from: -50, to: -100, by: -5) {
             let item = menu.addItem(withTitle: String(format: "%ddBm", proximity), action: action, keyEquivalent: "")
             item.tag = proximity
         }
@@ -477,9 +499,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         
         item = mainMenu.addItem(withTitle: t("launch_at_login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         item.state = prefs.bool(forKey: "launchAtLogin") ? .on : .off
+        
+        mainMenu.addItem(withTitle: t("set_rssi_threshold"), action: #selector(setRSSIThreshold),
+                         keyEquivalent: "")
 
         mainMenu.addItem(NSMenuItem.separator())
-        mainMenu.addItem(withTitle: t("about"), action: #selector(showAboutBox), keyEquivalent: "")
+        // mainMenu.addItem(withTitle: t("about"), action: #selector(showAboutBox), keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
         mainMenu.addItem(withTitle: t("quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         statusItem.menu = mainMenu
@@ -517,6 +542,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             ble.unlockRSSI = unlockRSSI
         }
         ble.passiveMode = prefs.bool(forKey: "passiveMode")
+        let thresholdRSSI = prefs.integer(forKey: "thresholdRSSI")
+        if thresholdRSSI != 0 {
+            ble.thresholdRSSI = thresholdRSSI
+        }
 
         NSUserNotificationCenter.default.delegate = self
 

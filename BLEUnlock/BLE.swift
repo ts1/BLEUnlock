@@ -1,5 +1,6 @@
 import Foundation
 import CoreBluetooth
+import Accelerate
 
 class Device: NSObject {
     let uuid : UUID!
@@ -80,6 +81,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var lastReadAt = 0.0
     var powerWarn = true
     var passiveMode = false
+    var thresholdRSSI = -80
+    var latestRSSIs: [Double] = []
+    var latestN: Int = 5
 
     func startScanning() {
         scanMode = true
@@ -137,16 +141,38 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             break
         }
     }
+    
+    func getEstimatedRSSI(rssi: Int) -> Double {
+        if (latestRSSIs.count < latestN - 1) {
+            latestRSSIs.append(Double(rssi))
+            return 1.0 + Double(unlockRSSI)
+        }
+        if (latestRSSIs.count < latestN) {
+            latestRSSIs.append(Double(rssi))
+        } else {
+            latestRSSIs.removeFirst()
+            latestRSSIs.append(Double(rssi))
+        }
+        var mean: Double = 0.0
+        var sddev: Double = 0.0
+        vDSP_normalizeD(latestRSSIs, 1, nil, 1, &mean, &sddev, vDSP_Length(latestRSSIs.count))
+        // sddev *= sqrt(Double(latestRSSIs.count)/Double(latestRSSIs.count - 1))
+        return mean
+    }
 
     func updateMonitoredPeripheral(_ rssi: Int) {
+        
         if let p = monitoredPeripheral {
             if !scanMode && p.state == .disconnected && !passiveMode {
                 centralMgr.connect(p, options: nil)
             }
         }
-        delegate?.updateRSSI(rssi: rssi)
-        if rssi > lockRSSI {
-            if rssi > unlockRSSI && !presence {
+        
+        // print(String(format: "rssi: %d", rssi))
+        let estimatedRSSI = Int(getEstimatedRSSI(rssi: rssi))
+        delegate?.updateRSSI(rssi: estimatedRSSI)
+        if estimatedRSSI >= lockRSSI {
+            if estimatedRSSI >= unlockRSSI && !presence {
                 print("Device is close")
                 presence = true
                 delegate?.updatePresence(presence: presence, reason: "close")
@@ -194,12 +220,14 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             var device: Device
             if (dev == nil) {
                 device = Device(uuid: peripheral.identifier)
-                device.peripheral = peripheral
-                device.rssi = rssi
-                device.advData = advertisementData["kCBAdvDataManufacturerData"] as? Data
-                devices[peripheral.identifier] = device
-                central.connect(peripheral, options: nil)
-                delegate?.newDevice(device: device)
+                if (rssi >= thresholdRSSI) {
+                    device.peripheral = peripheral
+                    device.rssi = rssi
+                    device.advData = advertisementData["kCBAdvDataManufacturerData"] as? Data
+                    devices[peripheral.identifier] = device
+                    central.connect(peripheral, options: nil)
+                    delegate?.newDevice(device: device)
+                }
             } else {
                 device = dev!
                 device.rssi = rssi
