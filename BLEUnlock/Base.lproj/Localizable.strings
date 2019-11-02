@@ -3,6 +3,7 @@
 "notification_device_away" = "Device is away";
 "notification_locked" = "This computer has been locked by BLEUnlock";
 "cancel" = "Cancel";
+"ok" = "OK";
 "enter_password" = "Enter password to unlock the lock screen.";
 "password_info" = "Your password will be securely stored in Keychain.";
 "device_not_set" = "Device not selected";
@@ -20,6 +21,9 @@
 "quit" = "Quit BLEUnlock";
 "lock_now" = "Lock Screen Now";
 "about" = "About BLEUnlock";
+"set_rssi_threshold" = "Set Minimum RSSI";
+"enter_rssi_threshold" = "Enter Minimum RSSI";
+"enter_rssi_threshold_info" = "Device whose RSSI is less than this value will be ignored while scanning.";
 "bluetooth_power_warn" = "Bluetooth is turned off. For BLEUnlock to work, turn it on.";
 "password_not_set" = "Password is not set.";
 "notification_update_available" = "Update is available.";
