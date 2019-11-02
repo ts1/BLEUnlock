@@ -504,7 +504,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
                          keyEquivalent: "")
 
         mainMenu.addItem(NSMenuItem.separator())
-        // mainMenu.addItem(withTitle: t("about"), action: #selector(showAboutBox), keyEquivalent: "")
+        mainMenu.addItem(withTitle: t("about"), action: #selector(showAboutBox), keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
         mainMenu.addItem(withTitle: t("quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
         statusItem.menu = mainMenu
