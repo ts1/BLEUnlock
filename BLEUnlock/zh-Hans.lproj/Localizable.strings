@@ -2,6 +2,7 @@
 "notification_lost_signal" = "信号丢失";
 "notification_device_away" = "设备掉线";
 "notification_locked" = "本电脑已被BLEUnlock锁定";
+"ok" = "确定";
 "cancel" = "取消";
 "enter_password" = "输入密码以解锁电脑。";
 "password_info" = "您的密码将安全地存储在钥匙串中。";
@@ -20,6 +21,9 @@
 "quit" = "退出BLEUnlock";
 "lock_now" = "立刻锁定屏幕";
 "about" = "关于BLEUnlock";
+"set_rssi_threshold" = "设置最小RSSI";
+"enter_rssi_threshold" = "输入最小RSSI";
+"enter_rssi_threshold_info" = "扫描设备时会忽略RSSI值低于该值的设备。";
 "bluetooth_power_warn" = "蓝牙已关闭。要使BLEUnlock正常工作，请将其打开。";
 "password_not_set" = "密码未设置。";
 "notification_update_available" = "发现新版本。";
