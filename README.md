@@ -14,7 +14,6 @@ This document is also available in [Japanese](README.ja.md).
 - Optionally pauses and unpauses iTunes playback when you're away and back
 - Password is securely stored in Keychain
 - Uses Hardened Runtime and notarized by Apple
-![](https://i.imgur.com/i9Rj44q.png)
 
 ## Requirements
 
