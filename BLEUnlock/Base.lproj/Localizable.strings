@@ -21,7 +21,7 @@
 "quit" = "Quit BLEUnlock";
 "lock_now" = "Lock Screen Now";
 "about" = "About BLEUnlock";
-"set_rssi_threshold" = "Set Minimum RSSI";
+"set_rssi_threshold" = "Set Minimum RSSI…";
 "enter_rssi_threshold" = "Enter Minimum RSSI";
 "enter_rssi_threshold_info" = "Device whose RSSI is less than this value will be ignored while scanning.";
 "bluetooth_power_warn" = "Bluetooth is turned off. For BLEUnlock to work, turn it on.";
