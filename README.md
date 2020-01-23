@@ -1,6 +1,6 @@
 # BLEUnlock
 
-BLEUnlock is a small menu bar utility that locks and unlocks your Mac with your iPhone, Apple Watch, or any other Bluetooth Low Energy device.
+BLEUnlock is a small menu bar utility that locks and unlocks your Mac with your iPhone, Apple Watch, or any other Bluetooth Low Energy devices.
 
 This document is also available in [Japanese](README.ja.md).
 
@@ -85,11 +85,13 @@ If you don't, turn it off.
 
 ## Credits
 
+- peiit: Chinese translation
+- wenmin-wu: Minimum RSSI and moving average
+- stephengroat: CI
+
 Icons are based on SVGs downloaded from materialdesignicons.com.
 They are originally designed by Google LLC and licensed under Apache License
 version 2.0.
-
-Chinese translation by @peiit.
 
 ## License
 
