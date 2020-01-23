@@ -1,0 +1,13 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: macOS-latest
+    
+    steps:
+    - uses: actions/checkout@master
+    - name: Start xcodebuild test
+      run: xcodebuild clean build -project BLEUnlock.xcodeproj -scheme BLEUnlock
