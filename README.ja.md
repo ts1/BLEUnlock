@@ -72,9 +72,11 @@ Bluetoothインターネット共有を使う場合、パッシブモードを�
 
 ## クレジット
 
-アイコンはmaterialdesignicons.comからダウンロードしたSVGファイルをもとにしています。これらはGoogleによってデザインされApache License version 2.0でライセンスされています。
+- peiit: 中国語の翻訳
+- wenmin-wu: 最小RSSIと移動平均
+- stephengroat: CI
 
-中国語の翻訳は @peiit さんによって行われました。
+アイコンはmaterialdesignicons.comからダウンロードしたSVGファイルをもとにしています。これらはGoogleによってデザインされApache License version 2.0でライセンスされています。
 
 ## ライセンス
 
