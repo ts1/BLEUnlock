@@ -13,6 +13,7 @@
 "unlock_rssi" = "Unlock RSSI";
 "closer" = "⬆Closer";
 "farther" = "⬇Farther";
+"disabled" = "Disable";
 "wake_on_proximity" = "Wake on Proximity";
 "pause_itunes" = "Pause iTunes while Locked";
 "pause_music" = "Pause Music while Locked";

@@ -191,7 +191,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             }
             tryUnlockScreen()
         } else {
-            if (!isScreenLocked()) {
+            if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseItunes()
                 if lockScreen() {
                     self.notifyUser(reason)
@@ -477,6 +477,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         let lockRSSIItem = mainMenu.addItem(withTitle: t("lock_rssi"), action: nil, keyEquivalent: "")
         lockRSSIItem.submenu = lockRSSIMenu
         constructRSSIMenu(lockRSSIMenu, #selector(setLockRSSI))
+        item = lockRSSIMenu.addItem(withTitle: t("disabled"), action: #selector(setLockRSSI), keyEquivalent: "")
+        item.tag = ble.LOCK_DISABLED
 
         item = mainMenu.addItem(withTitle: t("wake_on_proximity"), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
         if prefs.bool(forKey: "wakeOnProximity") {

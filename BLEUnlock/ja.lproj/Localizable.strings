@@ -13,6 +13,7 @@
 "unlock_rssi" = "アンロック信号強度";
 "closer" = "⬆近い";
 "farther" = "⬇遠い";
+"disabled" = "無効にする";
 "wake_on_proximity" = "画面スリープから復帰";
 "pause_itunes" = "ロック中 iTunes を一時停止";
 "pause_music" = "ロック中ミュージックを一時停止";
