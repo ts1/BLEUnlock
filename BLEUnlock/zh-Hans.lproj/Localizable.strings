@@ -13,6 +13,7 @@
 "unlock_rssi" = "解锁 RSSI";
 "closer" = "⬆接近";
 "farther" = "⬇远离";
+"disabled" = "禁用";
 "wake_on_proximity" = "靠近唤醒";
 "pause_itunes" = "锁定时暂停iTunes";
 "pause_music" = "锁定时暂停Music";
