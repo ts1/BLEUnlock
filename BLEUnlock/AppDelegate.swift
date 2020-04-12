@@ -177,19 +177,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func updatePresence(presence: Bool, reason: String) {
         if presence {
-            if let un = userNotification {
-                NSUserNotificationCenter.default.removeDeliveredNotification(un)
-                userNotification = nil
-            }
-            if displaySleep && !systemSleep && prefs.bool(forKey: "wakeOnProximity") {
-                print("Waking display")
-                wakeDisplay()
-                wakeTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
-                    print("Retrying waking display")
+            if ble.unlockRSSI != ble.UNLOCK_DISABLED {
+                if let un = userNotification {
+                    NSUserNotificationCenter.default.removeDeliveredNotification(un)
+                    userNotification = nil
+                }
+                if displaySleep && !systemSleep && prefs.bool(forKey: "wakeOnProximity") {
+                    print("Waking display")
                     wakeDisplay()
-                })
+                    wakeTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
+                        print("Retrying waking display")
+                        wakeDisplay()
+                    })
+                }
+                tryUnlockScreen()
             }
-            tryUnlockScreen()
         } else {
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseItunes()
@@ -472,6 +474,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         let unlockRSSIItem = mainMenu.addItem(withTitle: t("unlock_rssi"), action: nil, keyEquivalent: "")
         unlockRSSIItem.submenu = unlockRSSIMenu
+        item = unlockRSSIMenu.addItem(withTitle: t("disabled"), action: #selector(setUnlockRSSI), keyEquivalent: "")
+        item.tag = ble.UNLOCK_DISABLED
         constructRSSIMenu(unlockRSSIMenu, #selector(setUnlockRSSI))
 
         let lockRSSIItem = mainMenu.addItem(withTitle: t("lock_rssi"), action: nil, keyEquivalent: "")
