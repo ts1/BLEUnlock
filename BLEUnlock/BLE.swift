@@ -78,7 +78,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var lockRSSI = -80
     var unlockRSSI = -60
     var proximityTimeout = 4.5
-    var signalTimeout = 31.0
+    var signalTimeout = 61.0
     var lastReadAt = 0.0
     var powerWarn = true
     var passiveMode = false
