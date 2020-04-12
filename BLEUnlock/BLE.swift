@@ -65,6 +65,7 @@ protocol BLEDelegate {
 }
 
 class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
+    let UNLOCK_DISABLED = 1
     let LOCK_DISABLED = -100
     var centralMgr : CBCentralManager!
     var devices : [UUID : Device] = [:]
@@ -173,7 +174,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         let estimatedRSSI = Int(getEstimatedRSSI(rssi: rssi))
         delegate?.updateRSSI(rssi: estimatedRSSI)
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {
-            if estimatedRSSI >= unlockRSSI && !presence {
+            if estimatedRSSI >= (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI) && !presence {
                 print("Device is close")
                 presence = true
                 delegate?.updatePresence(presence: presence, reason: "close")
