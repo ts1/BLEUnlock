@@ -163,7 +163,6 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func updateMonitoredPeripheral(_ rssi: Int) {
-        
         if let p = monitoredPeripheral {
             if !scanMode && p.state == .disconnected && !passiveMode {
                 centralMgr.connect(p, options: nil)
@@ -171,14 +170,16 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
         
         // print(String(format: "rssi: %d", rssi))
+        if rssi >= (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI) && !presence {
+            print("Device is close")
+            presence = true
+            delegate?.updatePresence(presence: presence, reason: "close")
+        }
+
         let estimatedRSSI = Int(getEstimatedRSSI(rssi: rssi))
         delegate?.updateRSSI(rssi: estimatedRSSI)
+
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {
-            if estimatedRSSI >= (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI) && !presence {
-                print("Device is close")
-                presence = true
-                delegate?.updatePresence(presence: presence, reason: "close")
-            }
             if let timer = proximityTimer {
                 timer.invalidate()
                 print("Proximity timer canceled")
