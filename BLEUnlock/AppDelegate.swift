@@ -232,6 +232,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     func tryUnlockScreen() {
         guard !manualLock else { return }
         guard ble.presence else { return }
+        guard ble.unlockRSSI != ble.UNLOCK_DISABLED else { return }
         guard !systemSleep else { return }
         guard !displaySleep else { return }
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
@@ -563,7 +564,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         DistributedNotificationCenter.default().addObserver(self, selector: #selector(onUnlock), name: NSNotification.Name(rawValue: "com.apple.screenIsUnlocked"), object: nil)
 
-        if fetchPassword() == nil {
+        if ble.unlockRSSI != ble.UNLOCK_DISABLED && fetchPassword() == nil {
             askPassword()
         }
         checkAccessibility()
