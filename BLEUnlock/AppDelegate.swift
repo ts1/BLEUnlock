@@ -14,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     let deviceMenu = NSMenu()
     let lockRSSIMenu = NSMenu()
     let unlockRSSIMenu = NSMenu()
+    let timeoutMenu = NSMenu()
     var deviceDict: [UUID: NSMenuItem] = [:]
     var monitorMenuItem : NSMenuItem?
     let prefs = UserDefaults.standard
@@ -40,6 +41,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         } else if menu == unlockRSSIMenu {
             for item in menu.items {
                 if item.tag == ble.unlockRSSI {
+                    item.state = .on
+                } else {
+                    item.state = .off
+                }
+            }
+        } else if menu == timeoutMenu {
+            for item in menu.items {
+                if item.tag == Int(ble.signalTimeout) {
                     item.state = .on
                 } else {
                     item.state = .off
@@ -416,6 +425,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         ble.unlockRSSI = value
     }
 
+    @objc func setTimeout(_ menuItem: NSMenuItem) {
+        let value = menuItem.tag
+        prefs.set(value, forKey: "timeout")
+        ble.signalTimeout = Double(value)
+    }
+    
     @objc func toggleLaunchAtLogin(_ menuItem: NSMenuItem) {
         let launchAtLogin = !prefs.bool(forKey: "launchAtLogin")
         prefs.set(launchAtLogin, forKey: "launchAtLogin")
@@ -485,6 +500,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         item = lockRSSIMenu.addItem(withTitle: t("disabled"), action: #selector(setLockRSSI), keyEquivalent: "")
         item.tag = ble.LOCK_DISABLED
 
+        let timeoutItem = mainMenu.addItem(withTitle: t("timeout"), action: nil, keyEquivalent: "")
+        timeoutItem.submenu = timeoutMenu
+        timeoutMenu.addItem(withTitle: "30 " + t("seconds"), action: #selector(setTimeout), keyEquivalent: "").tag = 30
+        timeoutMenu.addItem(withTitle: "1 " + t("minute"), action: #selector(setTimeout), keyEquivalent: "").tag = 60
+        timeoutMenu.addItem(withTitle: "2 " + t("minutes"), action: #selector(setTimeout), keyEquivalent: "").tag = 120
+        timeoutMenu.addItem(withTitle: "5 " + t("minutes"), action: #selector(setTimeout), keyEquivalent: "").tag = 300
+        timeoutMenu.addItem(withTitle: "10 " + t("minutes"), action: #selector(setTimeout), keyEquivalent: "").tag = 600
+        timeoutMenu.delegate = self
+
         item = mainMenu.addItem(withTitle: t("wake_on_proximity"), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
         if prefs.bool(forKey: "wakeOnProximity") {
             item.state = .on
@@ -547,6 +571,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         let unlockRSSI = prefs.integer(forKey: "unlockRSSI")
         if unlockRSSI != 0 {
             ble.unlockRSSI = unlockRSSI
+        }
+        let timeout = prefs.integer(forKey: "timeout")
+        if timeout != 0 {
+            ble.signalTimeout = Double(timeout)
         }
         ble.passiveMode = prefs.bool(forKey: "passiveMode")
         let thresholdRSSI = prefs.integer(forKey: "thresholdRSSI")
