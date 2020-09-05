@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097.3"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -17,7 +17,7 @@
         <window title="About BLEUnlock" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" id="hgX-Z1-8qq">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <rect key="contentRect" x="196" y="240" width="500" height="450"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1177"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
             <view key="contentView" id="4gT-J6-CkT">
                 <rect key="frame" x="0.0" y="0.0" width="500" height="450"/>
                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -27,7 +27,7 @@
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="AboutImage" id="wpe-ZN-hhF"/>
                     </imageView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="V2H-IE-JRz">
-                        <rect key="frame" x="153" y="277" width="195" height="17"/>
+                        <rect key="frame" x="153" y="278" width="195" height="16"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" allowsUndo="NO" title="BLEUnlock version #{version}" id="VLW-23-BX0">
                             <font key="font" metaFont="systemBold"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -35,25 +35,25 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xhw-xw-Rxl">
-                        <rect key="frame" x="152" y="252" width="196" height="17"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="Copyright © 2019 Takeshi Sone" id="GN4-8z-o8I">
+                        <rect key="frame" x="134" y="254" width="233" height="16"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Copyright © 2019-2020 Takeshi Sone" id="GN4-8z-o8I">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zi4-VN-Z2O">
-                        <rect key="frame" x="20" y="49" width="460" height="195"/>
+                        <rect key="frame" x="20" y="49" width="460" height="197"/>
                         <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="HAL-4b-8ea">
-                            <rect key="frame" x="0.0" y="0.0" width="460" height="195"/>
+                            <rect key="frame" x="0.0" y="0.0" width="460" height="197"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <textView editable="NO" importsGraphics="NO" richText="NO" verticallyResizable="YES" smartInsertDelete="YES" id="wTr-M6-frY">
-                                    <rect key="frame" x="0.0" y="5" width="460" height="417"/>
+                                    <rect key="frame" x="0.0" y="38" width="460" height="384"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <color key="textColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    <size key="minSize" width="460" height="195"/>
+                                    <size key="minSize" width="460" height="197"/>
                                     <size key="maxSize" width="500" height="10000000"/>
                                     <attributedString key="textStorage">
                                         <fragment content="Permission is hereby granted">
@@ -404,7 +404,7 @@ Included icons are derived from SVGs downloaded from materialdesignicons.com. Th
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                         <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="scb-1K-7dN">
-                            <rect key="frame" x="444" y="0.0" width="16" height="195"/>
+                            <rect key="frame" x="444" y="0.0" width="16" height="197"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
