@@ -26,6 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var aboutBox: AboutBox? = nil
     var wakeTimer: Timer?
     var manualLock = false
+    var unlockedAt = 0.0
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -144,6 +145,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
+    func runScript(_ name: String) {
+        guard let directory = try? FileManager.default.url(for: .applicationScriptsDirectory, in: .userDomainMask, appropriateFor: nil, create: true) else { return }
+        let file = directory.appendingPathComponent(name)
+        let process = Process()
+        process.executableURL = file
+        try? process.run()
+    }
+
     func runAppleScript(_ script: String) -> NSAppleEventDescriptor? {
         guard let scriptObject = NSAppleScript(source: script) else { return nil }
         var error: NSDictionary?
@@ -205,7 +214,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseItunes()
                 if lockScreen() {
-                    self.notifyUser(reason)
+                    notifyUser(reason)
+                    runScript("locked")
                 } else {
                     print("Failed to lock")
                 }
@@ -251,6 +261,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             print("Entering password")
             self.fakeKeyStrokes(password)
             self.playItunes()
+            self.runScript("unlocked")
+            self.unlockedAt = Date().timeIntervalSince1970
         })
     }
 
@@ -282,6 +294,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     @objc func onUnlock() {
+        if Date().timeIntervalSince1970 >= unlockedAt + 10 {
+            runScript("intruded")
+        }
         manualLock = false
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             checkUpdate()
