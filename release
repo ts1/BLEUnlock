@@ -60,8 +60,8 @@ xcodebuild \
    -exportOptionsPlist $BASEDIR/ExportOptions.plist \
    -exportPath $RELEASEDIR
 
-notarize $RELEASEDIR/$APPNAME.app/Contents/Library/LoginItems/Launcher.app
-notarize $RELEASEDIR/$APPNAME.app
+#notarize $RELEASEDIR/$APPNAME.app/Contents/Library/LoginItems/Launcher.app
+#notarize $RELEASEDIR/$APPNAME.app
 
 version=$(extract_info $RELEASEDIR/$APPNAME.app CFBundleShortVersionString)
 
