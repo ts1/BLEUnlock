@@ -83,6 +83,78 @@ That does not interfere with Bluetooth Internet Sharing.
 If you use Bluetooth Internet Sharing on the same device, turn Passive Mode on.
 If you don't, turn it off.
 
+## Run script on lock/unlock
+
+On locking and unlocking, BLEUnlock runs a script located here:
+
+```
+~/Library/Application Scripts/jp.sone.BLEUnlock/event
+```
+
+An argument is passed depending on the type of event:
+
+|Event|Argument|
+|-----|--------|
+|Locked by BLEUnlock because of low RSSI|`away`|
+|Locked by BLEUnlock because of no signal|`lost`|
+|Unlocked by BLEUnlock|`unlocked`|
+|Unlocked manually|`intruded`|
+
+> NOTE: for `intruded` event works properly, you have to set *Require password immediately after sleep* in Security & Privacy.
+
+### Example
+
+Here is an example script which sends LINE Notify message, with a photo of the person in front of Mac when unlocked manually.
+
+```sh
+#!/bin/bash
+
+set -eo pipefail
+
+LINE_TOKEN=xxxxx
+
+notify() {
+    local message=$1
+    local image=$2
+    if [ "$image" ]; then
+        img_arg="-F imageFile=@$image"
+    else
+        img_arg=""
+    fi
+    curl -X POST -H "Authorization: Bearer $LINE_TOKEN" -F "message=$message" \
+        $img_arg https://notify-api.line.me/api/notify
+}
+
+capture() {
+    open -Wa SnapshotUnlocker
+    ls -t /tmp/unlock-*.jpg | head -1
+}
+
+case $1 in
+    away)
+        notify "$(hostname -s) is locked by BLEUnlock because iPhone is away."
+        ;;
+    lost)
+        notify "$(hostname -s) is locked by BLEUnlock because signal is lost."
+        ;;
+    unlocked)
+        #notify "$(hostname -s) is unlocked by BLEUnlock."
+        ;;
+    intruded)
+        notify "$(hostname -s) is manually unlocked." $(capture)
+        ;;
+esac
+```
+
+`SnapshotUnlocker` is an .app created with Script Editor with this script:
+
+```
+do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y /tmp/unlock-$(date +%Y%m%d_%H%M%S).jpg"
+```
+
+This is required because BLEUnlock does not have Camera permission.
+Giving permission to this app resolve the problem.
+
 ## Credits
 
 - peiit: Chinese translation
@@ -97,4 +169,4 @@ version 2.0.
 
 MIT
 
-Copyright © 2019 Takeshi Sone.
+Copyright © 2019-2020 Takeshi Sone.
