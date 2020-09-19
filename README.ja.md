@@ -70,6 +70,78 @@ BLEUnlockはデフォルトで能動的にデバイスに接続して信号強�
 Bluetoothインターネット共有を使う場合、パッシブモードをオンにしてください。
 そうでなければオフにしてください。
 
+## ロック・アンロック時にスクリプトを実行する
+
+BLEUnlockはロック・アンロック時に以下のスクリプトを実行します。
+
+```
+~/Library/Application Scripts/jp.sone.BLEUnlock/event
+```
+
+スクリプトにはイベントに応じて以下の引数の一つが渡されます。
+
+|Event|Argument|
+|-----|--------|
+|信号強度のためBLEUnlockによりロックされた|`away`|
+|無信号のためBLEUnlockによりロックされた|`lost`|
+|BLEUnlockによりアンロックされた|`unlocked`|
+|手動でアンロックされた|`intruded`|
+
+> 注意: `intruded` イベントが正常に働くには、 *セキュリティとプライバシー* で *スリープとスクリーンセーバの解除にパスワードを要求* を **すぐに** に設定してください。
+
+### サンプル
+
+例としてLINE Notifyにメッセージを送るスクリプトを示します。
+手動でアンロックされた場合Macの前にいる人の写真を添付します。
+
+```sh
+#!/bin/bash
+
+set -eo pipefail
+
+LINE_TOKEN=xxxxx
+
+notify() {
+    local message=$1
+    local image=$2
+    if [ "$image" ]; then
+        img_arg="-F imageFile=@$image"
+    else
+        img_arg=""
+    fi
+    curl -X POST -H "Authorization: Bearer $LINE_TOKEN" -F "message=$message" \
+        $img_arg https://notify-api.line.me/api/notify
+}
+
+capture() {
+    open -Wa SnapshotUnlocker
+    ls -t /tmp/unlock-*.jpg | head -1
+}
+
+case $1 in
+    away)
+        notify "$(hostname -s) is locked by BLEUnlock because iPhone is away."
+        ;;
+    lost)
+        notify "$(hostname -s) is locked by BLEUnlock because signal is lost."
+        ;;
+    unlocked)
+        #notify "$(hostname -s) is unlocked by BLEUnlock."
+        ;;
+    intruded)
+        notify "$(hostname -s) is manually unlocked." $(capture)
+        ;;
+esac
+```
+
+`SnapshotUnlocker` は Script Editor で作られた .app で、内容は以下のとおりです。
+
+```
+do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y /tmp/unlock-$(date +%Y%m%d_%H%M%S).jpg"
+```
+
+これはBLEUnlockにカメラのパーミッションがないため必要となります。このappにパーミッションを与えることによりパーミッションの問題を回避できます。
+
 ## クレジット
 
 - peiit: 中国語の翻訳
