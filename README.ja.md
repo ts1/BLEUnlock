@@ -12,7 +12,6 @@ BLEUnlockはiPhone, Apple Watchやその他のBluetooth Low Energyデバイス�
 - デバイスがMacに近づくと画面スリープを解除します (オプション)
 - デバイスがMacから離れる/近づくとiTunesの再生を一時停止/再生します (オプション)
 - パスワードはキーチェーンに安全に保管されます
-- Hardened Runtimeを使いAppleによる公証を受けています
 
 ## 必要なもの
 

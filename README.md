@@ -13,7 +13,6 @@ This document is also available in [Japanese](README.ja.md).
 - Optionally wakes from display sleep state
 - Optionally pauses and unpauses iTunes playback when you're away and back
 - Password is securely stored in Keychain
-- Uses Hardened Runtime and notarized by Apple
 
 ## Requirements
 
