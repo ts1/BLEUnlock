@@ -1,6 +1,15 @@
 import Foundation
 import CoreBluetooth
+import IOBluetooth
 import Accelerate
+
+func getIOBDevice(_ uuid: String) -> IOBluetoothDevice? {
+    guard let plist = NSDictionary(contentsOfFile: "/Library/Preferences/com.apple.Bluetooth.plist") else { return nil }
+    guard let cbcache = plist["CoreBluetoothCache"] as? NSDictionary else { return nil }
+    guard let device = cbcache[uuid] as? NSDictionary else { return nil }
+    guard let addr = device["DeviceAddress"] as? String else {return nil }
+    return IOBluetoothDevice(addressString: addr)
+}
 
 class Device: NSObject {
     let uuid : UUID!
@@ -10,9 +19,16 @@ class Device: NSObject {
     var advData: Data?
     var rssi: Int = 0
     var scanTimer: Timer?
+    var iobDevice: IOBluetoothDevice?
     
     override var description: String {
         get {
+            if iobDevice == nil {
+                iobDevice = getIOBDevice(uuid.description)
+            }
+            if let name = iobDevice?.nameOrAddress {
+                return name
+            }
             if let manu = manufacture {
                 if let mod = model {
                     if manu == "Apple Inc." && appleDeviceNames[mod] != nil {
