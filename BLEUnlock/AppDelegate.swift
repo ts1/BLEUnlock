@@ -74,7 +74,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
     
     func menuItemTitle(device: Device) -> String {
-        return String(format: "%@ (%ddBm)", device.description, device.rssi)
+        var desc : String!
+        if let mac = device.macAddr {
+            desc = String(format: "%@ (%@)", device.description, mac)
+        } else {
+            desc = device.description
+        }
+        return String(format: "%@ (%ddBm)", desc, device.rssi)
     }
     
     func newDevice(device: Device) {
