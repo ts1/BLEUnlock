@@ -1,14 +1,19 @@
 import Foundation
 import CoreBluetooth
-import IOBluetooth
 import Accelerate
 
-func getIOBDevice(_ uuid: String) -> IOBluetoothDevice? {
+func getMACFromUUID(_ uuid: String) -> String? {
     guard let plist = NSDictionary(contentsOfFile: "/Library/Preferences/com.apple.Bluetooth.plist") else { return nil }
     guard let cbcache = plist["CoreBluetoothCache"] as? NSDictionary else { return nil }
     guard let device = cbcache[uuid] as? NSDictionary else { return nil }
-    guard let addr = device["DeviceAddress"] as? String else {return nil }
-    return IOBluetoothDevice(addressString: addr)
+    return device["DeviceAddress"] as? String
+}
+
+func getNameFromMAC(_ mac: String) -> String? {
+    guard let plist = NSDictionary(contentsOfFile: "/Library/Preferences/com.apple.Bluetooth.plist") else { return nil }
+    guard let devcache = plist["DeviceCache"] as? NSDictionary else { return nil }
+    guard let device = devcache[mac] as? NSDictionary else { return nil }
+    return device["Name"] as? String
 }
 
 class Device: NSObject {
@@ -19,15 +24,21 @@ class Device: NSObject {
     var advData: Data?
     var rssi: Int = 0
     var scanTimer: Timer?
-    var iobDevice: IOBluetoothDevice?
+    var macAddr: String?
+    var blName: String?
     
     override var description: String {
         get {
-            if iobDevice == nil {
-                iobDevice = getIOBDevice(uuid.description)
+            if macAddr == nil {
+                macAddr = getMACFromUUID(uuid.description)
             }
-            if let name = iobDevice?.nameOrAddress {
-                return name
+            if let mac = macAddr {
+                blName = getNameFromMAC(mac)
+                if let name = blName {
+                    if name != "iPhone" && name != "iPad" {
+                        return name
+                    }
+                }
             }
             if let manu = manufacture {
                 if let mod = model {
@@ -47,6 +58,7 @@ class Device: NSObject {
             if let mod = model {
                 return mod
             }
+            // iBeacon
             if let adv = advData {
                 var iBeaconPrefix : [uint16] = [0x004c, 0x01502]
                 if adv[0...3] == Data(bytes: &iBeaconPrefix, count: 4) {
@@ -57,6 +69,12 @@ class Device: NSObject {
                     let d = String(format:"%.1f", distance)
                     return "iBeacon [\(major), \(minor)] \(d)m"
                 }
+            }
+            if let name = blName {
+                return name
+            }
+            if let mac = macAddr {
+                return mac // better than uuid
             }
             return uuid.description
         }
