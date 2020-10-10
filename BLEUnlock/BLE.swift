@@ -245,7 +245,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 if monitoredPeripheral == nil {
                     monitoredPeripheral = peripheral
                 }
-                if peripheral.state != .connected {
+                if passiveMode || peripheral.state != .connected {
                     updateMonitoredPeripheral(rssi)
                     //print("Discover \(rssi)dBm")
                 }
