@@ -249,10 +249,24 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         resetSignalTimer()
     }
 
+    func resetScanTimer(device: Device) {
+        device.scanTimer?.invalidate()
+        device.scanTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { _ in
+            self.delegate?.removeDevice(device: device)
+            if let p = device.peripheral {
+                self.centralMgr.cancelPeripheralConnection(p)
+            }
+            self.devices.removeValue(forKey: device.uuid)
+        })
+        if let timer = device.scanTimer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+
     func connectMonitoredPeripheral() {
         if let p = monitoredPeripheral {
             guard p.state == .disconnected else { return }
-            //print("connecting")
+            print("Connecting")
             centralMgr.connect(p, options: nil)
             connectionTimer?.invalidate()
             connectionTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false, block: { _ in
@@ -264,6 +278,8 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             RunLoop.main.add(connectionTimer!, forMode: .common)
         }
     }
+
+    //MARK:- CBCentralManagerDelegate start
 
     func centralManager(_ central: CBCentralManager,
                         didDiscover peripheral: CBPeripheral,
@@ -277,7 +293,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                     monitoredPeripheral = peripheral
                 }
                 if activeModeTimer == nil {
-                    //print("Discover \(rssi)dBm")
+                    print("Discover \(rssi)dBm")
                     updateMonitoredPeripheral(rssi)
                     if !passiveMode {
                         connectMonitoredPeripheral()
@@ -308,22 +324,6 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
     }
 
-    func resetScanTimer(device: Device) {
-        device.scanTimer?.invalidate()
-        device.scanTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { _ in
-            self.delegate?.removeDevice(device: device)
-            if let p = device.peripheral {
-                self.centralMgr.cancelPeripheralConnection(p)
-            }
-            self.devices.removeValue(forKey: device.uuid)
-        })
-        if let timer = device.scanTimer {
-            RunLoop.main.add(timer, forMode: .common)
-        }
-    }
-
-    //MARK:- CBCentralManagerDelegate start
-
     func centralManager(_ central: CBCentralManager,
                         didConnect peripheral: CBPeripheral)
     {
@@ -334,7 +334,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         if peripheral == monitoredPeripheral && !passiveMode {
             connectionTimer?.invalidate()
             connectionTimer = nil
-            //print("reading RSSI")
+            print("reading RSSI")
             peripheral.readRSSI()
         }
     }
