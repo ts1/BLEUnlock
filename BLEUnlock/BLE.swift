@@ -113,7 +113,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var lockRSSI = -80
     var unlockRSSI = -60
     var proximityTimeout = 4.5
-    var signalTimeout = 30.0
+    var signalTimeout = 60.0
     var lastReadAt = 0.0
     var powerWarn = true
     var passiveMode = false
@@ -146,6 +146,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         if passiveMode {
             activeModeTimer?.invalidate()
             activeModeTimer = nil
+            if let p = monitoredPeripheral {
+                centralMgr.cancelPeripheralConnection(p)
+            }
         }
         scanForPeripherals()
     }
@@ -293,7 +296,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                     monitoredPeripheral = peripheral
                 }
                 if activeModeTimer == nil {
-                    print("Discover \(rssi)dBm")
+                    //print("Discover \(rssi)dBm")
                     updateMonitoredPeripheral(rssi)
                     if !passiveMode {
                         connectMonitoredPeripheral()
@@ -334,7 +337,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         if peripheral == monitoredPeripheral && !passiveMode {
             connectionTimer?.invalidate()
             connectionTimer = nil
-            print("reading RSSI")
+            //print("reading RSSI")
             peripheral.readRSSI()
         }
     }
@@ -348,19 +351,20 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         let rssi = RSSI.intValue > 0 ? 0 : RSSI.intValue
         //print("readRSSI \(rssi)dBm")
         updateMonitoredPeripheral(rssi)
-        centralMgr.cancelPeripheralConnection(peripheral)
         lastReadAt = Date().timeIntervalSince1970
 
-        if activeModeTimer == nil && !passiveMode{
+        if activeModeTimer == nil && !passiveMode {
             print("Entering active mode")
             centralMgr.stopScan()
-            activeModeTimer = Timer.scheduledTimer(withTimeInterval: 4, repeats: true, block: { _ in
-                if Date().timeIntervalSince1970 > self.lastReadAt + 16 {
+            activeModeTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true, block: { _ in
+                if Date().timeIntervalSince1970 > self.lastReadAt + 10 {
                     print("Falling back to passive mode")
                     self.centralMgr.cancelPeripheralConnection(peripheral)
                     self.activeModeTimer?.invalidate()
                     self.activeModeTimer = nil
                     self.scanForPeripherals()
+                } else if peripheral.state == .connected {
+                    peripheral.readRSSI()
                 } else {
                     self.connectMonitoredPeripheral()
                 }
