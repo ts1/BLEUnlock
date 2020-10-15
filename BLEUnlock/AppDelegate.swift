@@ -234,13 +234,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func fakeKeyStrokes(_ string: String) {
         let src = CGEventSource(stateID: .hidSystemState)
-        let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
-        let len = string.count
-        let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: len)
-        NSString(string:string).getCharacters(buffer)
-        pressEvent?.keyboardSetUnicodeString(stringLength: len, unicodeString: buffer)
-        pressEvent?.post(tap: .cghidEventTap)
-        CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: false)?.post(tap: .cghidEventTap)
+        // Send key event once by one character so the string longer than 20 characters can be entered
+        for c in string {
+            let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
+            let char = Array(c.utf16)
+            pressEvent?.keyboardSetUnicodeString(stringLength: 1, unicodeString: char)
+            pressEvent?.post(tap: .cghidEventTap)
+            CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: false)?.post(tap: .cghidEventTap)
+        }
         
         // Return key
         CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: true)?.post(tap: .cghidEventTap)
@@ -265,6 +266,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
             guard self.isScreenLocked() else { return }
             guard let password = self.fetchPassword(warn: true) else { return }
+            print(password)
             
             print("Entering password")
             self.fakeKeyStrokes(password)
