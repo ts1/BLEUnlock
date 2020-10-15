@@ -266,7 +266,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
             guard self.isScreenLocked() else { return }
             guard let password = self.fetchPassword(warn: true) else { return }
-            print(password)
             
             print("Entering password")
             self.fakeKeyStrokes(password)

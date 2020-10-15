@@ -153,4 +153,4 @@ do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y
 
 MIT
 
-Copyright © 2019 Takeshi Sone.
+Copyright © 2019-2020 Takeshi Sone.
