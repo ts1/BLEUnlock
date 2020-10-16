@@ -492,7 +492,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func constructRSSIMenu(_ menu: NSMenu, _ action: Selector) {
         menu.addItem(withTitle: t("closer"), action: nil, keyEquivalent: "")
-        for proximity in stride(from: -50, to: -100, by: -5) {
+        for proximity in stride(from: -30, to: -100, by: -5) {
             let item = menu.addItem(withTitle: String(format: "%ddBm", proximity), action: action, keyEquivalent: "")
             item.tag = proximity
         }
