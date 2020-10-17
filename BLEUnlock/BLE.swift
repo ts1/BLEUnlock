@@ -2,6 +2,11 @@ import Foundation
 import CoreBluetooth
 import Accelerate
 
+let DeviceInformation = CBUUID(string:"180A")
+let ManufacturerName = CBUUID(string:"2A29")
+let ModelName = CBUUID(string:"2A24")
+let ExposureNotification = CBUUID(string:"FD6F")
+
 func getMACFromUUID(_ uuid: String) -> String? {
     guard let plist = NSDictionary(contentsOfFile: "/Library/Preferences/com.apple.Bluetooth.plist") else { return nil }
     guard let cbcache = plist["CoreBluetoothCache"] as? NSDictionary else { return nil }
@@ -79,15 +84,11 @@ class Device: NSObject {
             return uuid.description
         }
     }
-    
+
     init(uuid _uuid: UUID) {
         uuid = _uuid
     }
 }
-
-let DeviceInformation = CBUUID(string:"180A")
-let ManufacturerName = CBUUID(string:"2A29")
-let ModelName = CBUUID(string:"2A24")
 
 protocol BLEDelegate {
     func newDevice(device: Device)
@@ -306,6 +307,14 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
 
         if (scanMode) {
+            if let uuids = advertisementData["kCBAdvDataServiceUUIDs"] as? [CBUUID] {
+                for uuid in uuids {
+                    if uuid == ExposureNotification {
+                        //print("Device \(peripheral.identifier) Exposure Notification")
+                        return
+                    }
+                }
+            }
             let dev = devices[peripheral.identifier]
             var device: Device
             if (dev == nil) {
@@ -330,6 +339,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func centralManager(_ central: CBCentralManager,
                         didConnect peripheral: CBPeripheral)
     {
+        //print("didConnect")
         peripheral.delegate = self
         if scanMode {
             peripheral.discoverServices([DeviceInformation])
@@ -355,7 +365,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
         if activeModeTimer == nil && !passiveMode {
             print("Entering active mode")
-            centralMgr.stopScan()
+            if !scanMode {
+                centralMgr.stopScan()
+            }
             activeModeTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true, block: { _ in
                 if Date().timeIntervalSince1970 > self.lastReadAt + 10 {
                     print("Falling back to passive mode")
