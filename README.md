@@ -10,6 +10,7 @@ This document is also available in [Japanese](README.ja.md).
 - Works with any BLE devices that periodically send signal
 - Unlocks your Mac for you when the device is near Mac, no need to enter password again
 - Locks your Mac when the device is away from Mac
+- Optionally runs your script on lock/unlock
 - Optionally wakes from display sleep state
 - Optionally pauses and unpauses iTunes playback when you're away and back
 - Password is securely stored in Keychain
