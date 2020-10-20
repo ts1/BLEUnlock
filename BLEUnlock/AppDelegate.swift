@@ -27,6 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var wakeTimer: Timer?
     var manualLock = false
     var unlockedAt = 0.0
+    var inScreensaver = false
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -263,6 +264,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         guard ble.unlockRSSI != ble.UNLOCK_DISABLED else { return }
         guard !systemSleep else { return }
         guard !displaySleep else { return }
+
+        if inScreensaver {
+            // In screensaver, make sure Login panel is displayed
+            let src = CGEventSource(stateID: .hidSystemState)
+            // Shift key down and up
+            CGEvent(keyboardEventSource: src, virtualKey: 0x38, keyDown: true)?.post(tap: .cghidEventTap)
+            CGEvent(keyboardEventSource: src, virtualKey: 0x38, keyDown: false)?.post(tap: .cghidEventTap)
+        }
+
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
             guard self.isScreenLocked() else { return }
             guard let password = self.fetchPassword(warn: true) else { return }
@@ -311,6 +321,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             checkUpdate()
         })
+    }
+
+    @objc func onScreensaverStart() {
+        print("screensaver start")
+        inScreensaver = true
+    }
+
+    @objc func onScreensaverStop() {
+        print("screensaver stop")
+        inScreensaver = false
     }
 
     @objc func selectDevice(item: NSMenuItem) {
@@ -615,7 +635,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         nc.addObserver(self, selector: #selector(onSystemSleep), name: NSWorkspace.willSleepNotification, object: nil)
         nc.addObserver(self, selector: #selector(onSystemWake), name: NSWorkspace.didWakeNotification, object: nil)
 
-        DistributedNotificationCenter.default().addObserver(self, selector: #selector(onUnlock), name: NSNotification.Name(rawValue: "com.apple.screenIsUnlocked"), object: nil)
+        let dnc = DistributedNotificationCenter.default
+        dnc.addObserver(self, selector: #selector(onUnlock), name: NSNotification.Name(rawValue: "com.apple.screenIsUnlocked"), object: nil)
+        dnc.addObserver(self, selector: #selector(onScreensaverStart), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstart"), object: nil)
+        dnc.addObserver(self, selector: #selector(onScreensaverStop), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstop"), object: nil)
 
         if ble.unlockRSSI != ble.UNLOCK_DISABLED && fetchPassword() == nil {
             askPassword()
