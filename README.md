@@ -155,6 +155,15 @@ do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y
 This is required because BLEUnlock does not have Camera permission.
 Giving permission to this app resolve the problem.
 
+## Funding
+
+Since 1.9.0, binary releases are not notarized by Apple.
+Because of this, **you have to right-click and Open to start, and you have to re-authorize Keychain and other permissions.**
+
+My company is not developing iOS/Mac app at the moment, so I don't have access to a paid Apple Developer account.
+
+If you find this app is useful, please help me pay for Apple Developer Program by donating via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal.Me](https://paypal.me/takeshisone)!
+
 ## Credits
 
 - peiit: Chinese translation

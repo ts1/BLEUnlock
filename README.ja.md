@@ -142,6 +142,15 @@ do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y
 
 これはBLEUnlockにカメラのパーミッションがないため必要となります。このappにパーミッションを与えることによりパーミッションの問題を回避できます。
 
+## FUNDING
+
+1.9.0以降のバイナリリリースはAppleによって公証されていません。
+このため、**起動するには右クリックして開き、Keychain等のパーミッションを再認証する必要があります**。
+
+現在私の会社ではMacやiOSのアプリを開発していないため、有料のApple Developerアカウントにアクセスできません。
+
+このアプリを気に入っていただけたら、Apple Developer Programの費用を自分で払うことができるよう、[Buy Me a Coffee](https://www.buymeacoffee.com/tsone) もしくは [PayPal.Me](https://paypal.me/takeshisone) で寄付をいただけるとありがたいです。
+
 ## クレジット
 
 - peiit: 中国語の翻訳
