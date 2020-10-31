@@ -23,8 +23,7 @@
 "passive_mode" = "Passive Mode";
 "password_info" = "Your password will be securely stored in Keychain.";
 "password_not_set" = "Password is not set.";
-"pause_itunes" = "Pause iTunes while Locked";
-"pause_music" = "Pause Music while Locked";
+"pause_now_playing" = "Pause \"Now Playing\" while Locked";
 "quit" = "Quit BLEUnlock";
 "scanning" = "Scanning…";
 "seconds" = "seconds";

@@ -23,8 +23,7 @@
 "passive_mode" = "被动模式";
 "password_info" = "您的密码将安全地存储在钥匙串中。";
 "password_not_set" = "密码未设置。";
-"pause_itunes" = "锁定时暂停iTunes";
-"pause_music" = "锁定时暂停Music";
+"pause_now_playing" = "锁定时暂停\"播放中\"";
 "quit" = "退出BLEUnlock";
 "scanning" = "扫描中…";
 "seconds" = "秒钟";
