@@ -477,6 +477,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         menuItem.state = pauseNowPlaying ? .on : .off
     }
     
+    @objc func toggleUseScreensaver(_ menuItem: NSMenuItem) {
+        let value = !prefs.bool(forKey: "screensaver")
+        prefs.set(value, forKey: "screensaver")
+        menuItem.state = value ? .on : .off
+    }
+    
     @objc func togglePassiveMode(_ menuItem: NSMenuItem) {
         let passiveMode = !prefs.bool(forKey: "passiveMode")
         prefs.set(passiveMode, forKey: "passiveMode")
@@ -546,6 +552,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         item = mainMenu.addItem(withTitle: t("pause_now_playing"), action: #selector(togglePauseNowPlaying), keyEquivalent: "")
         if prefs.bool(forKey: "pauseItunes") {
+            item.state = .on
+        }
+
+        item = mainMenu.addItem(withTitle: t("use_screensaver_to_lock"), action: #selector(toggleUseScreensaver), keyEquivalent: "")
+        if prefs.bool(forKey: "screensaver") {
             item.state = .on
         }
         

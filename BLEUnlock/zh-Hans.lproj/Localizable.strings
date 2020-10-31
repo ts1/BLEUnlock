@@ -31,4 +31,5 @@
 "set_rssi_threshold" = "设置最小RSSI…";
 "timeout" = "无信号超时";
 "unlock_rssi" = "解锁 RSSI";
+"use_screensaver_to_lock" = "用屏保来锁定它";
 "wake_on_proximity" = "靠近唤醒";
