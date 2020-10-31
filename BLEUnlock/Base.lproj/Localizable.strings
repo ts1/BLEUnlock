@@ -31,4 +31,5 @@
 "set_rssi_threshold" = "Set Minimum RSSI…";
 "timeout" = "No-Signal Timeout";
 "unlock_rssi" = "Unlock RSSI";
+"use_screensaver_to_lock" = "Use Screensaver to Lock";
 "wake_on_proximity" = "Wake on Proximity";
