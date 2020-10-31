@@ -162,17 +162,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         try? process.run()
     }
 
-    func runAppleScript(_ script: String) -> NSAppleEventDescriptor? {
-        guard let scriptObject = NSAppleScript(source: script) else { return nil }
-        var error: NSDictionary?
-        let output = scriptObject.executeAndReturnError(&error)
-        if let e = error {
-            debugPrint(e)
-            return nil
-        }
-        return output
-    }
-
     func pauseNowPlaying() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
         NowPlayingIsPlaying({ (playing) in
@@ -189,6 +178,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         if nowPlayingWasPlaying {
             print("play")
             NowPlayingPlay()
+        }
+    }
+
+    func lockOrSaveScreen() -> Bool {
+        if prefs.bool(forKey: "screensaver") {
+            NSWorkspace.shared.launchApplication("ScreenSaverEngine")
+            return true // Really!?
+        } else {
+            return lockScreen()
         }
     }
 
@@ -212,7 +210,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         } else {
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseNowPlaying()
-                if lockScreen() {
+                if lockOrSaveScreen() {
                     notifyUser(reason)
                     runScript(reason)
                 } else {
@@ -490,7 +488,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         guard !isScreenLocked() else { return }
         manualLock = true
         pauseNowPlaying()
-        lockScreen()
+        lockOrSaveScreen()
     }
     
     @objc func showAboutBox() {
