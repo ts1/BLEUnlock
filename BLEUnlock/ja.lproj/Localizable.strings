@@ -23,8 +23,7 @@
 "passive_mode" = "パッシブモード";
 "password_info" = "パスワードはキーチェーンに安全に保存されます。";
 "password_not_set" = "パスワードが設定されていません。";
-"pause_itunes" = "ロック中 iTunes を一時停止";
-"pause_music" = "ロック中ミュージックを一時停止";
+"pause_now_playing" = "ロック中 \"再生中\" を一時停止";
 "quit" = "BLEUnlock を終了";
 "scanning" = "スキャン中…";
 "seconds" = "秒";

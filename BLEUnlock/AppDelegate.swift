@@ -22,7 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var systemSleep = false
     var connected = false
     var userNotification: NSUserNotification?
-    var iTunesWasPlaying = false
+    var nowPlayingWasPlaying = false
     var aboutBox: AboutBox? = nil
     var wakeTimer: Timer?
     var manualLock = false
@@ -173,32 +173,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         return output
     }
 
-    func iTunesName() -> String {
-        if #available(OSX 10.15, *) {
-            return "Music"
-        } else {
-            return "iTunes"
-        }
-    }
-    
-    func isItunesPlaying() -> Bool {
-        let result = runAppleScript("tell application \"\(iTunesName())\" to return player state")
-        return result?.stringValue == "kPSP"
-    }
-    
-    func pauseItunes() {
+    func pauseNowPlaying() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
-        iTunesWasPlaying = isItunesPlaying()
-        if iTunesWasPlaying {
-            _ = runAppleScript("tell application \"\(iTunesName())\" to pause")
-        }
+        NowPlayingIsPlaying({ (playing) in
+            self.nowPlayingWasPlaying = playing
+            if self.nowPlayingWasPlaying {
+                print("pause")
+                NowPlayingPause()
+            }
+        })
     }
     
-    func playItunes() {
+    func playNowPlaying() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
-        if iTunesWasPlaying {
-            _ = runAppleScript("tell application \"\(iTunesName())\" to play")
-            iTunesWasPlaying = false
+        if nowPlayingWasPlaying {
+            print("play")
+            NowPlayingPlay()
         }
     }
 
@@ -221,7 +211,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             }
         } else {
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
-                pauseItunes()
+                pauseNowPlaying()
                 if lockScreen() {
                     notifyUser(reason)
                     runScript(reason)
@@ -279,7 +269,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             
             print("Entering password")
             self.fakeKeyStrokes(password)
-            self.playItunes()
+            self.playNowPlaying()
             self.runScript("unlocked")
             self.unlockedAt = Date().timeIntervalSince1970
         })
@@ -483,13 +473,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         SMLoginItemSetEnabled(Bundle.main.bundleIdentifier! + ".Launcher" as CFString, launchAtLogin)
     }
 
-    @objc func togglePauseItunes(_ menuItem: NSMenuItem) {
-        let pauseItunes = !prefs.bool(forKey: "pauseItunes")
-        prefs.set(pauseItunes, forKey: "pauseItunes")
-        menuItem.state = pauseItunes ? .on : .off
-        if pauseItunes {
-            _ = isItunesPlaying() // Show permission dialog
-        }
+    @objc func togglePauseNowPlaying(_ menuItem: NSMenuItem) {
+        let pauseNowPlaying = !prefs.bool(forKey: "pauseItunes")
+        prefs.set(pauseNowPlaying, forKey: "pauseItunes")
+        menuItem.state = pauseNowPlaying ? .on : .off
     }
     
     @objc func togglePassiveMode(_ menuItem: NSMenuItem) {
@@ -502,7 +489,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
         manualLock = true
-        pauseItunes()
+        pauseNowPlaying()
         lockScreen()
     }
     
@@ -559,11 +546,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             item.state = .on
         }
 
-        var pause_itunes = "pause_itunes"
-        if #available(OSX 10.15, *) {
-            pause_itunes = "pause_music"
-        }
-        item = mainMenu.addItem(withTitle: t(pause_itunes), action: #selector(togglePauseItunes), keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: t("pause_now_playing"), action: #selector(togglePauseNowPlaying), keyEquivalent: "")
         if prefs.bool(forKey: "pauseItunes") {
             item.state = .on
         }
