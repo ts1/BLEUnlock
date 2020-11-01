@@ -4,7 +4,5 @@
 
 void wakeDisplay(void);
 bool lockScreen(void);
-void sleepDisplay(void);
-
 
 #endif /* lowlevel_h */
