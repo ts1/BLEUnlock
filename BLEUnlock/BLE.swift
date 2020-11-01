@@ -94,7 +94,7 @@ protocol BLEDelegate {
     func newDevice(device: Device)
     func updateDevice(device: Device)
     func removeDevice(device: Device)
-    func updateRSSI(rssi: Int?)
+    func updateRSSI(rssi: Int?, active: Bool)
     func updatePresence(presence: Bool, reason: String)
     func bluetoothPowerWarn()
 }
@@ -172,7 +172,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         signalTimer?.invalidate()
         signalTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { _ in
             print("Device is lost")
-            self.delegate?.updateRSSI(rssi: nil)
+            self.delegate?.updateRSSI(rssi: nil, active: false)
             if self.presence {
                 self.presence = false
                 self.delegate?.updatePresence(presence: self.presence, reason: "lost")
@@ -232,7 +232,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
 
         let estimatedRSSI = Int(getEstimatedRSSI(rssi: rssi))
-        delegate?.updateRSSI(rssi: estimatedRSSI)
+        delegate?.updateRSSI(rssi: estimatedRSSI, active: activeModeTimer != nil)
 
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {
             if let timer = proximityTimer {
