@@ -162,7 +162,7 @@ Because of this, **you have to right-click and Open to start, and you have to re
 
 My company is not developing iOS/Mac app at the moment, so I don't have access to a paid Apple Developer account.
 
-If you find this app is useful, please help me pay for Apple Developer Program by donating via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal.Me](https://paypal.me/takeshisone)!
+If you find this app useful, please help me pay for Apple Developer Program by donating via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal.Me](https://paypal.me/takeshisone)!
 
 ## Credits
 

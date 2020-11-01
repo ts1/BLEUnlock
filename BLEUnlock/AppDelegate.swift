@@ -494,7 +494,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         guard !isScreenLocked() else { return }
         manualLock = true
         pauseNowPlaying()
-        lockOrSaveScreen()
+        _ = lockOrSaveScreen()
     }
     
     @objc func showAboutBox() {

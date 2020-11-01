@@ -13,12 +13,3 @@ bool lockScreen(void)
     extern int SACLockScreenImmediate(void);
     return SACLockScreenImmediate() == 0;
 }
-
-void sleepDisplay(void)
-{
-    io_registry_entry_t reg = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/IOResources/IODisplayWrangler");
-    if (reg) {
-        IORegistryEntrySetCFProperty(reg, CFSTR("IORequestIdle"), kCFBooleanTrue);
-        IOObjectRelease(reg);
-    }
-}
