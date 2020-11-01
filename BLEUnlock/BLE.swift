@@ -268,19 +268,19 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func connectMonitoredPeripheral() {
-        if let p = monitoredPeripheral {
-            guard p.state == .disconnected else { return }
-            print("Connecting")
-            centralMgr.connect(p, options: nil)
-            connectionTimer?.invalidate()
-            connectionTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false, block: { _ in
-                if p.state == .connecting {
-                    print("Connection timeout")
-                    self.centralMgr.cancelPeripheralConnection(p)
-                }
-            })
-            RunLoop.main.add(connectionTimer!, forMode: .common)
-        }
+        guard let p = monitoredPeripheral else { return }
+        p.readRSSI() // Idk why but this works like a charm when 'didConnect' won't get called!
+        guard p.state == .disconnected else { return }
+        print("Connecting")
+        centralMgr.connect(p, options: nil)
+        connectionTimer?.invalidate()
+        connectionTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false, block: { _ in
+            if p.state == .connecting {
+                print("Connection timeout")
+                self.centralMgr.cancelPeripheralConnection(p)
+            }
+        })
+        RunLoop.main.add(connectionTimer!, forMode: .common)
     }
 
     //MARK:- CBCentralManagerDelegate start
@@ -339,15 +339,14 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func centralManager(_ central: CBCentralManager,
                         didConnect peripheral: CBPeripheral)
     {
-        //print("didConnect")
         peripheral.delegate = self
         if scanMode {
             peripheral.discoverServices([DeviceInformation])
         }
         if peripheral == monitoredPeripheral && !passiveMode {
+            print("Connected")
             connectionTimer?.invalidate()
             connectionTimer = nil
-            //print("reading RSSI")
             peripheral.readRSSI()
         }
     }
