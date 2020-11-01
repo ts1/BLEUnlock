@@ -106,9 +106,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         deviceDict.removeValue(forKey: device.uuid)
     }
 
-    func updateRSSI(rssi: Int?) {
+    func updateRSSI(rssi: Int?, active: Bool) {
         if let r = rssi {
-            monitorMenuItem?.title = String(format:"%ddBm", r)
+            monitorMenuItem?.title = String(format:"%ddBm", r) + (active ? " (Active)" : "")
             if (!connected) {
                 connected = true
                 statusItem.button?.image = NSImage(named: "StatusBarConnected")
