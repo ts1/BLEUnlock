@@ -1,5 +1,8 @@
 # BLEUnlock
 
+![CI](https://github.com/ts1/BLEUnlock/workflows/CI/badge.svg)
+![Github All Releases](https://img.shields.io/github/downloads/ts1/BLEUnlock/total.svg)
+
 BLEUnlockはiPhone, Apple Watchやその他のBluetooth Low EnergyデバイスでMacをロック・アンロックする小さなメニューバーユーティリティーです。
 
 
