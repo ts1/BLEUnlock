@@ -81,7 +81,20 @@ broadcasts.
 That does not interfere with Bluetooth Internet Sharing.
 
 If you use Bluetooth Internet Sharing on the same device, turn Passive Mode on.
-If you don't, turn it off.
+Otherwise, turn it off.
+
+### Notes on Now Playing
+
+BLEUnlock can pause apps that support Media Remote framework while locking.
+These apps include Apple Music, QuickTime Player, Spotify, and Youtube on Safari.
+Unfortunately Google Chrome doesn't seem to react to play/pause command at the moment.
+
+If an app can be controlled via "Now Playing" widget, or by the ⏯️ key on the keyboard, BLEUnlock should be able to control it.
+
+
+### Using screensaver to lock
+
+If you turn on Use Screensaver to Lock option, to lock the computer properly, you have to set *Require pasword **immediately** after sleep or screen saver begins* option in *Security & Privacy* preference pane.
 
 ## Run script on lock/unlock
 
@@ -100,7 +113,7 @@ An argument is passed depending on the type of event:
 |Unlocked by BLEUnlock|`unlocked`|
 |Unlocked manually|`intruded`|
 
-> NOTE: for `intruded` event works properly, you have to set *Require password immediately after sleep* in Security & Privacy.
+> NOTE: for `intruded` event works properly, you have to set *Require password **immediately** after sleep* in *Security & Privacy* preference pane.
 
 ### Example
 
@@ -162,7 +175,7 @@ Because of this, **you have to right-click and Open to start, and you have to re
 
 My company is not developing iOS/Mac app at the moment, so I don't have access to a paid Apple Developer account.
 
-If you like this, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal.Me](https://paypal.me/takeshisone) so that I can pay for the Apple Developer Program myself!
+If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal.Me](https://paypal.me/takeshisone) so that I can pay for the Apple Developer Program myself!
 
 ## Credits
 
