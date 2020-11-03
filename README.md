@@ -1,5 +1,8 @@
 # BLEUnlock
 
+![CI](https://github.com/ts1/BLEUnlock/workflows/CI/badge.svg)
+![Github All Releases](https://img.shields.io/github/downloads/ts1/BLEUnlock/total.svg)
+
 BLEUnlock is a small menu bar utility that locks and unlocks your Mac with your iPhone, Apple Watch, or any other Bluetooth Low Energy devices.
 
 This document is also available in [Japanese](README.ja.md).
