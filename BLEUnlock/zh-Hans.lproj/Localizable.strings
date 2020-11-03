@@ -10,6 +10,7 @@
 "enter_rssi_threshold_info" = "扫描设备时会忽略RSSI值低于该值的设备。";
 "farther" = "⬇远离";
 "launch_at_login" = "开机启动";
+"lock_delay" = "延迟锁定";
 "lock_now" = "立刻锁定屏幕";
 "lock_rssi" = "锁定 RSSI";
 "minute" = "分钟";
