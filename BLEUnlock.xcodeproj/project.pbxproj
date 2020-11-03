@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D2CF85B255102B300157996 /* MediaRemote.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D2CF85A255102B300157996 /* MediaRemote.framework */; };
 		3D2FCF08226C99CB007A06E7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D2FCF07226C99CB007A06E7 /* Images.xcassets */; };
-		3D43E004254D3946009D5EEB /* NowPlaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D43E003254D3946009D5EEB /* NowPlaying.swift */; };
 		3D4EE4112279E55A00AF9E93 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EE4102279E55A00AF9E93 /* AppDelegate.m */; };
 		3D4EE4132279E56900AF9E93 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EE4122279E56900AF9E93 /* main.m */; };
 		3D4EE4152279E94B00AF9E93 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D4EE4142279E94B00AF9E93 /* MainMenu.xib */; };
@@ -39,8 +39,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3D2CF85A255102B300157996 /* MediaRemote.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaRemote.framework; path = ../../../../System/Library/PrivateFrameworks/MediaRemote.framework; sourceTree = "<group>"; };
 		3D2FCF07226C99CB007A06E7 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
-		3D43E003254D3946009D5EEB /* NowPlaying.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NowPlaying.swift; sourceTree = "<group>"; };
 		3D4EE40F2279E55A00AF9E93 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		3D4EE4102279E55A00AF9E93 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		3D4EE4122279E56900AF9E93 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -81,6 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D2CF85B255102B300157996 /* MediaRemote.framework in Frameworks */,
 				3DD4B669226C1E3700451B7B /* login.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -124,7 +125,6 @@
 		3DD4B652226C1C3200451B7B /* BLEUnlock */ = {
 			isa = PBXGroup;
 			children = (
-				3D43E003254D3946009D5EEB /* NowPlaying.swift */,
 				3D95379322784D550017D8B9 /* AboutBox.swift */,
 				3D953799227853E20017D8B9 /* AboutBox.xib */,
 				3D600A35226CC1A40068FB7B /* Localizable.strings */,
@@ -146,6 +146,7 @@
 		3DD4B667226C1E3700451B7B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3D2CF85A255102B300157996 /* MediaRemote.framework */,
 				3DD4B668226C1E3700451B7B /* login.framework */,
 			);
 			name = Frameworks;
@@ -308,7 +309,6 @@
 			files = (
 				3DD4B654226C1C3200451B7B /* AppDelegate.swift in Sources */,
 				3DD4B666226C1DF200451B7B /* BLE.swift in Sources */,
-				3D43E004254D3946009D5EEB /* NowPlaying.swift in Sources */,
 				3DD4B664226C1CF000451B7B /* lowlevel.c in Sources */,
 				3DCAAA7D22ADE9830011A2DA /* checkUpdate.swift in Sources */,
 				3D95379522784D550017D8B9 /* AboutBox.swift in Sources */,
