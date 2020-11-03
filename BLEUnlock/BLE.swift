@@ -269,7 +269,11 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     func connectMonitoredPeripheral() {
         guard let p = monitoredPeripheral else { return }
-        p.readRSSI() // Idk why but this works like a charm when 'didConnect' won't get called!
+
+        // Idk why but this works like a charm when 'didConnect' won't get called.
+        // However, this generates warnings in the log.
+        p.readRSSI()
+
         guard p.state == .disconnected else { return }
         print("Connecting")
         centralMgr.connect(p, options: nil)

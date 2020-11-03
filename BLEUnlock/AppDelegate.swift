@@ -164,20 +164,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func pauseNowPlaying() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
-        NowPlayingIsPlaying({ (playing) in
-            self.nowPlayingWasPlaying = playing
-            if self.nowPlayingWasPlaying {
-                print("pause")
-                NowPlayingPause()
+        MRMediaRemoteGetNowPlayingApplicationIsPlaying(
+            DispatchQueue.main,
+            { (playing) in
+                self.nowPlayingWasPlaying = playing
+                if self.nowPlayingWasPlaying {
+                    print("pause")
+                    MRMediaRemoteSendCommand(MRCommandPause, nil)
+                }
             }
-        })
+        )
     }
     
     func playNowPlaying() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
         if nowPlayingWasPlaying {
             print("play")
-            NowPlayingPlay()
+            MRMediaRemoteSendCommand(MRCommandPlay, nil)
         }
     }
 
