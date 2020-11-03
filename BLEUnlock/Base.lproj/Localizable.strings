@@ -10,6 +10,7 @@
 "enter_rssi_threshold_info" = "Device whose RSSI is less than this value will be ignored while scanning.";
 "farther" = "⬇Farther";
 "launch_at_login" = "Launch at Login";
+"lock_delay" = "Delay to Lock";
 "lock_now" = "Lock Screen Now";
 "lock_rssi" = "Lock RSSI";
 "minute" = "minute";

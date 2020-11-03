@@ -113,7 +113,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var presence = false
     var lockRSSI = -80
     var unlockRSSI = -60
-    var proximityTimeout = 4.5
+    var proximityTimeout = 5.0
     var signalTimeout = 60.0
     var lastReadAt = 0.0
     var powerWarn = true
@@ -205,22 +205,15 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
     }
     
-    func getEstimatedRSSI(rssi: Int) -> Double {
-        if (latestRSSIs.count < latestN - 1) {
-            latestRSSIs.append(Double(rssi))
-            return 1.0 + Double(unlockRSSI)
-        }
-        if (latestRSSIs.count < latestN) {
-            latestRSSIs.append(Double(rssi))
-        } else {
+    func getEstimatedRSSI(rssi: Int) -> Int {
+        if latestRSSIs.count >= latestN {
             latestRSSIs.removeFirst()
-            latestRSSIs.append(Double(rssi))
         }
+        latestRSSIs.append(Double(rssi))
         var mean: Double = 0.0
         var sddev: Double = 0.0
         vDSP_normalizeD(latestRSSIs, 1, nil, 1, &mean, &sddev, vDSP_Length(latestRSSIs.count))
-        // sddev *= sqrt(Double(latestRSSIs.count)/Double(latestRSSIs.count - 1))
-        return mean
+        return Int(mean)
     }
 
     func updateMonitoredPeripheral(_ rssi: Int) {
@@ -229,9 +222,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             print("Device is close")
             presence = true
             delegate?.updatePresence(presence: presence, reason: "close")
+            latestRSSIs.removeAll() // Avoid bouncing
         }
 
-        let estimatedRSSI = Int(getEstimatedRSSI(rssi: rssi))
+        let estimatedRSSI = getEstimatedRSSI(rssi: rssi)
         delegate?.updateRSSI(rssi: estimatedRSSI, active: activeModeTimer != nil)
 
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {

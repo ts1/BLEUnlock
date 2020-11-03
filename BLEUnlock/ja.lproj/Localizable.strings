@@ -10,6 +10,7 @@
 "enter_rssi_threshold_info" = "この値よりRSSIが小さいデバイスはスキャンに表示されません。";
 "farther" = "⬇遠い";
 "launch_at_login" = "ログイン時に起動";
+"lock_delay" = "ロックするまでの遅延";
 "lock_now" = "今すぐロック";
 "lock_rssi" = "ロック信号強度";
 "minute" = "分";
