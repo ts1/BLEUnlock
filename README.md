@@ -71,19 +71,19 @@ Usually, devices send signal less frequently when it is in sleep mode.
 Thus, if you wake the device, in most cases it sends signal promptly,
 and BLEUnlock unlocks.
 
-### Passive mode and Bluetooth Internet Sharing
+### Passive mode and Bluetooth Personal Hotspot
 
 By default BLEUnlock actively connects to the device to read RSSI
 (signal strength).
 It is the best way to steadily read RSSI for devices such as iPhone that
 support it.
-However, it does not play nice with Bluetooth Internet Sharing.
+However, it does not play nice with Bluetooth Personal Hotspot.
 
 With Passive Mode, BLEUnlock only passively receives signals that the deveice
 broadcasts.
-That does not interfere with Bluetooth Internet Sharing.
+That does not interfere with Bluetooth Personal Hotspot.
 
-If you use Bluetooth Internet Sharing on the same device, turn Passive Mode on.
+If you use Bluetooth Personal Hotspot on the same device, turn Passive Mode on.
 Otherwise, turn it off.
 
 ### Notes on Now Playing
