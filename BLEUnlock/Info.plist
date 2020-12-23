@@ -19,13 +19,15 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.10.0</string>
 	<key>CFBundleVersion</key>
-	<string>709</string>
+	<string>714</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>BLEUnlock uses Bluetooth to detect devices.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2019-2020 Takeshi Sone. MIT Licensed.</string>
 	<key>NSMainNibFile</key>
