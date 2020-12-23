@@ -189,8 +189,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         guard prefs.bool(forKey: "pauseItunes") else { return }
         if nowPlayingWasPlaying {
             print("play")
-            MRMediaRemoteSendCommand(MRCommandPlay, nil)
-            nowPlayingWasPlaying = false
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
+                MRMediaRemoteSendCommand(MRCommandPlay, nil)
+                self.nowPlayingWasPlaying = false
+            })
         }
     }
 
@@ -317,6 +319,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     @objc func onUnlock() {
         if Date().timeIntervalSince1970 >= unlockedAt + 2 {
             runScript("intruded")
+            self.playNowPlaying()
         }
         manualLock = false
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
