@@ -271,9 +271,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         if inScreensaver {
             // In screensaver, make sure Login panel is displayed
             let src = CGEventSource(stateID: .hidSystemState)
-            // Shift key down and up
-            CGEvent(keyboardEventSource: src, virtualKey: 0x38, keyDown: true)?.post(tap: .cghidEventTap)
-            CGEvent(keyboardEventSource: src, virtualKey: 0x38, keyDown: false)?.post(tap: .cghidEventTap)
+            // Esc key down and up
+            CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: true)?.post(tap: .cghidEventTap)
+            CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: false)?.post(tap: .cghidEventTap)
         }
 
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
