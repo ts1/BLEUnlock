@@ -2,102 +2,116 @@
 
 ![CI](https://github.com/ts1/BLEUnlock/workflows/CI/badge.svg)
 ![Github All Releases](https://img.shields.io/github/downloads/ts1/BLEUnlock/total.svg)
+[![Buy me a coffee](img/buymeacoffee.svg)](https://www.buymeacoffee.com/tsone)
 
-BLEUnlock is a small menu bar utility that locks and unlocks your Mac with your iPhone, Apple Watch, or any other Bluetooth Low Energy devices.
+BLEUnlock is a small menu bar utility that locks and unlocks your Mac by proximity of your iPhone, Apple Watch, or any other Bluetooth Low Energy device.
 
-This document is also available in [Japanese](README.ja.md).
+This document is also available in [Japanese (日本語版はこちら)](README.ja.md).
 
 ## Features
 
 - No iPhone app is required
-- Works with any BLE devices that periodically send signal
-- Unlocks your Mac for you when the device is near Mac, no need to enter password again
-- Locks your Mac when the device is away from Mac
-- Optionally runs your script on lock/unlock
-- Optionally wakes from display sleep state
+- Works with any BLE devices that periodically transmits signal from [static MAC address](#notes-on-mac-address)
+- Unlocks your Mac for you when the BLE device is near your Mac, without entering password
+- Locks your Mac when the BLE device is away from your Mac
+- Optionally runs your own script upon lock/unlock
+- Optionally wakes from display sleep
 - Optionally pauses and unpauses music/video playback when you're away and back
 - Password is securely stored in Keychain
 
 ## Requirements
 
-- Mac with Bluetooth Low Energy support
+- A Mac with Bluetooth Low Energy support
 - macOS 10.13 (High Sierra) or later
-- iPhone 5s or later, Apple Watch (all), or other BLE device that transmits
-signal periodically
+- iPhone 5s or newer, Apple Watch (all), or another BLE device that has [static MAC address](#notes-on-mac-address) and transmits signal periodically
 
 ## Installation
 
-Download zip file from [Releases](https://github.com/ts1/BLEUnlock/releases),
-unzip and copy to Applications folder.
+### Using Homebrew Cask
 
-On the first launch, it asks your login password,
-which is required to unlock the lock screen.
-It's safe because it's stored in Keychain. 
+```
+$ brew install bleunlock
+```
 
-Then it asks for permission for Accessibility.
-In System Preferences, click the lock icon to unlock and turn BLEUnlock on.
-This permission is also required to unlock the lock screen.
+### Manual installation
 
-Finally, from the menu bar icon, select "Device".
+Download the zip file from [Releases](https://github.com/ts1/BLEUnlock/releases), unzip and move to the Applications folder.
+
+## Setting up
+
+On the first launch, it asks for the following permissions, which you must grant:
+
+Permission | Description
+-----------|---
+Bluetooth | Obviously, Bluetooth access is required. Choose *OK*.
+Accessibility | This is required to unlock the locked screen. Click *Open System Preferences*, click the lock icon on the bottom left to unlock, and turn on BLEUnlock.
+Keychain | (Not always asked) If asked, you have to choose **Always Allow** because it is required while the screen is locked.
+Notification | (Optional) BLEUnlock shows a message on the lock screen when it locks the screen. It is helpful to know if it's working properly. Additionally, to see the message on the lock screen, you need to set *Show previews* to *always* in the *Notification* preference pane. 
+
+> NOTE: The number of permissions required increases with each version of macOS, so if you are using an older OS, you may not be asked for one or more permissions.
+
+Then it asks your login password to unlock the lock screen.
+It will be stored safely in Keychain. 
+
+Finally, from the menu bar icon, select *Device*.
 It starts scanning nearby BLE devices.
 Select your device, and you're done!
 
+## Options
+
+Option | Description
+-------|---
+Unlock RSSI | Bluetooth signal strength to unlock. Larger value indicates that the BLE device needs to be closer to the Mac to unlock. Choose *Disable* to disable unlocking.
+Lock RSSI | Bluetooth signal strength to lock. Smaller value indicates that the BLE device needs to be farther away from the Mac to lock. Choose *Disable* to disable locking.
+Delay to Lock | Duration of time before it locks the Mac when it detects that the BLE device is away. If the BLE device comes closer within that time, no lock will occur.
+No-Signal Timeout | Time between last signal reception and locking. If you experience frequent "Signal is lost" locking, increase this value.
+Wake on Proximity | Wakes up the display from sleep when the BLE device approaches while locking.
+Pause "Now Playing" while Locked | On lock/unlock, BLEUnlock pauses/unpauses playback of music or video (including Apple Music, QuickTime Player and Spotify) that is controlled by *Now Playing* widget or the ⏯ key on the keyboard.
+Use Screensaver to Lock | If this option is set, BLEUnlock launches screensaver instead of locking. For this option to work properly, you need to set *Require password **immediately** after sleep or screen saver begins* option in *Security & Privacy* preference pane.
+Set Password... | If you changed your login password, use this.
+Passive Mode | By default it actively tries to connect to the BLE device and read the RSSI. Most of the time, the default is recommended and works stably. However, if you are using other Bluetooth things like keyboard, mouse, track pad or most notably Bluetooth Personal Hotspot, the default mode may interfere with each other. 2.4GHz WiFi may interfere as well. If you are experiencing instability of Bluetooth, turn on Passive Mode.
+Launch at Login | Launches BLEUnlock when you login.
+Set Minimum RSSI | Devices with RSSI below this value will not be displayed in the device scan list.
+
 ## Troubleshooting
 
-If it fails to unlock, check BLEUnlock is turned on in "System Preferences" →
-"Security & Privacy" → "Privacy" → "Accessibility".
+### Can't find my device in the list
+
+If your BLE device is not from Apple, BLEUnlock may not able to find the device name.
+If that is the case, your device is displayed as a UUID (long hexadecimal numbers and hyphens).
+To identify the device, try moving the device closer to or farther away from the Mac and see if the RSSI (dB value) changes accordingly.
+
+### It fails to unlock
+
+Make sure BLEUnlock is turned on in *System Preferences* > *Security & Privacy* > *Privacy* > *Accessibility*.
 If it is already on, try turning it off and on again.
 
-If it asks for permission to access its own password, click "Always Allow",
-because it is needed while the screen is locked.
+If it asks for permission to access its own password in Keychain, you must choose *Always Allow*, because it is needed while the screen is locked.
 
-If "Signal is lost" occurs frequently, turn Bluetooth of Mac off then on.
-Or use a device that sends signal more frequently.
+### "Signal is lost" occurs frequently
 
-### Why does it sometimes take long time to unlock?
+Increase *No-Signal Timeout*.
+Or try *Passive Mode*.
 
-Short answer: wake your iPhone.
+### My Bluetooth keyboard, mouse, Personal Hotspot, or whatever Bluetooth, went nuts!
 
-From version 1.4.1, BLEUnlock assumes the device is away
-when Mac enters system sleep and Bluetooth hardware is powered off
-(typically 15-30 seconds after the lid is closed).
-This is required for security.
-Consequently, it sometimes takes up to several seconds to unlock when Mac wakes
-from system sleep.
+Turn on *Passive Mode*!
 
-This is because BLEUnlock has lost connection to the device and has to wait
-for the device to send signal.
-Usually, devices send signal less frequently when it is in sleep mode.
-Thus, if you wake the device, in most cases it sends signal promptly,
-and BLEUnlock unlocks.
+## Notes on MAC address
 
-### Passive mode and Bluetooth Personal Hotspot
+Unlike classic Bluetooth, Bluetooth Low Energy devices can use *private* MAC address.
+That private address can be random, and can be changed from time to time.
 
-By default BLEUnlock actively connects to the device to read RSSI
-(signal strength).
-It is the best way to steadily read RSSI for devices such as iPhone that
-support it.
-However, it does not play nice with Bluetooth Personal Hotspot.
+Recent smart devices, both iOS and Android, tend to use private addresses that change every 15 minutes or so. This is probably to prevent tracking.
 
-With Passive Mode, BLEUnlock only passively receives signals that the deveice
-broadcasts.
-That does not interfere with Bluetooth Personal Hotspot.
+On the other hand, in order for BLEUnlock to track your device, its MAC address must be static.
 
-If you use Bluetooth Personal Hotspot on the same device, turn Passive Mode on.
-Otherwise, turn it off.
+Fortunately, on Apple devices, if you are signed in with the same Apple ID as your Mac, the MAC address is resolved to the true (public) address.
 
-### Notes on Now Playing
+For other devices, including Android, the way to resolve the address is unknown.
+If your non-Apple device changes its MAC address over time, unfortunately BLEUnlock can't support it.
 
-BLEUnlock can pause apps that support Media Remote framework while locking.
-These apps include Apple Music, QuickTime Player, Spotify, and Youtube on Safari.
-Unfortunately Google Chrome doesn't seem to react to play/pause command at the moment.
-
-If an app can be controlled via "Now Playing" widget, or by the ⏯️ key on the keyboard, BLEUnlock should be able to control it.
-
-
-### Using screensaver to lock
-
-If you turn on Use Screensaver to Lock option, to lock the computer properly, you have to set *Require pasword **immediately** after sleep or screen saver begins* option in *Security & Privacy* preference pane.
+To check if the MAC address is resolved correctly, compare the MAC address displayed in the *Device* scan list of BLEUnlock with the one that is displayed on your device.
 
 ## Run script on lock/unlock
 
@@ -120,7 +134,7 @@ An argument is passed depending on the type of event:
 
 ### Example
 
-Here is an example script which sends LINE Notify message, with a photo of the person in front of Mac when unlocked manually.
+Here is an example script which sends a LINE Notify message, with a photo of the person in front of the Mac when it is unlocked manually.
 
 ```sh
 #!/bin/bash
@@ -168,30 +182,30 @@ esac
 do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y /tmp/unlock-$(date +%Y%m%d_%H%M%S).jpg"
 ```
 
-This is required because BLEUnlock does not have Camera permission.
-Giving permission to this app resolve the problem.
+This app is required because BLEUnlock does not have Camera permission.
+Giving permission to this app resolves the problem.
 
 ## Funding
 
-Since 1.9.0, binary releases are not notarized by Apple.
+Since version 1.9.0, binary releases are not notarized by Apple.
 Because of this, **you have to right-click and Open to start, and you have to re-authorize Keychain and other permissions.**
 
-My company is not developing iOS/Mac app at the moment, so I don't have access to a paid Apple Developer account.
+My company is not developing iOS or Mac app at the moment, so I don't have access to a paid Apple Developer account.
 
-If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal.Me](https://paypal.me/takeshisone) so that I can pay for the Apple Developer Program myself!
+If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) so that I can pay for the Apple Developer Program myself!
 
 ## Credits
 
 - peiit: Chinese translation
 - wenmin-wu: Minimum RSSI and moving average
 - stephengroat: CI
+- joeyhoer: Homebrew Cask
 
 Icons are based on SVGs downloaded from materialdesignicons.com.
-They are originally designed by Google LLC and licensed under Apache License
-version 2.0.
+They are originally designed by Google LLC and licensed under Apache License version 2.0.
 
 ## License
 
 MIT
 
-Copyright © 2019-2020 Takeshi Sone.
+Copyright © 2019-2021 Takeshi Sone.
