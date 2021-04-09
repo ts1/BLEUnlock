@@ -238,11 +238,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func fakeKeyStrokes(_ string: String) {
         let src = CGEventSource(stateID: .hidSystemState)
-        // Send key event once by one character so the string longer than 20 characters can be entered
-        for c in string {
+        // Send 20 characters per keyboard event. That seems to be the limit.
+        let PER = 20
+        let uniCharCount = string.utf16.count
+        var strIndex = string.utf16.startIndex
+        for offset in stride(from: 0, to: uniCharCount, by: PER) {
             let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
-            let char = Array(c.utf16)
-            pressEvent?.keyboardSetUnicodeString(stringLength: 1, unicodeString: char)
+            let len = offset + PER < uniCharCount ? PER : uniCharCount - offset
+            let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: len)
+            for i in 0..<len {
+                buffer[i] = string.utf16[strIndex]
+                strIndex = string.utf16.index(after: strIndex)
+            }
+            pressEvent?.keyboardSetUnicodeString(stringLength: len, unicodeString: buffer)
             pressEvent?.post(tap: .cghidEventTap)
             CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: false)?.post(tap: .cghidEventTap)
         }
