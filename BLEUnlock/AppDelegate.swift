@@ -29,6 +29,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var manualLock = false
     var unlockedAt = 0.0
     var inScreensaver = false
+    var lastRSSI: Int? = nil
     
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -117,6 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func updateRSSI(rssi: Int?, active: Bool) {
         if let r = rssi {
+            lastRSSI = r
             monitorMenuItem?.title = String(format:"%ddBm", r) + (active ? " (Active)" : "")
             if (!connected) {
                 connected = true
@@ -167,7 +169,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         let file = directory.appendingPathComponent("event")
         let process = Process()
         process.executableURL = file
-        process.arguments = [arg]
+        if let r = lastRSSI {
+            process.arguments = [arg, String(r)]
+        } else {
+            process.arguments = [arg]
+        }
         try? process.run()
     }
 
