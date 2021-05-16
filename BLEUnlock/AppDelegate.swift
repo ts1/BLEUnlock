@@ -331,7 +331,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     @objc func onUnlock() {
-        if Date().timeIntervalSince1970 >= unlockedAt + 2 {
+        if Date().timeIntervalSince1970 >= unlockedAt + 5 {
             runScript("intruded")
             self.playNowPlaying()
         }
