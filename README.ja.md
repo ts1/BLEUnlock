@@ -103,6 +103,9 @@ Apple製以外のBLEデバイスでは、BLEUnlockはデバイスの名前を取
 
 デバイスを識別するには、Macから遠ざけたり近づけたりして、信号強度（dB値）がそれに応じて変化するかどうかを確認してください。
 
+もしリストに何も表示されない場合、下記のBluetoothモジュールのリセットを試してください。
+
+
 ### アンロックされない
 
 *システム環境設定* > *セキュリティとプライバシー* > *アクセシビリティ* でBLEUnlockがオンになっているか確認してください。すでにオンになっている場合、一度オフにしてもう一度オンにしてみてください。
@@ -115,7 +118,9 @@ Apple製以外のBLEデバイスでは、BLEUnlockはデバイスの名前を取
 
 ### Bluetoothキーボード、マウス、インターネット共有その他Bluetoothがおかしくなった
 
-*パッシブモード*をオンにしてください。
+メニューバーもしくはコントロールセンターにあるBluetoothアイコンをShift+Option+クリックし、表示される*Bluetoothモジュールのリセット*をしてみてください。
+
+それでも問題が繰り返し起こる場合、*パッシブモード*をオンにしてください。
 
 ## MACアドレスについて
 
@@ -218,6 +223,7 @@ do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y
 - wenmin-wu: 最小RSSIと移動平均
 - stephengroat: CI
 - joeyhoer: Homebrew Cask
+- Skyearn: Big Surスタイルのアイコン
 
 アイコンはmaterialdesignicons.comからダウンロードしたSVGファイルをもとにしています。これらはGoogleによってデザインされApache License version 2.0でライセンスされています。
 
