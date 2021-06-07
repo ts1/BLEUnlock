@@ -82,6 +82,8 @@ If your BLE device is not from Apple, BLEUnlock may not able to find the device 
 If that is the case, your device is displayed as a UUID (long hexadecimal numbers and hyphens).
 To identify the device, try moving the device closer to or farther away from the Mac and see if the RSSI (dB value) changes accordingly.
 
+If you don't see *any* device in the list, try resetting the Bluetooth module as described below.
+
 ### It fails to unlock
 
 Make sure BLEUnlock is turned on in *System Preferences* > *Security & Privacy* > *Privacy* > *Accessibility*.
@@ -96,7 +98,9 @@ Or try *Passive Mode*.
 
 ### My Bluetooth keyboard, mouse, Personal Hotspot, or whatever Bluetooth, went nuts!
 
-Turn on *Passive Mode*!
+Firstly, Shift + Option + Click the Bluetooth icon in the menubar or Control Center, then click *Reset the Bluetooth module*.
+
+If the problem persists, turn on *Passive Mode*.
 
 ## Notes on MAC address
 
@@ -201,6 +205,7 @@ If you like this app, I'd appreciate it if you could make a donation via [Buy Me
 - wenmin-wu: Minimum RSSI and moving average
 - stephengroat: CI
 - joeyhoer: Homebrew Cask
+- Skyearn: Big Sur style icon
 
 Icons are based on SVGs downloaded from materialdesignicons.com.
 They are originally designed by Google LLC and licensed under Apache License version 2.0.
