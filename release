@@ -66,3 +66,7 @@ notarize $RELEASEDIR/$APPNAME.app
 version=$(extract_info $RELEASEDIR/$APPNAME.app CFBundleShortVersionString)
 
 ditto -c -k --keepParent $RELEASEDIR/$APPNAME.app $RELEASEDIR/$APPNAME-$version.zip
+
+v=$version-$(extract_info $RELEASEDIR/$APPNAME.app CFBundleVersion)
+mkdir -p archives/$v
+cp -a "$RELEASEDIR/$APPNAME.xcarchive" archives/$v
