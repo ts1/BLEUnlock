@@ -14,6 +14,7 @@
 		3D4EE4152279E94B00AF9E93 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D4EE4142279E94B00AF9E93 /* MainMenu.xib */; };
 		3D600A37226CC1A40068FB7B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3D600A35226CC1A40068FB7B /* Localizable.strings */; };
 		3D600A5A22701E740068FB7B /* Launcher.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3D600A4022701A5A0068FB7B /* Launcher.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3D6070E226DBC68E00EE4E48 /* LEDeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D6070E126DBC68E00EE4E48 /* LEDeviceInfo.swift */; };
 		3D79FD7D226C335100A373C0 /* appleDeviceNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D79FD7C226C335100A373C0 /* appleDeviceNames.swift */; };
 		3D95379522784D550017D8B9 /* AboutBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D95379322784D550017D8B9 /* AboutBox.swift */; };
 		3D953797227853E20017D8B9 /* AboutBox.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D953799227853E20017D8B9 /* AboutBox.xib */; };
@@ -50,6 +51,7 @@
 		3D600A4022701A5A0068FB7B /* Launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D600A4922701A5C0068FB7B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3D600A4A22701A5C0068FB7B /* Launcher.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Launcher.entitlements; sourceTree = "<group>"; };
+		3D6070E126DBC68E00EE4E48 /* LEDeviceInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LEDeviceInfo.swift; sourceTree = "<group>"; };
 		3D79FD7C226C335100A373C0 /* appleDeviceNames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = appleDeviceNames.swift; sourceTree = "<group>"; };
 		3D95379322784D550017D8B9 /* AboutBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutBox.swift; sourceTree = "<group>"; };
 		3D953798227853E20017D8B9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/AboutBox.xib; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 				3D953799227853E20017D8B9 /* AboutBox.xib */,
 				3D600A35226CC1A40068FB7B /* Localizable.strings */,
 				3DD4B665226C1DF200451B7B /* BLE.swift */,
+				3D6070E126DBC68E00EE4E48 /* LEDeviceInfo.swift */,
 				3DD4B653226C1C3200451B7B /* AppDelegate.swift */,
 				3DC0BC6922728FF1001145EC /* Info.plist */,
 				3DCAAA7C22ADE9830011A2DA /* checkUpdate.swift */,
@@ -312,6 +315,7 @@
 				3DD4B664226C1CF000451B7B /* lowlevel.c in Sources */,
 				3DCAAA7D22ADE9830011A2DA /* checkUpdate.swift in Sources */,
 				3D95379522784D550017D8B9 /* AboutBox.swift in Sources */,
+				3D6070E226DBC68E00EE4E48 /* LEDeviceInfo.swift in Sources */,
 				3D79FD7D226C335100A373C0 /* appleDeviceNames.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -354,7 +358,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 42LGPQYC7M;
@@ -521,7 +525,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BLEUnlock/BLEUnlock.entitlements;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 42LGPQYC7M;

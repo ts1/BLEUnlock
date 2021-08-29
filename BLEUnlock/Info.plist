@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.11-alpha</string>
 	<key>CFBundleVersion</key>
-	<string>742</string>
+	<string>757</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>

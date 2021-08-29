@@ -34,12 +34,21 @@ class Device: NSObject {
     
     override var description: String {
         get {
+            if macAddr == nil || blName == nil {
+                if let info = getLEDeviceInfoFromUUID(uuid.description) {
+                    blName = info.name
+                    macAddr = info.macAddr
+                }
+            }
             if macAddr == nil {
                 macAddr = getMACFromUUID(uuid.description)
             }
             if let mac = macAddr {
-                blName = getNameFromMAC(mac)
+                if blName == nil {
+                    blName = getNameFromMAC(mac)
+                }
                 if let name = blName {
+                    // If it's just "iPhone" or "iPad", there's a chance we can get the model name in the following code
                     if name != "iPhone" && name != "iPad" {
                         return name
                     }
