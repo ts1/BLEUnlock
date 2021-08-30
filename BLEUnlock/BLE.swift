@@ -74,14 +74,16 @@ class Device: NSObject {
             }
             // iBeacon
             if let adv = advData {
-                var iBeaconPrefix : [uint16] = [0x004c, 0x01502]
-                if adv[0...3] == Data(bytes: &iBeaconPrefix, count: 4) {
-                    let major = uint16(adv[20]) << 8 | uint16(adv[21])
-                    let minor = uint16(adv[22]) << 8 | uint16(adv[23])
-                    let tx = Int8(bitPattern: adv[24])
-                    let distance = pow(10, Double(Int(tx) - rssi)/20.0)
-                    let d = String(format:"%.1f", distance)
-                    return "iBeacon [\(major), \(minor)] \(d)m"
+                if adv.count >= 25 {
+                    var iBeaconPrefix : [uint16] = [0x004c, 0x01502]
+                    if adv[0...3] == Data(bytes: &iBeaconPrefix, count: 4) {
+                        let major = uint16(adv[20]) << 8 | uint16(adv[21])
+                        let minor = uint16(adv[22]) << 8 | uint16(adv[23])
+                        let tx = Int8(bitPattern: adv[24])
+                        let distance = pow(10, Double(Int(tx) - rssi)/20.0)
+                        let d = String(format:"%.1f", distance)
+                        return "iBeacon [\(major), \(minor)] \(d)m"
+                    }
                 }
             }
             if let name = blName {
