@@ -53,3 +53,5 @@ fastlane/report.xml
 fastlane/screenshots
 
 .DS_Store
+
+/archives
