@@ -30,7 +30,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var unlockedAt = 0.0
     var inScreensaver = false
     var lastRSSI: Int? = nil
-    
+
+    override init() {
+        // Hide dock icon.
+        // This is required because we can't have LSUIElement set to true in Info.plist,
+        // otherwise CBCentralManager.scanForPeripherals won't work.
+        NSApp.setActivationPolicy(.prohibited)
+    }
+
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
             ble.startScanning()
