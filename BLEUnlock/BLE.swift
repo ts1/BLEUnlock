@@ -18,7 +18,12 @@ func getNameFromMAC(_ mac: String) -> String? {
     guard let plist = NSDictionary(contentsOfFile: "/Library/Preferences/com.apple.Bluetooth.plist") else { return nil }
     guard let devcache = plist["DeviceCache"] as? NSDictionary else { return nil }
     guard let device = devcache[mac] as? NSDictionary else { return nil }
-    return device["Name"] as? String
+    if let name = device["Name"] as? String {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        if trimmed == "" { return nil }
+        return trimmed
+    }
+    return nil
 }
 
 class Device: NSObject {
