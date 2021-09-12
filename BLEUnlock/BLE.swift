@@ -18,7 +18,12 @@ func getNameFromMAC(_ mac: String) -> String? {
     guard let plist = NSDictionary(contentsOfFile: "/Library/Preferences/com.apple.Bluetooth.plist") else { return nil }
     guard let devcache = plist["DeviceCache"] as? NSDictionary else { return nil }
     guard let device = devcache[mac] as? NSDictionary else { return nil }
-    return device["Name"] as? String
+    if let name = device["Name"] as? String {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        if trimmed == "" { return nil }
+        return trimmed
+    }
+    return nil
 }
 
 class Device: NSObject {
@@ -34,12 +39,21 @@ class Device: NSObject {
     
     override var description: String {
         get {
+            if macAddr == nil || blName == nil {
+                if let info = getLEDeviceInfoFromUUID(uuid.description) {
+                    blName = info.name
+                    macAddr = info.macAddr
+                }
+            }
             if macAddr == nil {
                 macAddr = getMACFromUUID(uuid.description)
             }
             if let mac = macAddr {
-                blName = getNameFromMAC(mac)
+                if blName == nil {
+                    blName = getNameFromMAC(mac)
+                }
                 if let name = blName {
+                    // If it's just "iPhone" or "iPad", there's a chance we can get the model name in the following code
                     if name != "iPhone" && name != "iPad" {
                         return name
                     }
