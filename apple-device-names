@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
 import re, json
+from glob import glob
 from subprocess import Popen, PIPE
 
-p = Popen([
-    'plutil',
-    '-convert', 'json',
-    '/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MobileDevices.bundle/Contents/Info.plist',
-    '-o', '-'
-], stdout=PIPE)
-
-data = json.load(p.stdout)
 mapping = {}
 
-for item in data['UTExportedTypeDeclarations']:
-    if 'UTTypeTagSpecification' not in item: continue
-    for code in item['UTTypeTagSpecification']['com.apple.device-model-code']:
-        if re.match(r'^[a-zA-Z]+\d+,\d+$', code):
-            name = item['UTTypeDescription']
-            name = re.sub(r'Model A?\d+(, A?\d+)*', '', name)
-            name = re.sub(r' *?\)', ')', name)
-            name = re.sub(r' \(\)', '', name)
-            mapping[code] = name
+def parse_info(filename):
+    p = Popen([
+        'plutil',
+        '-convert', 'json',
+        f,
+        '-o', '-'
+    ], stdout=PIPE)
+
+    data = json.load(p.stdout)
+
+    for item in data['UTExportedTypeDeclarations']:
+        if 'UTTypeTagSpecification' not in item: continue
+        for code in item['UTTypeTagSpecification']['com.apple.device-model-code']:
+            if re.match(r'^[a-zA-Z]+\d+,\d+$', code):
+                name = item['UTTypeDescription']
+                name = re.sub(r'Model A?\d+(, A?\d+)*', '', name)
+                name = re.sub(r' *?\)', ')', name)
+                name = re.sub(r' \(\)', '', name)
+                mapping[code] = name
+
+for f in glob('/System/Library/CoreServices/CoreTypes.bundle/Contents/Library/MobileDevices*.bundle/Contents/Info.plist'):
+    parse_info(f)
 
 print('let appleDeviceNames = [')
 for code, name in mapping.items():
