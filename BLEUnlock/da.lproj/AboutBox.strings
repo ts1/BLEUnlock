@@ -1,0 +1,15 @@
+
+/* Class = "NSTextFieldCell"; title = "Copyright © 2019-2021 Takeshi Sone"; ObjectID = "GN4-8z-o8I"; */
+"GN4-8z-o8I.title" = "Copyright © 2019-2021 Takeshi Sone";
+
+/* Class = "NSTextFieldCell"; title = "BLEUnlock version #{version}"; ObjectID = "VLW-23-BX0"; */
+"VLW-23-BX0.title" = "BLEUnlock version #{version}";
+
+/* Class = "NSButtonCell"; title = "Check Releases"; ObjectID = "WIg-Gy-UeI"; */
+"WIg-Gy-UeI.title" = "Tjek opdateringer";
+
+/* Class = "NSButtonCell"; title = "Visit Homepage"; ObjectID = "fPY-L3-Edh"; */
+"fPY-L3-Edh.title" = "Besøg hjemmesiden";
+
+/* Class = "NSWindow"; title = "About BLEUnlock"; ObjectID = "hgX-Z1-8qq"; */
+"hgX-Z1-8qq.title" = "Om BLEUnlock";
