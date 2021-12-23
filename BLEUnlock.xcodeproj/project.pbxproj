@@ -77,6 +77,8 @@
 		3DD4B668226C1E3700451B7B /* login.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = login.framework; path = ../../../../System/Library/PrivateFrameworks/login.framework; sourceTree = "<group>"; };
 		B1EFF91422E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/AboutBox.strings"; sourceTree = "<group>"; };
 		B1EFF91622E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		F749D28C277515C600C78C28 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/AboutBox.strings; sourceTree = "<group>"; };
+		F749D28D277515C600C78C28 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -254,6 +256,7 @@
 				da,
 				nb,
 				sv,
+				tr,
 			);
 			mainGroup = 3DD4B647226C1C3200451B7B;
 			productRefGroup = 3DD4B651226C1C3200451B7B /* Products */;
@@ -345,6 +348,7 @@
 				3D43D0142765FCFD00D15991 /* da */,
 				3D43D0162765FD1600D15991 /* nb */,
 				3D43D0182765FD2800D15991 /* sv */,
+				F749D28D277515C600C78C28 /* tr */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -359,6 +363,7 @@
 				3D43D0132765FCFD00D15991 /* da */,
 				3D43D0152765FD1600D15991 /* nb */,
 				3D43D0172765FD2800D15991 /* sv */,
+				F749D28C277515C600C78C28 /* tr */,
 			);
 			name = AboutBox.xib;
 			sourceTree = "<group>";
