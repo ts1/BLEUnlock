@@ -34,3 +34,4 @@
 "unlock_rssi" = "Kilit açma RSSI";
 "use_screensaver_to_lock" = "Kilit ekranı için ekran kuruyucu kullan";
 "wake_on_proximity" = "Uyandırma yakınlığı";
+"wake_without_unlocking" = "Kilidi açmadan uyanın";
