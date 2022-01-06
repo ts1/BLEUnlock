@@ -12,7 +12,6 @@
 "launch_at_login" = "Beim Login starten";
 "lock_delay" = "Sperrverzögerung";
 "lock_now" = "Jetzt sperren";
-"display_off" = "Display ausschalten";
 "lock_rssi" = "RSSI Sperren";
 "minute" = "Minute";
 "minutes" = "Minuten";
