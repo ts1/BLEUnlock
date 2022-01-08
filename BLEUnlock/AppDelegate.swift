@@ -243,6 +243,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         } else {
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseNowPlaying()
+                lockOrSaveScreen()
                 notifyUser(reason)
                 runScript(reason)
             }
@@ -530,6 +531,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         prefs.set(value, forKey: "screensaver")
         menuItem.state = value ? .on : .off
     }
+
+    @objc func toggleSleepDisplay(_ menuItem: NSMenuItem) {
+        let value = !prefs.bool(forKey: "sleepDisplay")
+        prefs.set(value, forKey: "sleepDisplay")
+        menuItem.state = value ? .on : .off
+    }
     
     @objc func togglePassiveMode(_ menuItem: NSMenuItem) {
         let passiveMode = !prefs.bool(forKey: "passiveMode")
@@ -628,6 +635,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         item = mainMenu.addItem(withTitle: t("use_screensaver_to_lock"), action: #selector(toggleUseScreensaver), keyEquivalent: "")
         if prefs.bool(forKey: "screensaver") {
+            item.state = .on
+        }
+
+        item = mainMenu.addItem(withTitle: t("sleep_display"), action: #selector(toggleSleepDisplay), keyEquivalent: "")
+        if prefs.bool(forKey: "sleepDisplay") {
             item.state = .on
         }
         
