@@ -2,7 +2,8 @@
 #define lowlevel_h
 #include <stdbool.h>
 
+void sleepDisplay(void);
 void wakeDisplay(void);
-bool lockScreen(void);
+int SACLockScreenImmediate(void);
 
 #endif /* lowlevel_h */
