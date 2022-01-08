@@ -34,4 +34,4 @@
 "unlock_rssi" = "Lås upp RSSI";
 "use_screensaver_to_lock" = "Använd skärmsläckare för att låsa";
 "wake_on_proximity" = "Väckning om in närheten";
-
+"wake_without_unlocking" = "Vakna utan att låsa upp";
