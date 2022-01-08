@@ -30,6 +30,7 @@
 "seconds" = "秒钟";
 "set_password" = "设置密码…";
 "set_rssi_threshold" = "设置最小RSSI…";
+"sleep_display" = "锁定时关闭屏幕";
 "timeout" = "无信号超时";
 "unlock_rssi" = "解锁 RSSI";
 "use_screensaver_to_lock" = "用屏保来锁定它";
