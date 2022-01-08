@@ -30,6 +30,7 @@
 "seconds" = "seconds";
 "set_password" = "Set Password…";
 "set_rssi_threshold" = "Set Minimum RSSI…";
+"sleep_display" = "Turn Off Screen on Lock";
 "timeout" = "No-Signal Timeout";
 "unlock_rssi" = "Unlock RSSI";
 "use_screensaver_to_lock" = "Use Screensaver to Lock";

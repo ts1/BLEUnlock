@@ -30,6 +30,7 @@
 "seconds" = "秒";
 "set_password" = "パスワードを設定…";
 "set_rssi_threshold" = "最小RSSIを設定…";
+"sleep_display" = "ロック時画面をスリープ";
 "timeout" = "無信号タイムアウト";
 "unlock_rssi" = "アンロック信号強度";
 "use_screensaver_to_lock" = "スクリーンセーバーでロック";
