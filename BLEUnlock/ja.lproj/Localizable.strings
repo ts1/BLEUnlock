@@ -34,4 +34,4 @@
 "unlock_rssi" = "アンロック信号強度";
 "use_screensaver_to_lock" = "スクリーンセーバーでロック";
 "wake_on_proximity" = "画面スリープから復帰";
-"wake_without_unlocking" = "ロックを解除せずに目を覚ます";
+"wake_without_unlocking" = "アンロックせずに画面復帰";
