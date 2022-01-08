@@ -209,12 +209,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
-    func lockOrSaveScreen() -> Bool {
+    func lockOrSaveScreen() {
         if prefs.bool(forKey: "screensaver") {
             NSWorkspace.shared.launchApplication("ScreenSaverEngine")
-            return true // Really!?
         } else {
-            return lockScreen()
+            if SACLockScreenImmediate() != 0 {
+                print("Failed to lock screen")
+            }
+            if prefs.bool(forKey: "sleepDisplay") {
+                print("sleep display")
+                sleepDisplay()
+            }
         }
     }
 
@@ -238,12 +243,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         } else {
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseNowPlaying()
-                if lockOrSaveScreen() {
-                    notifyUser(reason)
-                    runScript(reason)
-                } else {
-                    print("Failed to lock")
-                }
+                notifyUser(reason)
+                runScript(reason)
             }
             manualLock = false
         }
@@ -547,7 +548,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         guard !isScreenLocked() else { return }
         manualLock = true
         pauseNowPlaying()
-        _ = lockOrSaveScreen()
+        lockOrSaveScreen()
     }
     
     @objc func showAboutBox() {
