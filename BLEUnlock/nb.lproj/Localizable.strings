@@ -30,6 +30,7 @@
 "seconds" = "seconder";
 "set_password" = "Angi passord…";
 "set_rssi_threshold" = "Angi minimum RSSI…";
+"sleep_display" = "Slå av skjermen på lås";
 "timeout" = "Tidsavbrudd uten signal";
 "unlock_rssi" = "Låse opp RSSI";
 "use_screensaver_to_lock" = "Bruke skjermsparer til å låse";
