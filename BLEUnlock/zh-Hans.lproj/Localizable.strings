@@ -34,3 +34,4 @@
 "unlock_rssi" = "解锁 RSSI";
 "use_screensaver_to_lock" = "用屏保来锁定它";
 "wake_on_proximity" = "靠近唤醒";
+"wake_without_unlocking" = "唤醒时不需解锁";

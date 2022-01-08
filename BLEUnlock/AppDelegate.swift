@@ -297,6 +297,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: false)?.post(tap: .cghidEventTap)
         }
 
+        guard !self.prefs.bool(forKey: "wakeWithoutUnlocking") else { return }
+
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
             guard self.isScreenLocked() else { return }
             guard let password = self.fetchPassword(warn: true) else { return }
@@ -533,6 +535,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         ble.setPassiveMode(passiveMode)
     }
 
+    @objc func toggleWakeWithoutUnlocking(_ menuItem: NSMenuItem) {
+        let wakeWithoutUnlocking = !prefs.bool(forKey: "wakeWithoutUnlocking")
+        prefs.set(wakeWithoutUnlocking, forKey: "wakeWithoutUnlocking")
+        menuItem.state = wakeWithoutUnlocking ? .on : .off
+    }
+
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
         manualLock = true
@@ -602,6 +610,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         item = mainMenu.addItem(withTitle: t("wake_on_proximity"), action: #selector(toggleWakeOnProximity), keyEquivalent: "")
         if prefs.bool(forKey: "wakeOnProximity") {
+            item.state = .on
+        }
+
+        item = mainMenu.addItem(withTitle: t("wake_without_unlocking"), action: #selector(toggleWakeWithoutUnlocking), keyEquivalent: "")
+        if prefs.bool(forKey: "wakeWithoutUnlocking") {
             item.state = .on
         }
 
@@ -691,7 +704,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         dnc.addObserver(self, selector: #selector(onScreensaverStart), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstart"), object: nil)
         dnc.addObserver(self, selector: #selector(onScreensaverStop), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstop"), object: nil)
 
-        if ble.unlockRSSI != ble.UNLOCK_DISABLED && fetchPassword() == nil {
+        if ble.unlockRSSI != ble.UNLOCK_DISABLED && !prefs.bool(forKey: "wakeWithoutUnlocking") && fetchPassword() == nil {
             askPassword()
         }
         checkAccessibility()
