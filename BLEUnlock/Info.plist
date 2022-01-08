@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.11</string>
 	<key>CFBundleVersion</key>
-	<string>766</string>
+	<string>771</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
@@ -27,7 +27,7 @@
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>BLEUnlock uses Bluetooth to detect devices.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2019-2021 Takeshi Sone. MIT Licensed.</string>
+	<string>Copyright © 2019-2022 Takeshi Sone. MIT Licensed.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
