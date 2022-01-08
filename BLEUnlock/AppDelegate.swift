@@ -341,7 +341,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     @objc func onUnlock() {
         if Date().timeIntervalSince1970 >= unlockedAt + 10 {
-            runScript("intruded")
+            if ble.unlockRSSI != ble.UNLOCK_DISABLED && !prefs.bool(forKey: "wakeWithoutUnlocking") {
+                runScript("intruded")
+            }
             self.playNowPlaying()
         }
         manualLock = false
