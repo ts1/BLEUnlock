@@ -30,6 +30,7 @@
 "seconds" = "seconder";
 "set_password" = "Ange lösenord…";
 "set_rssi_threshold" = "Ange lägsta RSSI…";
+"sleep_display" = "Stäng av skärmen vid låsning";
 "timeout" = "Ingen-signal tidsgräns";
 "unlock_rssi" = "Lås upp RSSI";
 "use_screensaver_to_lock" = "Använd skärmsläckare för att låsa";
