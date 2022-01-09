@@ -306,10 +306,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             guard let password = self.fetchPassword(warn: true) else { return }
             
             print("Entering password")
+            self.unlockedAt = Date().timeIntervalSince1970
             self.fakeKeyStrokes(password)
             self.playNowPlaying()
             self.runScript("unlocked")
-            self.unlockedAt = Date().timeIntervalSince1970
         })
     }
 
@@ -342,12 +342,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     @objc func onUnlock() {
-        if Date().timeIntervalSince1970 >= unlockedAt + 10 {
-            if ble.unlockRSSI != ble.UNLOCK_DISABLED && !prefs.bool(forKey: "wakeWithoutUnlocking") {
-                runScript("intruded")
+        Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
+            print("onUnlock")
+            if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
+                if self.ble.unlockRSSI != self.ble.UNLOCK_DISABLED && !self.prefs.bool(forKey: "wakeWithoutUnlocking") {
+                    self.runScript("intruded")
+                }
+                self.playNowPlaying()
             }
-            self.playNowPlaying()
-        }
+        })
         manualLock = false
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             checkUpdate()
