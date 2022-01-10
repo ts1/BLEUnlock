@@ -602,10 +602,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         let lockDelayItem = mainMenu.addItem(withTitle: t("lock_delay"), action: nil, keyEquivalent: "")
         lockDelayItem.submenu = lockDelayMenu
-        lockDelayMenu.addItem(withTitle: "0 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 0
+        lockDelayMenu.addItem(withTitle: "2 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 2
         lockDelayMenu.addItem(withTitle: "5 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 5
-        lockDelayMenu.addItem(withTitle: "10 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 10
-        lockDelayMenu.addItem(withTitle: "20 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 20
+        lockDelayMenu.addItem(withTitle: "15 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 15
         lockDelayMenu.addItem(withTitle: "30 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 30
         lockDelayMenu.addItem(withTitle: "1 " + t("minute"), action: #selector(setLockDelay), keyEquivalent: "").tag = 60
         lockDelayMenu.addItem(withTitle: "2 " + t("minutes"), action: #selector(setLockDelay), keyEquivalent: "").tag = 120
