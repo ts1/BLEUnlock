@@ -30,6 +30,7 @@
 "seconds" = "saniye";
 "set_password" = "Şifre belirle…";
 "set_rssi_threshold" = "Minimum RSSI belirle";
+"sleep_display" = "Kilitli Ekranı Kapat";
 "timeout" = "Sinyal yok Zaman Aşımı";
 "unlock_rssi" = "Kilit açma RSSI";
 "use_screensaver_to_lock" = "Kilit ekranı için ekran kuruyucu kullan";
