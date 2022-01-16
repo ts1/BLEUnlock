@@ -193,20 +193,20 @@ Giving permission to this app resolves the problem.
 
 ## Funding
 
-Since version 1.9.0, binary releases are not notarized by Apple.
-Because of this, **you have to right-click and Open to start, and you have to re-authorize Keychain and other permissions.**
+The annual Apple Developer Program fee is funded by donations.
 
-My company is not developing iOS or Mac app at the moment, so I don't have access to a paid Apple Developer account.
-
-If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) so that I can pay for the Apple Developer Program myself!
+If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal Me](https://www.paypal.com/paypalme/my/profile) so I can keep up.
 
 ## Credits
 
-- peiit: Chinese translation
-- wenmin-wu: Minimum RSSI and moving average
-- stephengroat: CI
-- joeyhoer: Homebrew Cask
-- Skyearn: Big Sur style icon
+- [peiit](https://github.com/peiit): Chinese translation
+- [wenmin-wu](https://github.com/wenmin-wu): Minimum RSSI and moving average
+- [stephengroat](https://github.com/stephengroat): CI
+- [joeyhoer](https://github.com/joeyhoer): Homebrew Cask
+- [Skyearn](https://github.com/Skyearn): Big Sur style icon
+- [cyberclaus](https://github.com/cyberclaus): German, Swedish, Norwegian (Bokmål) and Danish localizations
+- [alonewolfx2](https://github.com/alonewolfx2): Turkish localization
+- [wernjie](https://github.com/wernjie): Wake without Unlocking
 
 Icons are based on SVGs downloaded from materialdesignicons.com.
 They are originally designed by Google LLC and licensed under Apache License version 2.0.
@@ -215,4 +215,4 @@ They are originally designed by Google LLC and licensed under Apache License ver
 
 MIT
 
-Copyright © 2019-2021 Takeshi Sone.
+Copyright © 2019-2022 Takeshi Sone.
