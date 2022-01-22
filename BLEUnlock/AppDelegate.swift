@@ -31,13 +31,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var inScreensaver = false
     var lastRSSI: Int? = nil
 
-    override init() {
-        // Hide dock icon.
-        // This is required because we can't have LSUIElement set to true in Info.plist,
-        // otherwise CBCentralManager.scanForPeripherals won't work.
-        NSApp.setActivationPolicy(.accessory)
-    }
-
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
             ble.startScanning()
@@ -331,6 +324,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         print("system wake")
         Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
             print("delayed system wake job")
+            NSApp.setActivationPolicy(.accessory) // Hide Dock icon again
             self.systemSleep = false
             self.tryUnlockScreen()
         })
@@ -339,6 +333,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     @objc func onSystemSleep() {
         print("system sleep")
         systemSleep = true
+        // Set activation policy to regular, so the CBCentralManager can scan for peripherals
+        // when the Bluetooth will become on again.
+        // This enables Dock icon but the screen is off anyway.
+        NSApp.setActivationPolicy(.regular)
     }
 
     @objc func onUnlock() {
@@ -726,6 +724,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
         checkAccessibility()
         checkUpdate()
+
+        // Hide dock icon.
+        // This is required because we can't have LSUIElement set to true in Info.plist,
+        // otherwise CBCentralManager.scanForPeripherals won't work.
+        NSApp.setActivationPolicy(.accessory)
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
