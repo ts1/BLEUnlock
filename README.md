@@ -102,6 +102,15 @@ Or try *Passive Mode*.
 
 Firstly, Shift + Option + Click the Bluetooth icon in the menubar or Control Center, then click *Reset the Bluetooth module*.
 
+In macOS 12 Monterey, this option is no longer available.
+Instead, type the command below in Terminal to reset the Bluetooth module:
+
+```
+sudo pkill bluetoothd
+```
+
+This command will ask your login password.
+
 If the problem persists, turn on *Passive Mode*.
 
 ## Notes on MAC address
