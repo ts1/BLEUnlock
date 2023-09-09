@@ -226,3 +226,7 @@ They are originally designed by Google LLC and licensed under Apache License ver
 MIT
 
 Copyright © 2019-2022 Takeshi Sone.
+
+PrivateFramework
+Login：
+MediaRemote：

@@ -2,12 +2,14 @@ import Cocoa
 import Quartz
 import ServiceManagement
 
+/// 本地化
 func t(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
 }
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, NSUserNotificationCenterDelegate, BLEDelegate {
+    
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     let ble = BLE()
     let mainMenu = NSMenu()
