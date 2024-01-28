@@ -1,5 +1,7 @@
 # BLEUnlock
 
+## Please note that the SmartUnlock app on the Mac App Store is not mine. You can find it here for free! 
+
 ![CI](https://github.com/ts1/BLEUnlock/workflows/CI/badge.svg)
 ![Github All Releases](https://img.shields.io/github/downloads/ts1/BLEUnlock/total.svg)
 [![Buy me a coffee](img/buymeacoffee.svg)](https://www.buymeacoffee.com/tsone)
