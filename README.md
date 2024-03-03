@@ -1,6 +1,6 @@
 # BLEUnlock
 
-## Please note that the SmartUnlock app on the Mac App Store is not mine. You can find it here for free! 
+## Please note that I don't distribute this app on the Mac App Store. You can find it here for free! 
 
 ![CI](https://github.com/ts1/BLEUnlock/workflows/CI/badge.svg)
 ![Github All Releases](https://img.shields.io/github/downloads/ts1/BLEUnlock/total.svg)
@@ -219,6 +219,8 @@ If you like this app, I'd appreciate it if you could make a donation via [Buy Me
 - [cyberclaus](https://github.com/cyberclaus): German, Swedish, Norwegian (Bokmål) and Danish localizations
 - [alonewolfx2](https://github.com/alonewolfx2): Turkish localization
 - [wernjie](https://github.com/wernjie): Wake without Unlocking
+- [tokfrans03](https://github.com/tokfrans03): Language fixes
+
 
 Icons are based on SVGs downloaded from materialdesignicons.com.
 They are originally designed by Google LLC and licensed under Apache License version 2.0.
