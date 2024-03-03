@@ -2,7 +2,12 @@
 
 set -o pipefail
 
-USERNAME=takeshisone@gmail.com
+if [ ! "$PASSWORD" ]; then
+    echo set app-specific password in PASSWORD env var
+    exit 1
+fi
+
+USERNAME=takeshi.sone@gmail.com
 TEAM=42LGPQYC7M
 APPNAME=BLEUnlock
 
@@ -25,21 +30,20 @@ notarize() {
 
     rm -f $TMPDIR/upload.zip
     ditto -c -k --keepParent $app $TMPDIR/upload.zip
-    xcrun altool --notarize-app --primary-bundle-id $id --username $USERNAME \
-        --password "@keychain:AC_PASSWORD" --file $TMPDIR/upload.zip \
-        --asc-provider $TEAM 2>&1 | tee $TMPDIR/altool.log
-    uuid=$(awk '/^RequestUUID/ { print $3 }' $TMPDIR/altool.log)
+    xcrun notarytool submit --apple-id $USERNAME --password "$PASSWORD" $TMPDIR/upload.zip \
+        --team-id $TEAM 2>&1 | tee $TMPDIR/altool.log
+    uuid=$(awk '/ id:/ { print $2; exit }' $TMPDIR/altool.log)
     while true; do
-        sleep 5
-        xcrun altool --notarization-info $uuid  --username $USERNAME \
-            --password "@keychain:AC_PASSWORD" --asc-provider $TEAM 2>&1 |
+        sleep 2
+        xcrun notarytool info $uuid --apple-id $USERNAME \
+            --password "$PASSWORD" --team-id $TEAM 2>&1 |
             tee $TMPDIR/altool.log || true
-        status=$(grep Status: $TMPDIR/altool.log | sed 's/^.*Status: *//')
-        if [ "$status" ] && [ "$status" != "in progress" ]; then
+        status=$(grep status: $TMPDIR/altool.log | sed 's/^.*status: *//')
+        if [ "$status" ] && [ "$status" != "In Progress" ]; then
             break
         fi
     done
-    if [ "$status" != "success" ]; then
+    if [ "$status" != "Accepted" ]; then
         exit 1
     fi
     xcrun stapler staple $app
