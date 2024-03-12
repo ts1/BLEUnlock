@@ -32,7 +32,7 @@ This document is also available in [Japanese (日本語版はこちら)](README.
 ### Using Homebrew Cask
 
 ```
-$ brew install bleunlock
+brew install bleunlock
 ```
 
 ### Manual installation
