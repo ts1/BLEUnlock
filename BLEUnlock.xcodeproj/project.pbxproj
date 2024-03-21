@@ -141,10 +141,10 @@
 				3D953799227853E20017D8B9 /* AboutBox.xib */,
 				3D600A35226CC1A40068FB7B /* Localizable.strings */,
 				3DD4B665226C1DF200451B7B /* BLE.swift */,
+				3DCAAA7C22ADE9830011A2DA /* checkUpdate.swift */,
 				3D6070E126DBC68E00EE4E48 /* LEDeviceInfo.swift */,
 				3DD4B653226C1C3200451B7B /* AppDelegate.swift */,
 				3DC0BC6922728FF1001145EC /* Info.plist */,
-				3DCAAA7C22ADE9830011A2DA /* checkUpdate.swift */,
 				3DD4B662226C1CEF00451B7B /* lowlevel.h */,
 				3DD4B663226C1CF000451B7B /* lowlevel.c */,
 				3DD4B657226C1C3400451B7B /* MainMenu.xib */,
@@ -387,6 +387,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 42LGPQYC7M;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Launcher/Info.plist;
 				INSTALL_PATH = "";
@@ -551,9 +552,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = BLEUnlock/BLEUnlock.entitlements;
 				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 42LGPQYC7M;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BLEUnlock/Info.plist;

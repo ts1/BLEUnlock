@@ -31,6 +31,7 @@ class AboutBox: NSWindowController, NSWindowDelegate {
         close()
     }
 
+//    显示关于windo
     static func showAboutBox() {
         if (aboutBox == nil) {
             aboutBox = AboutBox()

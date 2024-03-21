@@ -5,6 +5,8 @@
 
 @implementation AppDelegate
 
+/// 通过launcher调起主应用，此时没有su权限，是失败的
+
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     NSString *id = [[NSBundle mainBundle] bundleIdentifier];
     NSString *mainId = [id stringByReplacingOccurrencesOfString:@".Launcher" withString:@""];
@@ -19,7 +21,8 @@
     [components removeLastObject];
     [components removeLastObject];
     NSString *mainPath = [NSString pathWithComponents:components];
-    [[NSWorkspace sharedWorkspace] launchApplication:mainPath];
+    /// Debug调起失败，提示是个文件夹
+    BOOL success = [[NSWorkspace sharedWorkspace] launchApplication:mainPath];
     [NSApp terminate:self];
 }
 

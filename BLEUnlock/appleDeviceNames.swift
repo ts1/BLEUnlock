@@ -1,3 +1,4 @@
+/// 苹果设备列表
 let appleDeviceNames = [
     "iPhone1,1": "iPhone",
     "iPhone1,2": "iPhone 3G",
