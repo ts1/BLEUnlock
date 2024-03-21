@@ -310,7 +310,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     @objc func onDisplayWake() {
         print("display wake")
-        unlockedAt = Date().timeIntervalSince1970
+        //unlockedAt = Date().timeIntervalSince1970
         displaySleep = false
         wakeTimer?.invalidate()
         wakeTimer = nil
@@ -345,7 +345,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             print("onUnlock")
             if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
-                if self.ble.unlockRSSI != self.ble.UNLOCK_DISABLED && !self.prefs.bool(forKey: "wakeWithoutUnlocking") {
+                if self.ble.unlockRSSI != self.ble.UNLOCK_DISABLED {
                     self.runScript("intruded")
                 }
                 self.playNowPlaying()
