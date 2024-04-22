@@ -36,3 +36,5 @@
 "use_screensaver_to_lock" = "Den Bildschirmschoner verwenden zum Sperren";
 "wake_on_proximity" = "Aufwachen bei Annäherung";
 "wake_without_unlocking" = "Aufwachen ohne Entsperren";
+"external_display_mode_only" = "Externer Bildschirm Erkennung";
+"external_displays" = "Externe Bildschirme";
