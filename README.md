@@ -1,5 +1,7 @@
 # BLEUnlock
 
+## Please note that I don't distribute this app on the Mac App Store. You can find it here for free! 
+
 ![CI](https://github.com/ts1/BLEUnlock/workflows/CI/badge.svg)
 ![Github All Releases](https://img.shields.io/github/downloads/ts1/BLEUnlock/total.svg)
 [![Buy me a coffee](img/buymeacoffee.svg)](https://www.buymeacoffee.com/tsone)
@@ -30,7 +32,7 @@ This document is also available in [Japanese (日本語版はこちら)](README.
 ### Using Homebrew Cask
 
 ```
-$ brew install bleunlock
+brew install bleunlock
 ```
 
 ### Manual installation
@@ -67,8 +69,10 @@ Lock RSSI | Bluetooth signal strength to lock. Smaller value indicates that the 
 Delay to Lock | Duration of time before it locks the Mac when it detects that the BLE device is away. If the BLE device comes closer within that time, no lock will occur.
 No-Signal Timeout | Time between last signal reception and locking. If you experience frequent "Signal is lost" locking, increase this value.
 Wake on Proximity | Wakes up the display from sleep when the BLE device approaches while locking.
+Wake without Unlocking | BLEUnlock will not unlock the Mac when the display wakes up from sleep, whether automatically via "Wake on Proximity" or manually. This allows for compatibility with the macOS built-in unlock with Apple Watch feature (which can operate immediately after BLEUnlock wakes the screen), or if you just prefer the lock screen to appear more quickly but don't want it to auto-unlock.
 Pause "Now Playing" while Locked | On lock/unlock, BLEUnlock pauses/unpauses playback of music or video (including Apple Music, QuickTime Player and Spotify) that is controlled by *Now Playing* widget or the ⏯ key on the keyboard.
 Use Screensaver to Lock | If this option is set, BLEUnlock launches screensaver instead of locking. For this option to work properly, you need to set *Require password **immediately** after sleep or screen saver begins* option in *Security & Privacy* preference pane.
+Turn Off Screen on Lock | Turn off the display immediately when locking.
 Set Password... | If you changed your login password, use this.
 Passive Mode | By default it actively tries to connect to the BLE device and read the RSSI. Most of the time, the default is recommended and works stably. However, if you are using other Bluetooth things like keyboard, mouse, track pad or most notably Bluetooth Personal Hotspot, the default mode may interfere with each other. 2.4GHz WiFi may interfere as well. If you are experiencing instability of Bluetooth, turn on Passive Mode.
 Launch at Login | Launches BLEUnlock when you login.
@@ -99,6 +103,15 @@ Or try *Passive Mode*.
 ### My Bluetooth keyboard, mouse, Personal Hotspot, or whatever Bluetooth, went nuts!
 
 Firstly, Shift + Option + Click the Bluetooth icon in the menubar or Control Center, then click *Reset the Bluetooth module*.
+
+In macOS 12 Monterey, this option is no longer available.
+Instead, type the command below in Terminal to reset the Bluetooth module:
+
+```
+sudo pkill bluetoothd
+```
+
+This command will ask your login password.
 
 If the problem persists, turn on *Passive Mode*.
 
@@ -192,20 +205,22 @@ Giving permission to this app resolves the problem.
 
 ## Funding
 
-Since version 1.9.0, binary releases are not notarized by Apple.
-Because of this, **you have to right-click and Open to start, and you have to re-authorize Keychain and other permissions.**
+The annual Apple Developer Program fee is funded by donations.
 
-My company is not developing iOS or Mac app at the moment, so I don't have access to a paid Apple Developer account.
-
-If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) so that I can pay for the Apple Developer Program myself!
+If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/tsone) or [PayPal Me](https://www.paypal.com/paypalme/my/profile) so I can keep up.
 
 ## Credits
 
-- peiit: Chinese translation
-- wenmin-wu: Minimum RSSI and moving average
-- stephengroat: CI
-- joeyhoer: Homebrew Cask
-- Skyearn: Big Sur style icon
+- [peiit](https://github.com/peiit): Chinese translation
+- [wenmin-wu](https://github.com/wenmin-wu): Minimum RSSI and moving average
+- [stephengroat](https://github.com/stephengroat): CI
+- [joeyhoer](https://github.com/joeyhoer): Homebrew Cask
+- [Skyearn](https://github.com/Skyearn): Big Sur style icon
+- [cyberclaus](https://github.com/cyberclaus): German, Swedish, Norwegian (Bokmål) and Danish localizations
+- [alonewolfx2](https://github.com/alonewolfx2): Turkish localization
+- [wernjie](https://github.com/wernjie): Wake without Unlocking
+- [tokfrans03](https://github.com/tokfrans03): Language fixes
+
 
 Icons are based on SVGs downloaded from materialdesignicons.com.
 They are originally designed by Google LLC and licensed under Apache License version 2.0.
@@ -214,4 +229,4 @@ They are originally designed by Google LLC and licensed under Apache License ver
 
 MIT
 
-Copyright © 2019-2021 Takeshi Sone.
+Copyright © 2019-2022 Takeshi Sone.

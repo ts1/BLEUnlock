@@ -31,13 +31,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var inScreensaver = false
     var lastRSSI: Int? = nil
 
-    override init() {
-        // Hide dock icon.
-        // This is required because we can't have LSUIElement set to true in Info.plist,
-        // otherwise CBCentralManager.scanForPeripherals won't work.
-        NSApp.setActivationPolicy(.accessory)
-    }
-
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
             ble.startScanning()
@@ -209,12 +202,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
-    func lockOrSaveScreen() -> Bool {
+    func lockOrSaveScreen() {
         if prefs.bool(forKey: "screensaver") {
             NSWorkspace.shared.launchApplication("ScreenSaverEngine")
-            return true // Really!?
         } else {
-            return lockScreen()
+            if SACLockScreenImmediate() != 0 {
+                print("Failed to lock screen")
+            }
+            if prefs.bool(forKey: "sleepDisplay") {
+                print("sleep display")
+                sleepDisplay()
+            }
         }
     }
 
@@ -238,12 +236,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         } else {
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseNowPlaying()
-                if lockOrSaveScreen() {
-                    notifyUser(reason)
-                    runScript(reason)
-                } else {
-                    print("Failed to lock")
-                }
+                lockOrSaveScreen()
+                notifyUser(reason)
+                runScript(reason)
             }
             manualLock = false
         }
@@ -297,21 +292,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: false)?.post(tap: .cghidEventTap)
         }
 
+        guard !self.prefs.bool(forKey: "wakeWithoutUnlocking") else { return }
+
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
             guard self.isScreenLocked() else { return }
             guard let password = self.fetchPassword(warn: true) else { return }
             
             print("Entering password")
+            self.unlockedAt = Date().timeIntervalSince1970
             self.fakeKeyStrokes(password)
             self.playNowPlaying()
             self.runScript("unlocked")
-            self.unlockedAt = Date().timeIntervalSince1970
         })
     }
 
     @objc func onDisplayWake() {
         print("display wake")
-        unlockedAt = Date().timeIntervalSince1970
+        //unlockedAt = Date().timeIntervalSince1970
         displaySleep = false
         wakeTimer?.invalidate()
         wakeTimer = nil
@@ -327,6 +324,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         print("system wake")
         Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
             print("delayed system wake job")
+            NSApp.setActivationPolicy(.accessory) // Hide Dock icon again
             self.systemSleep = false
             self.tryUnlockScreen()
         })
@@ -335,13 +333,22 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     @objc func onSystemSleep() {
         print("system sleep")
         systemSleep = true
+        // Set activation policy to regular, so the CBCentralManager can scan for peripherals
+        // when the Bluetooth will become on again.
+        // This enables Dock icon but the screen is off anyway.
+        NSApp.setActivationPolicy(.regular)
     }
 
     @objc func onUnlock() {
-        if Date().timeIntervalSince1970 >= unlockedAt + 10 {
-            runScript("intruded")
-            self.playNowPlaying()
-        }
+        Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
+            print("onUnlock")
+            if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
+                if self.ble.unlockRSSI != self.ble.UNLOCK_DISABLED {
+                    self.runScript("intruded")
+                }
+                self.playNowPlaying()
+            }
+        })
         manualLock = false
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             checkUpdate()
@@ -525,6 +532,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         prefs.set(value, forKey: "screensaver")
         menuItem.state = value ? .on : .off
     }
+
+    @objc func toggleSleepDisplay(_ menuItem: NSMenuItem) {
+        let value = !prefs.bool(forKey: "sleepDisplay")
+        prefs.set(value, forKey: "sleepDisplay")
+        menuItem.state = value ? .on : .off
+    }
     
     @objc func togglePassiveMode(_ menuItem: NSMenuItem) {
         let passiveMode = !prefs.bool(forKey: "passiveMode")
@@ -533,11 +546,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         ble.setPassiveMode(passiveMode)
     }
 
+    @objc func toggleWakeWithoutUnlocking(_ menuItem: NSMenuItem) {
+        let wakeWithoutUnlocking = !prefs.bool(forKey: "wakeWithoutUnlocking")
+        prefs.set(wakeWithoutUnlocking, forKey: "wakeWithoutUnlocking")
+        menuItem.state = wakeWithoutUnlocking ? .on : .off
+    }
+
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
         manualLock = true
         pauseNowPlaying()
-        _ = lockOrSaveScreen()
+        lockOrSaveScreen()
     }
     
     @objc func showAboutBox() {
@@ -581,10 +600,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         let lockDelayItem = mainMenu.addItem(withTitle: t("lock_delay"), action: nil, keyEquivalent: "")
         lockDelayItem.submenu = lockDelayMenu
-        lockDelayMenu.addItem(withTitle: "0 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 0
+        lockDelayMenu.addItem(withTitle: "2 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 2
         lockDelayMenu.addItem(withTitle: "5 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 5
-        lockDelayMenu.addItem(withTitle: "10 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 10
-        lockDelayMenu.addItem(withTitle: "20 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 20
+        lockDelayMenu.addItem(withTitle: "15 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 15
         lockDelayMenu.addItem(withTitle: "30 " + t("seconds"), action: #selector(setLockDelay), keyEquivalent: "").tag = 30
         lockDelayMenu.addItem(withTitle: "1 " + t("minute"), action: #selector(setLockDelay), keyEquivalent: "").tag = 60
         lockDelayMenu.addItem(withTitle: "2 " + t("minutes"), action: #selector(setLockDelay), keyEquivalent: "").tag = 120
@@ -605,6 +623,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             item.state = .on
         }
 
+        item = mainMenu.addItem(withTitle: t("wake_without_unlocking"), action: #selector(toggleWakeWithoutUnlocking), keyEquivalent: "")
+        if prefs.bool(forKey: "wakeWithoutUnlocking") {
+            item.state = .on
+        }
+
         item = mainMenu.addItem(withTitle: t("pause_now_playing"), action: #selector(togglePauseNowPlaying), keyEquivalent: "")
         if prefs.bool(forKey: "pauseItunes") {
             item.state = .on
@@ -612,6 +635,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         item = mainMenu.addItem(withTitle: t("use_screensaver_to_lock"), action: #selector(toggleUseScreensaver), keyEquivalent: "")
         if prefs.bool(forKey: "screensaver") {
+            item.state = .on
+        }
+
+        item = mainMenu.addItem(withTitle: t("sleep_display"), action: #selector(toggleSleepDisplay), keyEquivalent: "")
+        if prefs.bool(forKey: "sleepDisplay") {
             item.state = .on
         }
         
@@ -691,11 +719,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         dnc.addObserver(self, selector: #selector(onScreensaverStart), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstart"), object: nil)
         dnc.addObserver(self, selector: #selector(onScreensaverStop), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstop"), object: nil)
 
-        if ble.unlockRSSI != ble.UNLOCK_DISABLED && fetchPassword() == nil {
+        if ble.unlockRSSI != ble.UNLOCK_DISABLED && !prefs.bool(forKey: "wakeWithoutUnlocking") && fetchPassword() == nil {
             askPassword()
         }
         checkAccessibility()
         checkUpdate()
+
+        // Hide dock icon.
+        // This is required because we can't have LSUIElement set to true in Info.plist,
+        // otherwise CBCentralManager.scanForPeripherals won't work.
+        NSApp.setActivationPolicy(.accessory)
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {

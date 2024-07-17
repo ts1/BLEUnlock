@@ -75,6 +75,11 @@ BLEデバイスが遠ざかってから実際にロックをするまでの時�
 
 ロック中にBLEデバイスが近づいてきたとき、ディスプレイをスリープ画面から復帰させます。
 
+### アンロックせずに画面復帰
+
+ディスプレイがスリープから復帰したとき（「画面スリープから復帰」による自動または手動に関わらず）、Macをアンロックしません。
+これはApple WatchやTouch IDなどのよりセキュアなアンロック機構を使用したい場合に、「画面スリープから復帰」と共に使用すると素早く画面にアクセスできます。
+
 ### ロック中 "再生中" を一時停止
 
 ロック時に音楽や動画の再生を一時停止し、ロック解除時に再開します。対応しているのはApple Music, QuickTime Player, Spotifyなど、*再生中*ウィジェットやキーボードの⏯キーで制御できるアプリです。
@@ -82,6 +87,10 @@ BLEデバイスが遠ざかってから実際にロックをするまでの時�
 ### スクリーンセーバーでロック
 
 ロック時にスクリーンセーバーを起動します。このオプションが正しく動作するには、*セキュリティとプライバシー*システム環境パネルで*スリープとスクリーンセーバーの解除にパスワードを要求*を*すぐに*に設定する必要があります。
+
+### ロック時画面をスリープ
+
+ロック時にロック画面を表示せずディスプレイをスリープします。
 
 ### パスワードを設定...
 
@@ -119,6 +128,15 @@ Apple製以外のBLEデバイスでは、BLEUnlockはデバイスの名前を取
 ### Bluetoothキーボード、マウス、インターネット共有その他Bluetoothがおかしくなった
 
 メニューバーもしくはコントロールセンターにあるBluetoothアイコンをShift+Option+クリックし、表示される*Bluetoothモジュールのリセット*をしてみてください。
+
+macOS 12 Montereyでは、上記のオプションはなくなっています。
+代わりに、ターミナルで以下のコマンドを入力してBluetoothモジュールをリセットしてください。
+
+```
+sudo pkill bluetoothd
+```
+
+このコマンドは、ログインパスワードを要求します。
 
 それでも問題が繰り返し起こる場合、*パッシブモード*をオンにしてください。
 
@@ -210,20 +228,20 @@ do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y
 
 ## FUNDING
 
-1.9.0以降のバイナリリリースはAppleによって公証されていません。
-このため、**起動するには右クリックして開き、Keychain等のパーミッションを再認証する必要があります**。
+Apple Developer Programの年間費用は、寄付金で賄われています。
 
-現在私の会社ではMacやiOSのアプリを開発していないため、有料のApple Developerアカウントにアクセスできません。
-
-このアプリを気に入っていただけたら、Apple Developer Programの費用を自分で払うことができるよう、[Buy Me a Coffee](https://www.buymeacoffee.com/tsone) もしくは [PayPal.Me](https://paypal.me/takeshisone) で寄付をいただけるとありがたいです。
+もしこのアプリを気に入っていただけたら、継続できるよう、[Buy Me a Coffee](https://www.buymeacoffee.com/tsone) もしくは [PayPal.Me](https://paypal.me/takeshisone) で寄付をしていただけるとありがたいです。
 
 ## クレジット
 
-- peiit: 中国語の翻訳
-- wenmin-wu: 最小RSSIと移動平均
-- stephengroat: CI
-- joeyhoer: Homebrew Cask
-- Skyearn: Big Surスタイルのアイコン
+- [peiit](https://github.com/peiit): 中国語のローカリゼーション
+- [wenmin-wu](https://github.com/wenmin-wu): 最小RSSIと移動平均
+- [stephengroat](https://github.com/stephengroat): CI
+- [joeyhoer](https://github.com/joeyhoer): Homebrew Cask
+- [Skyearn](https://github.com/Skyearn): Big Surスタイルのアイコン
+- [cyberclaus](https://github.com/cyberclaus): ドイツ語, スウェーデン語, ノルウェー語 (Bokmål) およびデンマーク語のローカリゼーション
+- [alonewolfx2](https://github.com/alonewolfx2): トルコ語のローカリゼーション
+- [wernjie](https://github.com/wernjie): アンロックせずに画面復帰
 
 アイコンはmaterialdesignicons.comからダウンロードしたSVGファイルをもとにしています。これらはGoogleによってデザインされApache License version 2.0でライセンスされています。
 
@@ -231,4 +249,4 @@ do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y
 
 MIT
 
-Copyright © 2019-2021 Takeshi Sone.
+Copyright © 2019-2022 Takeshi Sone.

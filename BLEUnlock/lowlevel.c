@@ -1,5 +1,6 @@
 #include "lowlevel.h"
 #include <IOKit/pwr_mgt/IOPMLib.h>
+#include <IOKit/IOKitLib.h>
 
 void wakeDisplay(void)
 {
@@ -7,9 +8,11 @@ void wakeDisplay(void)
     IOPMAssertionDeclareUserActivity(CFSTR("BLEUnlock"), kIOPMUserActiveLocal, &assertionID);
 }
 
-bool lockScreen(void)
+void sleepDisplay(void)
 {
-    // Go to lock screen by private API. Doesn't work in Sandbox.
-    extern int SACLockScreenImmediate(void);
-    return SACLockScreenImmediate() == 0;
+    io_registry_entry_t reg = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/IOResources/IODisplayWrangler");
+    if (reg) {
+        IORegistryEntrySetCFProperty(reg, CFSTR("IORequestIdle"), kCFBooleanTrue);
+        IOObjectRelease(reg);
+    }
 }
