@@ -40,6 +40,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		287831B02D643E260040621C /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/AboutBox.strings; sourceTree = "<group>"; };
+		287831B22D643E260040621C /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/Localizable.strings; sourceTree = "<group>"; };
+		287831B32D643E400040621C /* ro */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ro; path = ro.lproj/AboutBox.strings; sourceTree = "<group>"; };
+		287831B52D643E400040621C /* ro */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ro; path = ro.lproj/Localizable.strings; sourceTree = "<group>"; };
 		3D2CF85A255102B300157996 /* MediaRemote.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaRemote.framework; path = ../../../../System/Library/PrivateFrameworks/MediaRemote.framework; sourceTree = "<group>"; };
 		3D2FCF07226C99CB007A06E7 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3D43D0112765FCCB00D15991 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AboutBox.strings; sourceTree = "<group>"; };
@@ -257,6 +261,8 @@
 				nb,
 				sv,
 				tr,
+				he,
+				ro,
 			);
 			mainGroup = 3DD4B647226C1C3200451B7B;
 			productRefGroup = 3DD4B651226C1C3200451B7B /* Products */;
@@ -349,6 +355,8 @@
 				3D43D0162765FD1600D15991 /* nb */,
 				3D43D0182765FD2800D15991 /* sv */,
 				F749D28D277515C600C78C28 /* tr */,
+				287831B22D643E260040621C /* he */,
+				287831B52D643E400040621C /* ro */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -364,6 +372,8 @@
 				3D43D0152765FD1600D15991 /* nb */,
 				3D43D0172765FD2800D15991 /* sv */,
 				F749D28C277515C600C78C28 /* tr */,
+				287831B02D643E260040621C /* he */,
+				287831B32D643E400040621C /* ro */,
 			);
 			name = AboutBox.xib;
 			sourceTree = "<group>";
