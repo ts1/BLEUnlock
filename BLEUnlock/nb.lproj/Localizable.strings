@@ -36,3 +36,4 @@
 "use_screensaver_to_lock" = "Bruke skjermsparer til å låse";
 "wake_on_proximity" = "Vekk ved nærhet";
 "wake_without_unlocking" = "Våkne uten å låse opp";
+"sleep_rssi" = "Sove RSSI";

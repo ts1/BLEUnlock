@@ -36,3 +36,4 @@
 "use_screensaver_to_lock" = "Use Screensaver to Lock";
 "wake_on_proximity" = "Wake on Proximity";
 "wake_without_unlocking" = "Wake without Unlocking";
+"sleep_rssi" = "Sleep RSSI";
