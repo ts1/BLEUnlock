@@ -96,7 +96,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
     
     func newDevice(device: Device) {
-        let menuItem = deviceMenu.addItem(withTitle: menuItemTitle(device: device), action:#selector(selectDevice), keyEquivalent: "")
+        let title = menuItemTitle(device: device)
+        
+        // Check for duplicate menu items by title (without RSSI) to catch duplicates that slipped through
+        let titleWithoutRSSI = title.components(separatedBy: " (").first ?? title
+        var duplicateUUID: UUID? = nil
+        for (existingUUID, existingItem) in deviceDict {
+            if existingUUID != device.uuid {
+                let existingTitle = existingItem.title
+                let existingTitleWithoutRSSI = existingTitle.components(separatedBy: " (").first ?? existingTitle
+                if existingTitleWithoutRSSI == titleWithoutRSSI {
+                    duplicateUUID = existingUUID
+                    break
+                }
+            }
+        }
+        
+        if let dupUUID = duplicateUUID {
+            // Find the actual device from BLE and remove it properly
+            if let dupDevice = ble.devices[dupUUID] {
+                removeDevice(device: dupDevice)
+            } else {
+                // Fallback: just remove from menu and dict
+                if let menuItem = deviceDict[dupUUID] {
+                    menuItem.menu?.removeItem(menuItem)
+                }
+                deviceDict.removeValue(forKey: dupUUID)
+            }
+        }
+        
+        let menuItem = deviceMenu.addItem(withTitle: title, action:#selector(selectDevice), keyEquivalent: "")
         deviceDict[device.uuid] = menuItem
         if (device.uuid == ble.monitoredUUID) {
             menuItem.state = .on

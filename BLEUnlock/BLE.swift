@@ -337,6 +337,47 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                     device.peripheral = peripheral
                     device.rssi = rssi
                     device.advData = advertisementData["kCBAdvDataManufacturerData"] as? Data
+                    
+                    // Force resolve device info (MAC address, name, etc.) for de-duplication
+                    if device.macAddr == nil {
+                        if let info = getLEDeviceInfoFromUUID(device.uuid.description) {
+                            device.blName = info.name
+                            device.macAddr = info.macAddr
+                        }
+                        if device.macAddr == nil {
+                            device.macAddr = getMACFromUUID(device.uuid.description)
+                        }
+                    }
+                    
+                    // Force evaluation of description to get device name
+                    let deviceDesc = device.description
+                    
+                    // De-duplicate by multiple criteria:
+                    // 1. Same MAC address (most reliable)
+                    // 2. Same device description/name (fallback if MAC not available)
+                    var duplicateFound: Device? = nil
+                    
+                    if let mac = device.macAddr, !mac.isEmpty {
+                        duplicateFound = devices.values.first(where: { $0.macAddr == mac && $0.macAddr != nil && !$0.macAddr!.isEmpty })
+                    }
+                    
+                    // If no MAC-based duplicate, check by device description
+                    if duplicateFound == nil && !deviceDesc.isEmpty {
+                        duplicateFound = devices.values.first(where: { 
+                            let otherDesc = $0.description
+                            return otherDesc == deviceDesc && otherDesc != "" && !otherDesc.hasPrefix("iBeacon")
+                        })
+                    }
+                    
+                    if let dup = duplicateFound {
+                        // Remove old entry/UI before inserting the new one to avoid duplicates
+                        self.delegate?.removeDevice(device: dup)
+                        if let p = dup.peripheral {
+                            self.centralMgr.cancelPeripheralConnection(p)
+                        }
+                        self.devices.removeValue(forKey: dup.uuid)
+                    }
+                    
                     devices[peripheral.identifier] = device
                     central.connect(peripheral, options: nil)
                     delegate?.newDevice(device: device)
