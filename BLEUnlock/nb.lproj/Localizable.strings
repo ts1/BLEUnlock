@@ -1,6 +1,6 @@
 "about" = "Om BLEUnlock";
 "bluetooth_power_warn" = "Bluetooth er slått av. Slå den på for at BLEUnlock skal fungere.";
-"cancel" = "Annullere";
+"cancel" = "Annuller";
 "closer" = "⬆Nærmere";
 "device" = "Enhet";
 "device_not_set" = "Enheten er ikke valgt";
@@ -14,7 +14,7 @@
 "lock_now" = "Lås skjerm nå";
 "lock_rssi" = "Lås RSSI";
 "minute" = "minutt";
-"minutes" = "minutn";
+"minutes" = "minutter";
 "not_detected" = "Finner ikke signal";
 "notification_device_away" = "Enheten er borte";
 "notification_locked" = "Denne datamaskinen er låst av BLEUnlock";
@@ -26,13 +26,13 @@
 "password_not_set" = "Passord er ikke angitt.";
 "pause_now_playing" = "Stans \"Avspilling nå\" mens den er låst";
 "quit" = "Slutte BLEUnlock";
-"scanning" = "kcanning…";
-"seconds" = "seconder";
+"scanning" = "søker…";
+"seconds" = "sekunder";
 "set_password" = "Angi passord…";
 "set_rssi_threshold" = "Angi minimum RSSI…";
 "sleep_display" = "Slå av skjerm ved låsing";
 "timeout" = "Tidsavbrudd uten signal";
 "unlock_rssi" = "Låse opp RSSI";
-"use_screensaver_to_lock" = "Bruke skjermsparer til å låse";
+"use_screensaver_to_lock" = "Bruk skjermsparer til å låse";
 "wake_on_proximity" = "Vekk ved nærhet";
-"wake_without_unlocking" = "Våkne uten å låse opp";
+"wake_without_unlocking" = "Vekk uten å låse opp";
