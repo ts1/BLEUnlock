@@ -25,6 +25,7 @@
 "password_info" = "Ditt lösenord lagras säkert i nyckelringen.";
 "password_not_set" = "Inget lösenordet har angetts.";
 "pause_now_playing" = "Pausa \"Spela nu\" när låst";
+"run_event_script_while_locked" = "Kör \"event\"-skript när låst";
 "quit" = "Avsluta BLEUnlock";
 "scanning" = "Skannar…";
 "seconds" = "sekunder";

@@ -25,6 +25,7 @@
 "password_info" = "パスワードはキーチェーンに安全に保存されます。";
 "password_not_set" = "パスワードが設定されていません。";
 "pause_now_playing" = "ロック中 \"再生中\" を一時停止";
+"run_event_script_while_locked" = "ロック中に \"event\" スクリプトを実行";
 "quit" = "BLEUnlock を終了";
 "scanning" = "スキャン中…";
 "seconds" = "秒";

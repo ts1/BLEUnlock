@@ -25,6 +25,7 @@
 "password_info" = "Şifreniz güvenli bir şekilde anahtar zincirinde saklanacaktır.";
 "password_not_set" = "Şifre belirlenmedi.";
 "pause_now_playing" = "Kilitliyken \"Now Playing\" beklet";
+"run_event_script_while_locked" = "Kilitliyken \"event\" betiğini çalıştır";
 "quit" = "BLEUnlock'tan çıkış";
 "scanning" = "Taranıyor…";
 "seconds" = "saniye";

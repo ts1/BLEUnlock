@@ -25,6 +25,7 @@
 "password_info" = "Passordet lagres sikkert i nøkkelringen.";
 "password_not_set" = "Passord er ikke angitt.";
 "pause_now_playing" = "Stans \"Avspilling nå\" mens den er låst";
+"run_event_script_while_locked" = "Kjør \"event\"-skriptet mens den er låst";
 "quit" = "Slutte BLEUnlock";
 "scanning" = "kcanning…";
 "seconds" = "seconder";

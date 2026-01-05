@@ -30,6 +30,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var unlockedAt = 0.0
     var inScreensaver = false
     var lastRSSI: Int? = nil
+    var didRunEventScriptSinceLock = false
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -234,11 +235,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
                 tryUnlockScreen()
             }
         } else {
-            if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
-                pauseNowPlaying()
-                lockOrSaveScreen()
-                notifyUser(reason)
-                runScript(reason)
+            if ble.lockRSSI != ble.LOCK_DISABLED {
+                let locked = isScreenLocked()
+                if !locked {
+                    pauseNowPlaying()
+                    lockOrSaveScreen()
+                    notifyUser(reason)
+                }
+                if (!locked || prefs.bool(forKey: "runEventScriptWhileLocked")) && !didRunEventScriptSinceLock {
+                    runScript(reason)
+                    didRunEventScriptSinceLock = true
+                }
             }
             manualLock = false
         }
@@ -340,6 +347,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     @objc func onUnlock() {
+        didRunEventScriptSinceLock = false
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             print("onUnlock")
             if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
@@ -526,6 +534,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         prefs.set(pauseNowPlaying, forKey: "pauseItunes")
         menuItem.state = pauseNowPlaying ? .on : .off
     }
+
+    @objc func toggleRunEventScriptWhileLocked(_ menuItem: NSMenuItem) {
+        let value = !prefs.bool(forKey: "runEventScriptWhileLocked")
+        prefs.set(value, forKey: "runEventScriptWhileLocked")
+        menuItem.state = value ? .on : .off
+    }
     
     @objc func toggleUseScreensaver(_ menuItem: NSMenuItem) {
         let value = !prefs.bool(forKey: "screensaver")
@@ -630,6 +644,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         item = mainMenu.addItem(withTitle: t("pause_now_playing"), action: #selector(togglePauseNowPlaying), keyEquivalent: "")
         if prefs.bool(forKey: "pauseItunes") {
+            item.state = .on
+        }
+
+        item = mainMenu.addItem(withTitle: t("run_event_script_while_locked"), action: #selector(toggleRunEventScriptWhileLocked), keyEquivalent: "")
+        if prefs.bool(forKey: "runEventScriptWhileLocked") {
             item.state = .on
         }
 

@@ -25,6 +25,7 @@
 "password_info" = "您的密码将安全地存储在钥匙串中。";
 "password_not_set" = "密码未设置。";
 "pause_now_playing" = "锁定时暂停\"播放中\"";
+"run_event_script_while_locked" = "锁定时运行 \"event\" 脚本";
 "quit" = "退出BLEUnlock";
 "scanning" = "扫描中…";
 "seconds" = "秒钟";

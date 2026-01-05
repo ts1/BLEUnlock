@@ -25,6 +25,7 @@
 "password_info" = "Das Passwort wurde sicher am Schlüsselbund gespeichert.";
 "password_not_set" = "Kein Passwort gesetzt.";
 "pause_now_playing" = "Pause \"Spielt jetzt\" während der Sperre";
+"run_event_script_while_locked" = "\"event\"-Skript während der Sperre ausführen";
 "quit" = "BLEUnlock beenden";
 "scanning" = "Scanning";
 "seconds" = "seconds";

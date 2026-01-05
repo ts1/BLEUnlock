@@ -71,6 +71,7 @@ No-Signal Timeout | Time between last signal reception and locking. If you exper
 Wake on Proximity | Wakes up the display from sleep when the BLE device approaches while locking.
 Wake without Unlocking | BLEUnlock will not unlock the Mac when the display wakes up from sleep, whether automatically via "Wake on Proximity" or manually. This allows for compatibility with the macOS built-in unlock with Apple Watch feature (which can operate immediately after BLEUnlock wakes the screen), or if you just prefer the lock screen to appear more quickly but don't want it to auto-unlock.
 Pause "Now Playing" while Locked | On lock/unlock, BLEUnlock pauses/unpauses playback of music or video (including Apple Music, QuickTime Player and Spotify) that is controlled by *Now Playing* widget or the ⏯ key on the keyboard.
+Run "event" Script while Locked | If the screen is already locked (for example, the user locks it manually and then walks away), the event script still runs. When this option is disabled, the event script runs only when BLEUnlock itself locks the screen (default behavior).
 Use Screensaver to Lock | If this option is set, BLEUnlock launches screensaver instead of locking. For this option to work properly, you need to set *Require password **immediately** after sleep or screen saver begins* option in *Security & Privacy* preference pane.
 Turn Off Screen on Lock | Turn off the display immediately when locking.
 Set Password... | If you changed your login password, use this.
