@@ -75,6 +75,8 @@
 		3DD4B663226C1CF000451B7B /* lowlevel.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = lowlevel.c; sourceTree = "<group>"; };
 		3DD4B665226C1DF200451B7B /* BLE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLE.swift; sourceTree = "<group>"; };
 		3DD4B668226C1E3700451B7B /* login.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = login.framework; path = ../../../../System/Library/PrivateFrameworks/login.framework; sourceTree = "<group>"; };
+		4C166F272F0C46A4005CD5A9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/AboutBox.strings; sourceTree = "<group>"; };
+		4C166F282F0C46A4005CD5A9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		B1EFF91422E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/AboutBox.strings"; sourceTree = "<group>"; };
 		B1EFF91622E010F50010DB0A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		F749D28C277515C600C78C28 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/AboutBox.strings; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 				nb,
 				sv,
 				tr,
+				fr,
 			);
 			mainGroup = 3DD4B647226C1C3200451B7B;
 			productRefGroup = 3DD4B651226C1C3200451B7B /* Products */;
@@ -349,6 +352,7 @@
 				3D43D0162765FD1600D15991 /* nb */,
 				3D43D0182765FD2800D15991 /* sv */,
 				F749D28D277515C600C78C28 /* tr */,
+				4C166F282F0C46A4005CD5A9 /* fr */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -364,6 +368,7 @@
 				3D43D0152765FD1600D15991 /* nb */,
 				3D43D0172765FD2800D15991 /* sv */,
 				F749D28C277515C600C78C28 /* tr */,
+				4C166F272F0C46A4005CD5A9 /* fr */,
 			);
 			name = AboutBox.xib;
 			sourceTree = "<group>";
