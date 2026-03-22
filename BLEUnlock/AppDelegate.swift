@@ -9,6 +9,8 @@ func t(_ key: String) -> String {
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, NSUserNotificationCenterDelegate, BLEDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    // Stores whether the menu bar icon is hidden.
+    let hideStatusItemPreferenceKey = "hideStatusItemFromMenuBar"
     let ble = BLE()
     let mainMenu = NSMenu()
     let deviceMenu = NSMenu()
@@ -117,6 +119,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func updateRSSI(rssi: Int?, active: Bool) {
+        // Keep updating the status item even when it is hidden.
         if let r = rssi {
             lastRSSI = r
             monitorMenuItem?.title = String(format:"%ddBm", r) + (active ? " (Active)" : "")
@@ -552,6 +555,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         menuItem.state = wakeWithoutUnlocking ? .on : .off
     }
 
+    @objc func toggleHideMenuBarIcon(_ menuItem: NSMenuItem) {
+        let hideMenuBarIcon = !prefs.bool(forKey: hideStatusItemPreferenceKey)
+        prefs.set(hideMenuBarIcon, forKey: hideStatusItemPreferenceKey)
+        menuItem.state = hideMenuBarIcon ? .on : .off
+
+        // Apply the visibility change immediately.
+        statusItem.isVisible = !hideMenuBarIcon
+    }
+
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
         manualLock = true
@@ -650,6 +662,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         
         item = mainMenu.addItem(withTitle: t("launch_at_login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         item.state = prefs.bool(forKey: "launchAtLogin") ? .on : .off
+
+        item = mainMenu.addItem(withTitle: t("hide_menu_bar_icon"), action: #selector(toggleHideMenuBarIcon), keyEquivalent: "")
+        item.state = prefs.bool(forKey: hideStatusItemPreferenceKey) ? .on : .off
         
         mainMenu.addItem(withTitle: t("set_rssi_threshold"), action: #selector(setRSSIThreshold),
                          keyEquivalent: "")
@@ -658,6 +673,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         mainMenu.addItem(withTitle: t("about"), action: #selector(showAboutBox), keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
         mainMenu.addItem(withTitle: t("quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
+        // Keep the menu attached to the status item.
         statusItem.menu = mainMenu
     }
 
@@ -673,11 +689,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
+    func resetHiddenMenuBarIconState() {
+        guard prefs.bool(forKey: hideStatusItemPreferenceKey) else { return }
+
+        // Show the icon again when the app is reopened.
+        prefs.set(false, forKey: hideStatusItemPreferenceKey)
+        statusItem.isVisible = true
+
+        if let item = mainMenu.items.first(where: { $0.action == #selector(toggleHideMenuBarIcon) }) {
+            item.state = .off
+        }
+    }
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = NSImage(named: "StatusBarDisconnected")
-            constructMenu()
         }
+        constructMenu()
+
+        let hideMenuBarIcon = prefs.bool(forKey: hideStatusItemPreferenceKey)
+
+        // Restore the saved visibility state on launch.
+        statusItem.isVisible = !hideMenuBarIcon
+
         ble.delegate = self
         if let str = prefs.string(forKey: "device") {
             if let uuid = UUID(uuidString: str) {
@@ -730,7 +764,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         // otherwise CBCentralManager.scanForPeripherals won't work.
         NSApp.setActivationPolicy(.accessory)
     }
+
     
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        // Restore the icon when the running app is reopened.
+        resetHiddenMenuBarIconState()
+        return false
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        // Also restore the icon when the app becomes active again.
+        resetHiddenMenuBarIconState()
+    }
+
     func applicationWillTerminate(_ aNotification: Notification) {
     }
 }
