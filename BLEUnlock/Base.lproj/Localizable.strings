@@ -26,6 +26,9 @@
 "password_not_set" = "Password is not set.";
 "pause_now_playing" = "Pause \"Now Playing\" while Locked";
 "quit" = "Quit BLEUnlock";
+"rename_device" = "Rename Device…";
+"rename_device_info" = "Enter a custom name for this device. Leave blank to remove the custom name.";
+"rename_device_placeholder" = "e.g. My iPhone";
 "scanning" = "Scanning…";
 "seconds" = "seconds";
 "set_password" = "Set Password…";

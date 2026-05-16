@@ -31,6 +31,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var inScreensaver = false
     var lastRSSI: Int? = nil
 
+    var customNames: [String: String] {
+        get { prefs.dictionary(forKey: "customDeviceNames") as? [String: String] ?? [:] }
+        set { prefs.set(newValue, forKey: "customDeviceNames") }
+    }
+
+    func updateMonitorMenuTitle() {
+        let prefix: String
+        if let uuid = ble.monitoredUUID, let name = customNames[uuid.uuidString], !name.isEmpty {
+            prefix = name + ": "
+        } else {
+            prefix = ""
+        }
+        if connected, let r = lastRSSI {
+            monitorMenuItem?.title = prefix + String(format: "%ddBm", r)
+        } else {
+            monitorMenuItem?.title = prefix.isEmpty ? t("not_detected") : prefix + t("not_detected")
+        }
+    }
+
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
             ble.startScanning()
@@ -74,8 +93,43 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             return menuItem.tag <= ble.unlockRSSI
         } else if menuItem.menu == unlockRSSIMenu {
             return menuItem.tag >= ble.lockRSSI
+        } else if menuItem.action == #selector(renameDevice) {
+            return ble.monitoredUUID != nil
         }
         return true
+    }
+
+    @objc func renameDevice() {
+        guard let uuid = ble.monitoredUUID else { return }
+
+        let msg = NSAlert()
+        msg.addButton(withTitle: t("ok"))
+        msg.addButton(withTitle: t("cancel"))
+        msg.messageText = t("rename_device")
+        msg.informativeText = t("rename_device_info")
+        msg.window.title = "BLEUnlock"
+
+        let txt = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 20))
+        txt.placeholderString = t("rename_device_placeholder")
+        if let existing = customNames[uuid.uuidString] {
+            txt.stringValue = existing
+        }
+        msg.accessoryView = txt
+        txt.becomeFirstResponder()
+        NSApp.activate(ignoringOtherApps: true)
+        let response = msg.runModal()
+
+        if response == .alertFirstButtonReturn {
+            var names = customNames
+            let name = txt.stringValue.trimmingCharacters(in: .whitespaces)
+            if name.isEmpty {
+                names.removeValue(forKey: uuid.uuidString)
+            } else {
+                names[uuid.uuidString] = name
+            }
+            customNames = names
+            updateMonitorMenuTitle()
+        }
     }
     
     func menuDidClose(_ menu: NSMenu) {
@@ -85,12 +139,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
     
     func menuItemTitle(device: Device) -> String {
-        var desc : String!
+        let customName = customNames[device.uuid.uuidString]
+        let label = customName.flatMap { $0.isEmpty ? nil : $0 } ?? device.description
+        let desc: String
         if let mac = device.macAddr {
             let prettifiedMac = mac.replacingOccurrences(of: "-", with: ":").uppercased()
-            desc = String(format: "%@ (%@)", device.description, prettifiedMac)
+            desc = "\(label) (\(prettifiedMac))"
         } else {
-            desc = device.description
+            desc = label
         }
         return String(format: "%@ (%ddBm)", desc, device.rssi)
     }
@@ -119,17 +175,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     func updateRSSI(rssi: Int?, active: Bool) {
         if let r = rssi {
             lastRSSI = r
-            monitorMenuItem?.title = String(format:"%ddBm", r) + (active ? " (Active)" : "")
             if (!connected) {
                 connected = true
                 statusItem.button?.image = NSImage(named: "StatusBarConnected")
             }
         } else {
-            monitorMenuItem?.title = t("not_detected")
             if (connected) {
                 connected = false
                 statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
             }
+        }
+        updateMonitorMenuTitle()
+        if let r = rssi, active {
+            monitorMenuItem?.title += " (Active)"
         }
     }
 
@@ -379,9 +437,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func monitorDevice(uuid: UUID) {
         connected = false
+        lastRSSI = nil
         statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
-        monitorMenuItem?.title = t("not_detected")
         ble.startMonitor(uuid: uuid)
+        updateMonitorMenuTitle()
     }
 
     func errorModal(_ msg: String, info: String? = nil) {
@@ -585,6 +644,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         item.submenu = deviceMenu
         deviceMenu.delegate = self
         deviceMenu.addItem(withTitle: t("scanning"), action: nil, keyEquivalent: "")
+
+        mainMenu.addItem(withTitle: t("rename_device"), action: #selector(renameDevice), keyEquivalent: "")
 
         let unlockRSSIItem = mainMenu.addItem(withTitle: t("unlock_rssi"), action: nil, keyEquivalent: "")
         unlockRSSIItem.submenu = unlockRSSIMenu
