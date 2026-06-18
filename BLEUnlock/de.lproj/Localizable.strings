@@ -36,3 +36,5 @@
 "use_screensaver_to_lock" = "Den Bildschirmschoner verwenden zum Sperren";
 "wake_on_proximity" = "Aufwachen bei Annäherung";
 "wake_without_unlocking" = "Aufwachen ohne Entsperren";
+"disable_on_this_network" = "In diesem Netzwerk deaktivieren";
+"network_not_identified" = "Aktuelles Netzwerk konnte nicht identifiziert werden (kein IPv4-Gateway gefunden).";
