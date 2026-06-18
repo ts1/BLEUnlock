@@ -36,3 +36,5 @@
 "use_screensaver_to_lock" = "Use Screensaver to Lock";
 "wake_on_proximity" = "Wake on Proximity";
 "wake_without_unlocking" = "Wake without Unlocking";
+"disable_on_this_network" = "Disable on This Network";
+"network_not_identified" = "Could not identify the current network (no IPv4 gateway found).";
