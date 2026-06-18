@@ -1,6 +1,5 @@
 import Foundation
 import CoreBluetooth
-import Accelerate
 
 let DeviceInformation = CBUUID(string:"180A")
 let ManufacturerName = CBUUID(string:"2A29")
@@ -137,6 +136,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var thresholdRSSI = -70
     var latestRSSIs: [Double] = []
     var latestN: Int = 5
+    var unlockMinSamples = 3   // window must hold >= this many readings before an unlock
     var activeModeTimer : Timer? = nil
     var connectionTimer : Timer? = nil
 
@@ -226,23 +226,27 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             latestRSSIs.removeFirst()
         }
         latestRSSIs.append(Double(rssi))
-        var mean: Double = 0.0
-        var sddev: Double = 0.0
-        vDSP_normalizeD(latestRSSIs, 1, nil, 1, &mean, &sddev, vDSP_Length(latestRSSIs.count))
-        return Int(mean)
+        return meanRSSI(latestRSSIs)
     }
 
     func updateMonitoredPeripheral(_ rssi: Int) {
-        // print(String(format: "rssi: %d", rssi))
-        if rssi >= (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI) && !presence {
+        // Smooth first, so every decision below uses the moving average.
+        let estimatedRSSI = getEstimatedRSSI(rssi: rssi)
+        delegate?.updateRSSI(rssi: estimatedRSSI, active: activeModeTimer != nil)
+
+        let unlockThreshold = (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI)
+        if shouldUnlock(estimatedRSSI: estimatedRSSI,
+                        sampleCount: latestRSSIs.count,
+                        unlockThreshold: unlockThreshold,
+                        minSamples: unlockMinSamples,
+                        isPresent: presence) {
             print("Device is close")
             presence = true
             delegate?.updatePresence(presence: presence, reason: "close")
-            latestRSSIs.removeAll() // Avoid bouncing
+            // NOTE: the previous `latestRSSIs.removeAll()` is intentionally gone — clearing
+            // the window made the very next sample drive the LOCK decision off a single raw
+            // value. Keeping the window smoothed protects both lock and unlock decisions.
         }
-
-        let estimatedRSSI = getEstimatedRSSI(rssi: rssi)
-        delegate?.updateRSSI(rssi: estimatedRSSI, active: activeModeTimer != nil)
 
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {
             if let timer = proximityTimer {
