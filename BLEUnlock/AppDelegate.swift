@@ -10,6 +10,7 @@ func t(_ key: String) -> String {
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, NSUserNotificationCenterDelegate, BLEDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     let ble = BLE()
+    let networkMonitor = NetworkMonitor()
     let mainMenu = NSMenu()
     let deviceMenu = NSMenu()
     let lockRSSIMenu = NSMenu()
@@ -30,6 +31,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var unlockedAt = 0.0
     var inScreensaver = false
     var lastRSSI: Int? = nil
+    var pausedByNetwork = true
+    var disableOnNetworkMenuItem: NSMenuItem?
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -217,6 +220,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func updatePresence(presence: Bool, reason: String) {
+        guard !pausedByNetwork else { return }
         if presence {
             if ble.unlockRSSI != ble.UNLOCK_DISABLED {
                 if let un = userNotification {
@@ -278,6 +282,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
     
     func tryUnlockScreen() {
+        guard !pausedByNetwork else { return }
         guard !manualLock else { return }
         guard ble.presence else { return }
         guard ble.unlockRSSI != ble.UNLOCK_DISABLED else { return }
@@ -546,6 +551,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         ble.setPassiveMode(passiveMode)
     }
 
+    @objc func toggleDisableOnThisNetwork(_ menuItem: NSMenuItem) {
+        // Gateway resolution blocks (route/ping/arp); do it off the main queue.
+        DispatchQueue.global(qos: .userInitiated).async {
+            guard let mac = self.networkMonitor.resolveGatewayMAC() else {
+                DispatchQueue.main.async { self.errorModal(t("network_not_identified")) }
+                return
+            }
+            DispatchQueue.main.async {
+                var list = self.networkMonitor.allowlist
+                if list.contains(mac) {
+                    list.remove(mac)
+                } else {
+                    list.insert(mac)
+                }
+                self.networkMonitor.allowlist = list
+                self.networkMonitor.networkChanged() // recompute pause state now
+            }
+        }
+    }
+
     @objc func toggleWakeWithoutUnlocking(_ menuItem: NSMenuItem) {
         let wakeWithoutUnlocking = !prefs.bool(forKey: "wakeWithoutUnlocking")
         prefs.set(wakeWithoutUnlocking, forKey: "wakeWithoutUnlocking")
@@ -647,6 +672,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         item = mainMenu.addItem(withTitle: t("passive_mode"), action: #selector(togglePassiveMode), keyEquivalent: "")
         item.state = prefs.bool(forKey: "passiveMode") ? .on : .off
+
+        disableOnNetworkMenuItem = mainMenu.addItem(withTitle: t("disable_on_this_network"),
+                                                    action: #selector(toggleDisableOnThisNetwork),
+                                                    keyEquivalent: "")
+        disableOnNetworkMenuItem?.state = networkMonitor.paused ? .on : .off
         
         item = mainMenu.addItem(withTitle: t("launch_at_login"), action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
         item.state = prefs.bool(forKey: "launchAtLogin") ? .on : .off
@@ -724,6 +754,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
         checkAccessibility()
         checkUpdate()
+
+        networkMonitor.onPauseStateChange = { [weak self] paused in
+            guard let self = self else { return }
+            self.pausedByNetwork = paused
+            self.disableOnNetworkMenuItem?.state = paused ? .on : .off
+            print("Network pause state: \(paused)")
+        }
+        networkMonitor.start()
 
         // Hide dock icon.
         // This is required because we can't have LSUIElement set to true in Info.plist,
