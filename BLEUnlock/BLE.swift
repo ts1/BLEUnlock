@@ -1,6 +1,5 @@
 import Foundation
 import CoreBluetooth
-import Accelerate
 
 let DeviceInformation = CBUUID(string:"180A")
 let ManufacturerName = CBUUID(string:"2A29")
@@ -137,6 +136,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var thresholdRSSI = -70
     var latestRSSIs: [Double] = []
     var latestN: Int = 5
+    var unlockMinSamples = 3   // window must hold >= this many readings before an unlock
     var activeModeTimer : Timer? = nil
     var connectionTimer : Timer? = nil
 
@@ -144,6 +144,20 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         guard !centralMgr.isScanning else { return }
         centralMgr.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
         //print("Start scanning")
+    }
+
+    func recoverMonitoredPeripheral(_ reason: String) {
+        guard monitoredPeripheral != nil else { return }
+
+        DiagnosticsLogger.shared.log("recovering_monitored_device", fields: ["reason": reason])
+        connectionTimer?.invalidate()
+        connectionTimer = nil
+        activeModeTimer?.invalidate()
+        activeModeTimer = nil
+
+        if centralMgr.state == .poweredOn {
+            scanForPeripherals()
+        }
     }
 
     func startScanning() {
@@ -187,7 +201,11 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func resetSignalTimer() {
         signalTimer?.invalidate()
         signalTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { _ in
-            print("Device is lost")
+            DiagnosticsLogger.shared.log("presence_timeout", fields: [
+                "reason": "lost",
+                "lastRSSI": self.latestRSSIs.last.map { String(Int($0)) } ?? "nil",
+                "signalTimeout": String(self.signalTimeout),
+            ])
             self.delegate?.updateRSSI(rssi: nil, active: false)
             if self.presence {
                 self.presence = false
@@ -202,16 +220,23 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            print("Bluetooth powered on")
-            if activeModeTimer == nil {
-                scanForPeripherals()
-            }
+            DiagnosticsLogger.shared.log("bluetooth_state", fields: ["state": "poweredOn"])
+            connectionTimer?.invalidate()
+            connectionTimer = nil
+            activeModeTimer?.invalidate()
+            activeModeTimer = nil
+            scanForPeripherals()
             powerWarn = false
         case .poweredOff:
-            print("Bluetooth powered off")
+            DiagnosticsLogger.shared.log("bluetooth_state", fields: ["state": "poweredOff"])
             presence = false
             signalTimer?.invalidate()
             signalTimer = nil
+            connectionTimer?.invalidate()
+            connectionTimer = nil
+            activeModeTimer?.invalidate()
+            activeModeTimer = nil
+            central.stopScan()
             if powerWarn {
                 powerWarn = false
                 delegate?.bluetoothPowerWarn()
@@ -226,39 +251,57 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             latestRSSIs.removeFirst()
         }
         latestRSSIs.append(Double(rssi))
-        var mean: Double = 0.0
-        var sddev: Double = 0.0
-        vDSP_normalizeD(latestRSSIs, 1, nil, 1, &mean, &sddev, vDSP_Length(latestRSSIs.count))
-        return Int(mean)
+        return meanRSSI(latestRSSIs)
     }
 
     func updateMonitoredPeripheral(_ rssi: Int) {
-        // print(String(format: "rssi: %d", rssi))
-        if rssi >= (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI) && !presence {
-            print("Device is close")
-            presence = true
-            delegate?.updatePresence(presence: presence, reason: "close")
-            latestRSSIs.removeAll() // Avoid bouncing
-        }
-
+        // Smooth first, so every decision below uses the moving average.
         let estimatedRSSI = getEstimatedRSSI(rssi: rssi)
         delegate?.updateRSSI(rssi: estimatedRSSI, active: activeModeTimer != nil)
+
+        let unlockThreshold = (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI)
+        if shouldUnlock(estimatedRSSI: estimatedRSSI,
+                        sampleCount: latestRSSIs.count,
+                        unlockThreshold: unlockThreshold,
+                        minSamples: unlockMinSamples,
+                        isPresent: presence) {
+            DiagnosticsLogger.shared.log("presence_detected", fields: [
+                "rssi": String(estimatedRSSI),
+                "sampleCount": String(latestRSSIs.count),
+            ])
+            presence = true
+            delegate?.updatePresence(presence: presence, reason: "close")
+            // NOTE: the previous `latestRSSIs.removeAll()` is intentionally gone — clearing
+            // the window made the very next sample drive the LOCK decision off a single raw
+            // value. Keeping the window smoothed protects both lock and unlock decisions.
+        }
 
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {
             if let timer = proximityTimer {
                 timer.invalidate()
-                print("Proximity timer canceled")
+                DiagnosticsLogger.shared.log("proximity_timer_canceled", fields: [
+                    "rssi": String(estimatedRSSI),
+                ])
                 proximityTimer = nil
             }
         } else if presence && proximityTimer == nil {
             proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { _ in
-                print("Device is away")
+                DiagnosticsLogger.shared.log("presence_timeout", fields: [
+                    "reason": "away",
+                    "lastRSSI": self.latestRSSIs.last.map { String(Int($0)) } ?? "nil",
+                    "lockRSSI": String(self.lockRSSI),
+                    "proximityTimeout": String(self.proximityTimeout),
+                ])
                 self.presence = false
                 self.delegate?.updatePresence(presence: self.presence, reason: "away")
                 self.proximityTimer = nil
             })
             RunLoop.main.add(proximityTimer!, forMode: .common)
-            print("Proximity timer started")
+            DiagnosticsLogger.shared.log("proximity_timer_started", fields: [
+                "rssi": String(estimatedRSSI),
+                "lockRSSI": String(self.lockRSSI),
+                "proximityTimeout": String(self.proximityTimeout),
+            ])
         }
         resetSignalTimer()
     }
@@ -285,12 +328,12 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         p.readRSSI()
 
         guard p.state == .disconnected else { return }
-        print("Connecting")
+        DiagnosticsLogger.shared.log("connecting")
         centralMgr.connect(p, options: nil)
         connectionTimer?.invalidate()
         connectionTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false, block: { _ in
             if p.state == .connecting {
-                print("Connection timeout")
+                DiagnosticsLogger.shared.log("connection_timeout")
                 self.centralMgr.cancelPeripheralConnection(p)
             }
         })
@@ -358,11 +401,33 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             peripheral.discoverServices([DeviceInformation])
         }
         if peripheral == monitoredPeripheral && !passiveMode {
-            print("Connected")
+            DiagnosticsLogger.shared.log("connected")
             connectionTimer?.invalidate()
             connectionTimer = nil
             peripheral.readRSSI()
         }
+    }
+
+    func centralManager(_ central: CBCentralManager,
+                        didDisconnectPeripheral peripheral: CBPeripheral,
+                        error: Error?)
+    {
+        guard peripheral == monitoredPeripheral else { return }
+
+        let detail = error?.localizedDescription ?? "no error reported"
+        DiagnosticsLogger.shared.log("monitored_device_disconnected", fields: ["detail": detail])
+        recoverMonitoredPeripheral("disconnected")
+    }
+
+    func centralManager(_ central: CBCentralManager,
+                        didFailToConnect peripheral: CBPeripheral,
+                        error: Error?)
+    {
+        guard peripheral == monitoredPeripheral else { return }
+
+        let detail = error?.localizedDescription ?? "no error reported"
+        DiagnosticsLogger.shared.log("connection_failed", fields: ["detail": detail])
+        recoverMonitoredPeripheral("connection failed")
     }
 
     //MARK:CBCentralManagerDelegate end -
@@ -377,13 +442,13 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         lastReadAt = Date().timeIntervalSince1970
 
         if activeModeTimer == nil && !passiveMode {
-            print("Entering active mode")
+            DiagnosticsLogger.shared.log("active_mode_started")
             if !scanMode {
                 centralMgr.stopScan()
             }
             activeModeTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true, block: { _ in
                 if Date().timeIntervalSince1970 > self.lastReadAt + 10 {
-                    print("Falling back to passive mode")
+                    DiagnosticsLogger.shared.log("active_mode_stopped", fields: ["reason": "stale_rssi"])
                     self.centralMgr.cancelPeripheralConnection(peripheral)
                     self.activeModeTimer?.invalidate()
                     self.activeModeTimer = nil

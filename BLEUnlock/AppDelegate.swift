@@ -203,10 +203,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func lockOrSaveScreen() {
+        DiagnosticsLogger.shared.log("lock_requested", fields: [
+            "method": prefs.bool(forKey: "screensaver") ? "screensaver" : "immediate",
+            "lastRSSI": lastRSSI.map(String.init) ?? "nil",
+        ])
         if prefs.bool(forKey: "screensaver") {
             NSWorkspace.shared.launchApplication("ScreenSaverEngine")
+            DiagnosticsLogger.shared.log("lock_started", fields: ["method": "screensaver"])
         } else {
-            if SACLockScreenImmediate() != 0 {
+            let status = SACLockScreenImmediate()
+            DiagnosticsLogger.shared.log("lock_result", fields: ["status": String(status)])
+            if status != 0 {
                 print("Failed to lock screen")
             }
             if prefs.bool(forKey: "sleepDisplay") {
@@ -217,6 +224,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func updatePresence(presence: Bool, reason: String) {
+        DiagnosticsLogger.shared.log("presence_changed", fields: [
+            "presence": String(presence),
+            "reason": reason,
+            "lastRSSI": lastRSSI.map(String.init) ?? "nil",
+            "lockRSSI": String(ble.lockRSSI),
+            "unlockRSSI": String(ble.unlockRSSI),
+        ])
         if presence {
             if ble.unlockRSSI != ble.UNLOCK_DISABLED {
                 if let un = userNotification {
@@ -679,11 +693,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             constructMenu()
         }
         ble.delegate = self
-        if let str = prefs.string(forKey: "device") {
-            if let uuid = UUID(uuidString: str) {
-                monitorDevice(uuid: uuid)
-            }
-        }
         let lockRSSI = prefs.integer(forKey: "lockRSSI")
         if lockRSSI != 0 {
             ble.lockRSSI = lockRSSI
@@ -704,6 +713,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         let lockDelay = prefs.integer(forKey: "lockDelay")
         if lockDelay != 0 {
             ble.proximityTimeout = Double(lockDelay)
+        }
+
+        // Start monitoring only after all persisted BLE settings are applied.
+        // Otherwise startMonitor() creates a signal timer with the default
+        // 60-second timeout before the configured timeout is loaded.
+        if let str = prefs.string(forKey: "device"),
+           let uuid = UUID(uuidString: str) {
+            monitorDevice(uuid: uuid)
         }
 
         NSUserNotificationCenter.default.delegate = self
@@ -729,6 +746,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         // This is required because we can't have LSUIElement set to true in Info.plist,
         // otherwise CBCentralManager.scanForPeripherals won't work.
         NSApp.setActivationPolicy(.accessory)
+        DiagnosticsLogger.shared.log("application_ready", fields: [
+            "bundleVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown",
+            "device": ble.monitoredUUID?.uuidString ?? "none",
+            "lockRSSI": String(ble.lockRSSI),
+            "unlockRSSI": String(ble.unlockRSSI),
+            "signalTimeout": String(ble.signalTimeout),
+            "proximityTimeout": String(ble.proximityTimeout),
+        ])
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
