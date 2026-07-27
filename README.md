@@ -8,7 +8,7 @@
 
 BLEUnlock is a small menu bar utility that locks and unlocks your Mac by proximity of your iPhone, Apple Watch, or any other Bluetooth Low Energy device.
 
-This document is also available in [Japanese (日本語版はこちら)](README.ja.md).
+This document is also available in [Japanese (日本語版はこちら)](README.ja.md) and [Traditional Chinese (繁體中文版)](README_CHT.md).
 
 ## Features
 
