@@ -7,6 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7E1000063000000000000001 /* TelegramEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000213000000000000001 /* TelegramEvent.swift */; };
+		7E1000073000000000000001 /* TelegramSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000223000000000000001 /* TelegramSettings.swift */; };
+		7E1000013000000000000001 /* TelegramSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000113000000000000001 /* TelegramSettingsTests.swift */; };
+		7E1000023000000000000001 /* TestDoubles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000123000000000000001 /* TestDoubles.swift */; };
+		7E1000093000000000000001 /* KeychainStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000233000000000000001 /* KeychainStoreTests.swift */; };
+		7E1000083000000000000001 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000243000000000000001 /* KeychainStore.swift */; };
+		7E10000A3000000000000001 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E1000253000000000000001 /* Security.framework */; };
+		7E10000C3000000000000001 /* TelegramNotifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000273000000000000001 /* TelegramNotifierTests.swift */; };
+		7E10000D3000000000000001 /* CameraCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000283000000000000001 /* CameraCaptureTests.swift */; };
+		7E10000E3000000000000001 /* CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000293000000000000001 /* CameraCapture.swift */; };
+		7E10000F3000000000000001 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E10002A3000000000000001 /* AVFoundation.framework */; };
+		7E10000B3000000000000001 /* TelegramNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000263000000000000001 /* TelegramNotifier.swift */; };
+		7E10002B3000000000000001 /* TelegramNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E10002C3000000000000001 /* TelegramNotificationService.swift */; };
+		7E10002D3000000000000001 /* TelegramNotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E10002E3000000000000001 /* TelegramNotificationServiceTests.swift */; };
+		7E1000303000000000000001 /* TelegramMenuControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E10002F3000000000000001 /* TelegramMenuControllerTests.swift */; };
+		7E1000323000000000000001 /* TelegramMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000313000000000000001 /* TelegramMenuController.swift */; };
+		7E1000333000000000000001 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000343000000000000001 /* LocalizationTests.swift */; };
+		7E1000353000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7E1000363000000000000001 /* InfoPlist.strings */; };
+		7E1000443000000000000001 /* MacLocationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000453000000000000001 /* MacLocationProvider.swift */; };
+		7E1000463000000000000001 /* MacLocationProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1000473000000000000001 /* MacLocationProviderTests.swift */; };
+		7E1000483000000000000001 /* PhotoLocationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E10004A3000000000000001 /* PhotoLocationCoordinator.swift */; };
+		7E1000493000000000000001 /* PhotoLocationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E10004B3000000000000001 /* PhotoLocationCoordinatorTests.swift */; };
+		7E1000033000000000000001 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E1000133000000000000001 /* XCTest.framework */; };
 		3D2CF85B255102B300157996 /* MediaRemote.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D2CF85A255102B300157996 /* MediaRemote.framework */; };
 		3D2FCF08226C99CB007A06E7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D2FCF07226C99CB007A06E7 /* Images.xcassets */; };
 		3D4EE4112279E55A00AF9E93 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EE4102279E55A00AF9E93 /* AppDelegate.m */; };
@@ -26,6 +49,16 @@
 		3DD4B669226C1E3700451B7B /* login.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DD4B668226C1E3700451B7B /* login.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		7E1000043000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3DD4B648226C1C3200451B7B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3DD4B64F226C1C3200451B7B;
+			remoteInfo = BLEUnlock;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		3D600A5922701E5D0068FB7B /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -40,6 +73,37 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7E1000213000000000000001 /* TelegramEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramEvent.swift; sourceTree = "<group>"; };
+		7E1000223000000000000001 /* TelegramSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramSettings.swift; sourceTree = "<group>"; };
+		7E1000103000000000000001 /* BLEUnlockTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BLEUnlockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E1000113000000000000001 /* TelegramSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramSettingsTests.swift; sourceTree = "<group>"; };
+		7E1000123000000000000001 /* TestDoubles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestDoubles.swift; sourceTree = "<group>"; };
+		7E1000233000000000000001 /* KeychainStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStoreTests.swift; sourceTree = "<group>"; };
+		7E1000243000000000000001 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		7E1000253000000000000001 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		7E1000273000000000000001 /* TelegramNotifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramNotifierTests.swift; sourceTree = "<group>"; };
+		7E1000283000000000000001 /* CameraCaptureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCaptureTests.swift; sourceTree = "<group>"; };
+		7E1000293000000000000001 /* CameraCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCapture.swift; sourceTree = "<group>"; };
+		7E10002A3000000000000001 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		7E1000263000000000000001 /* TelegramNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramNotifier.swift; sourceTree = "<group>"; };
+		7E10002C3000000000000001 /* TelegramNotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramNotificationService.swift; sourceTree = "<group>"; };
+		7E10002E3000000000000001 /* TelegramNotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramNotificationServiceTests.swift; sourceTree = "<group>"; };
+		7E10002F3000000000000001 /* TelegramMenuControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramMenuControllerTests.swift; sourceTree = "<group>"; };
+		7E1000313000000000000001 /* TelegramMenuController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramMenuController.swift; sourceTree = "<group>"; };
+		7E1000343000000000000001 /* LocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationTests.swift; sourceTree = "<group>"; };
+		7E1000373000000000000001 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7E1000383000000000000001 /* da */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = da; path = da.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7E1000393000000000000001 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7E10003A3000000000000001 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7E10003B3000000000000001 /* nb */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7E10003C3000000000000001 /* sv */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7E10003D3000000000000001 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7E10003E3000000000000001 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		7E1000453000000000000001 /* MacLocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocationProvider.swift; sourceTree = "<group>"; };
+		7E1000473000000000000001 /* MacLocationProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacLocationProviderTests.swift; sourceTree = "<group>"; };
+		7E10004A3000000000000001 /* PhotoLocationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLocationCoordinator.swift; sourceTree = "<group>"; };
+		7E10004B3000000000000001 /* PhotoLocationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLocationCoordinatorTests.swift; sourceTree = "<group>"; };
+		7E1000133000000000000001 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
 		3D2CF85A255102B300157996 /* MediaRemote.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaRemote.framework; path = ../../../../System/Library/PrivateFrameworks/MediaRemote.framework; sourceTree = "<group>"; };
 		3D2FCF07226C99CB007A06E7 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3D43D0112765FCCB00D15991 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AboutBox.strings; sourceTree = "<group>"; };
@@ -93,8 +157,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E10000F3000000000000001 /* AVFoundation.framework in Frameworks */,
+				7E10000A3000000000000001 /* Security.framework in Frameworks */,
 				3D2CF85B255102B300157996 /* MediaRemote.framework in Frameworks */,
 				3DD4B669226C1E3700451B7B /* login.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7E1000153000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E1000033000000000000001 /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				3DD4B652226C1C3200451B7B /* BLEUnlock */,
+				7E1000143000000000000001 /* BLEUnlockTests */,
 				3D600A4122701A5B0068FB7B /* Launcher */,
 				3DD4B651226C1C3200451B7B /* Products */,
 				3DD4B667226C1E3700451B7B /* Frameworks */,
@@ -130,6 +205,7 @@
 			children = (
 				3DD4B650226C1C3200451B7B /* BLEUnlock.app */,
 				3D600A4022701A5A0068FB7B /* Launcher.app */,
+				7E1000103000000000000001 /* BLEUnlockTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -137,9 +213,19 @@
 		3DD4B652226C1C3200451B7B /* BLEUnlock */ = {
 			isa = PBXGroup;
 			children = (
+				7E10004A3000000000000001 /* PhotoLocationCoordinator.swift */,
+				7E1000453000000000000001 /* MacLocationProvider.swift */,
+				7E1000313000000000000001 /* TelegramMenuController.swift */,
+				7E10002C3000000000000001 /* TelegramNotificationService.swift */,
+				7E1000293000000000000001 /* CameraCapture.swift */,
+				7E1000263000000000000001 /* TelegramNotifier.swift */,
+				7E1000213000000000000001 /* TelegramEvent.swift */,
+				7E1000223000000000000001 /* TelegramSettings.swift */,
+				7E1000243000000000000001 /* KeychainStore.swift */,
 				3D95379322784D550017D8B9 /* AboutBox.swift */,
 				3D953799227853E20017D8B9 /* AboutBox.xib */,
 				3D600A35226CC1A40068FB7B /* Localizable.strings */,
+				7E1000363000000000000001 /* InfoPlist.strings */,
 				3DD4B665226C1DF200451B7B /* BLE.swift */,
 				3D6070E126DBC68E00EE4E48 /* LEDeviceInfo.swift */,
 				3DD4B653226C1C3200451B7B /* AppDelegate.swift */,
@@ -156,9 +242,28 @@
 			path = BLEUnlock;
 			sourceTree = "<group>";
 		};
+		7E1000143000000000000001 /* BLEUnlockTests */ = {
+			isa = PBXGroup;
+			children = (
+				7E10004B3000000000000001 /* PhotoLocationCoordinatorTests.swift */,
+				7E1000473000000000000001 /* MacLocationProviderTests.swift */,
+				7E1000343000000000000001 /* LocalizationTests.swift */,
+				7E10002F3000000000000001 /* TelegramMenuControllerTests.swift */,
+				7E10002E3000000000000001 /* TelegramNotificationServiceTests.swift */,
+				7E1000283000000000000001 /* CameraCaptureTests.swift */,
+				7E1000233000000000000001 /* KeychainStoreTests.swift */,
+				7E1000273000000000000001 /* TelegramNotifierTests.swift */,
+				7E1000113000000000000001 /* TelegramSettingsTests.swift */,
+				7E1000123000000000000001 /* TestDoubles.swift */,
+			);
+			path = BLEUnlockTests;
+			sourceTree = "<group>";
+		};
 		3DD4B667226C1E3700451B7B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7E10002A3000000000000001 /* AVFoundation.framework */,
+				7E1000253000000000000001 /* Security.framework */,
 				3D2CF85A255102B300157996 /* MediaRemote.framework */,
 				3DD4B668226C1E3700451B7B /* login.framework */,
 			);
@@ -203,6 +308,23 @@
 			productName = BLEUnlock;
 			productReference = 3DD4B650226C1C3200451B7B /* BLEUnlock.app */;
 			productType = "com.apple.product-type.application";
+		};
+		7E1000163000000000000001 /* BLEUnlockTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E1000173000000000000001 /* Build configuration list for PBXNativeTarget "BLEUnlockTests" */;
+			buildPhases = (
+				7E1000183000000000000001 /* Sources */,
+				7E1000153000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7E1000053000000000000001 /* PBXTargetDependency */,
+			);
+			name = BLEUnlockTests;
+			productName = BLEUnlockTests;
+			productReference = 7E1000103000000000000001 /* BLEUnlockTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -265,6 +387,7 @@
 			targets = (
 				3DD4B64F226C1C3200451B7B /* BLEUnlock */,
 				3D600A3F22701A5A0068FB7B /* Launcher */,
+				7E1000163000000000000001 /* BLEUnlockTests */,
 			);
 		};
 /* End PBXProject section */
@@ -284,6 +407,7 @@
 			files = (
 				3D2FCF08226C99CB007A06E7 /* Images.xcassets in Resources */,
 				3D600A37226CC1A40068FB7B /* Localizable.strings in Resources */,
+				7E1000353000000000000001 /* InfoPlist.strings in Resources */,
 				3D953797227853E20017D8B9 /* AboutBox.xib in Resources */,
 				3DD4B659226C1C3400451B7B /* MainMenu.xib in Resources */,
 			);
@@ -312,6 +436,23 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7E1000183000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7E1000493000000000000001 /* PhotoLocationCoordinatorTests.swift in Sources */,
+				7E1000463000000000000001 /* MacLocationProviderTests.swift in Sources */,
+				7E1000333000000000000001 /* LocalizationTests.swift in Sources */,
+				7E1000303000000000000001 /* TelegramMenuControllerTests.swift in Sources */,
+				7E10002D3000000000000001 /* TelegramNotificationServiceTests.swift in Sources */,
+				7E10000D3000000000000001 /* CameraCaptureTests.swift in Sources */,
+				7E1000093000000000000001 /* KeychainStoreTests.swift in Sources */,
+				7E10000C3000000000000001 /* TelegramNotifierTests.swift in Sources */,
+				7E1000013000000000000001 /* TelegramSettingsTests.swift in Sources */,
+				7E1000023000000000000001 /* TestDoubles.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3D600A3C22701A5A0068FB7B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -325,6 +466,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E1000483000000000000001 /* PhotoLocationCoordinator.swift in Sources */,
+				7E1000443000000000000001 /* MacLocationProvider.swift in Sources */,
+				7E1000323000000000000001 /* TelegramMenuController.swift in Sources */,
+				7E10002B3000000000000001 /* TelegramNotificationService.swift in Sources */,
+				7E10000E3000000000000001 /* CameraCapture.swift in Sources */,
+				7E10000B3000000000000001 /* TelegramNotifier.swift in Sources */,
+				7E1000063000000000000001 /* TelegramEvent.swift in Sources */,
+				7E1000073000000000000001 /* TelegramSettings.swift in Sources */,
+				7E1000083000000000000001 /* KeychainStore.swift in Sources */,
 				3DD4B654226C1C3200451B7B /* AppDelegate.swift in Sources */,
 				3DD4B666226C1DF200451B7B /* BLE.swift in Sources */,
 				3DD4B664226C1CF000451B7B /* lowlevel.c in Sources */,
@@ -337,7 +487,30 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		7E1000053000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3DD4B64F226C1C3200451B7B /* BLEUnlock */;
+			targetProxy = 7E1000043000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
+		7E1000363000000000000001 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7E1000373000000000000001 /* Base */,
+				7E1000383000000000000001 /* da */,
+				7E1000393000000000000001 /* de */,
+				7E10003A3000000000000001 /* ja */,
+				7E10003B3000000000000001 /* nb */,
+				7E10003C3000000000000001 /* sv */,
+				7E10003D3000000000000001 /* tr */,
+				7E10003E3000000000000001 /* zh-Hans */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		3D600A35226CC1A40068FB7B /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -394,6 +567,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.BLEUnlock.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -418,6 +592,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.BLEUnlock.Launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -478,7 +653,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -535,7 +710,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -555,6 +730,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 42LGPQYC7M;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_LOCATION = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BLEUnlock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -586,6 +762,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 42LGPQYC7M;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_LOCATION = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = BLEUnlock/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -602,6 +779,34 @@
 					"$(inherited)",
 					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
 				);
+			};
+			name = Release;
+		};
+		7E1000193000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.BLEUnlockTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BLEUnlock.app/Contents/MacOS/BLEUnlock";
+			};
+			name = Debug;
+		};
+		7E1000203000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.BLEUnlockTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BLEUnlock.app/Contents/MacOS/BLEUnlock";
 			};
 			name = Release;
 		};
@@ -631,6 +836,15 @@
 			buildConfigurations = (
 				3DD4B65F226C1C3400451B7B /* Debug */,
 				3DD4B660226C1C3400451B7B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7E1000173000000000000001 /* Build configuration list for PBXNativeTarget "BLEUnlockTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E1000193000000000000001 /* Debug */,
+				7E1000203000000000000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

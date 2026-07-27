@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "BLEUnlock 使用系统默认摄像头拍摄手动解锁，并将警报上传到 Telegram。";
+"NSLocationUsageDescription" = "BLEUnlock 获取这台 Mac 拍照时的位置，并将坐标和地图附加到 Telegram 安全通知。";

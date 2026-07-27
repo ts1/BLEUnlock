@@ -26,8 +26,12 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>BLEUnlock uses Bluetooth to detect devices.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>BLEUnlock uses the system default camera to photograph a manual unlock and upload the alert to Telegram.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2019-2022 Takeshi Sone. MIT Licensed.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>BLEUnlock gets this Mac's location at capture time and attaches the coordinates and map to the Telegram security notification.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

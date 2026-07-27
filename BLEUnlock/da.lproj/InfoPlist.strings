@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "BLEUnlock bruger systemets standardkamera til at fotografere en manuel oplåsning og uploade advarslen til Telegram.";
+"NSLocationUsageDescription" = "BLEUnlock henter denne Macs placering på optagelsestidspunktet og vedhæfter koordinater og kort til Telegram-sikkerhedsmeddelelsen.";

@@ -52,6 +52,20 @@ Bluetooth | 当然ながら、Bluetoothへのアクセスが必要です。
 
 最後に、メニューバーアイコンから*デバイス*を選択してください。近くにあるBLEデバイスのスキャンが始まります。使いたいデバイスを選べば完了です。
 
+## Telegram通知
+
+Telegram通知は任意の機能で、設定して有効にするまでは無効です。
+
+1. [@BotFather](https://t.me/BotFather)でボットを作成し、そのトークンをコピーします。
+2. ボットにメッセージを送信してから、`https://api.telegram.org/bot<TOKEN>/getUpdates` を開き、応答内の数値のChat IDをコピーします。
+3. *BLEUnlock > Telegram通知 > 設定…* を開き、トークンとChat IDを保存します。
+4. テスト通知を送信し、通知するイベントを選んでからTelegram通知を有効にします。
+5. 写真付き通知を有効にしている場合は、macOSから求められたときにカメラへのアクセスを許可します。
+
+承認済みの初期設定では、`away`、`lost`、`intruded`がオン、`unlocked`がオフです。Telegram通知自体は無効で開始します。`intruded`の写真撮影は初期状態でオンですが、写真を添付できるイベントは`intruded`だけで、ほかのイベントは常にテキストのみです。カメラへのアクセスが拒否された場合や撮影に失敗した場合、`intruded`通知もテキストのみで送信されます。一時的に作成された侵入検知写真は、送信の成否にかかわらず、送信を試みるたびに削除されます。
+
+従来の`~/Library/Application Scripts/jp.sone.BLEUnlock/event`スクリプトも引き続き利用でき、Telegramとは独立して4種類すべてのイベント引数を受け取ります。
+
 ## オプション
 
 ### 今すぐロック
@@ -173,58 +187,9 @@ BLEUnlockはロック・アンロック時に以下のスクリプトを実行�
 
 > 注意: `intruded` イベントが正常に働くには、システム環境設定の *セキュリティとプライバシー* で *スリープとスクリーンセーバの解除にパスワードを要求* を **すぐに** に設定してください。
 
-### サンプル
+### LINE Notifyの過去のサンプル（非対応）
 
-例としてLINE Notifyにメッセージを送るスクリプトを示します。
-手動でアンロックされた場合Macの前にいる人の写真を添付します。
-
-```sh
-#!/bin/bash
-
-set -eo pipefail
-
-LINE_TOKEN=xxxxx
-
-notify() {
-    local message=$1
-    local image=$2
-    if [ "$image" ]; then
-        img_arg="-F imageFile=@$image"
-    else
-        img_arg=""
-    fi
-    curl -X POST -H "Authorization: Bearer $LINE_TOKEN" -F "message=$message" \
-        $img_arg https://notify-api.line.me/api/notify
-}
-
-capture() {
-    open -Wa SnapshotUnlocker
-    ls -t /tmp/unlock-*.jpg | head -1
-}
-
-case $1 in
-    away)
-        notify "$(hostname -s) is locked by BLEUnlock because iPhone is away."
-        ;;
-    lost)
-        notify "$(hostname -s) is locked by BLEUnlock because signal is lost."
-        ;;
-    unlocked)
-        #notify "$(hostname -s) is unlocked by BLEUnlock."
-        ;;
-    intruded)
-        notify "$(hostname -s) is manually unlocked." $(capture)
-        ;;
-esac
-```
-
-`SnapshotUnlocker` はスクリプトエディタで作った .app で、内容は以下のとおりです。
-
-```
-do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y /tmp/unlock-$(date +%Y%m%d_%H%M%S).jpg"
-```
-
-このappはBLEUnlockにカメラのパーミッションがないため必要となります。このappにパーミッションを与えることによりパーミッションの問題を回避できます。
+以前のREADMEでは、ここにLINE NotifyとSnapshotUnlockerを使用するスクリプト例を掲載していました。LINE Notifyは終了したため、その過去のエンドポイントとサンプルは非対応であり、現在は動作しません。BLEUnlock内蔵のTelegram通知を使用するか、従来の`event`スクリプトから現在利用できる別のサービスに接続してください。
 
 ## FUNDING
 

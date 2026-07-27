@@ -30,6 +30,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var unlockedAt = 0.0
     var inScreensaver = false
     var lastRSSI: Int? = nil
+    let telegramSettings = TelegramSettings(
+        secrets: KeychainStore(service: "jp.sone.BLEUnlock.telegram")
+    )
+    let macLocationProvider = CoreMacLocationProvider()
+    lazy var telegramService: TelegramNotificationHandling = TelegramNotificationService(
+        settings: telegramSettings,
+        sender: TelegramNotifier(transport: URLSessionTransport()),
+        camera: CameraCapture(),
+        location: macLocationProvider,
+        reporter: RateLimitedFailureReporter()
+    )
+    lazy var telegramMenuController = TelegramMenuController(
+        settings: telegramSettings,
+        service: telegramService,
+        dialogs: AppKitTelegramDialogPresenter(),
+        locationAuthorization: macLocationProvider
+    )
+    private let telegramEventQueue = DispatchQueue(
+        label: "jp.sone.BLEUnlock.telegram.events",
+        qos: .utility
+    )
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -177,6 +198,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         try? process.run()
     }
 
+    func dispatchEvent(_ rawValue: String) {
+        runScript(rawValue)
+        guard let event = TelegramEvent(rawValue: rawValue) else { return }
+        let context = TelegramEventContext(
+            event: event,
+            hostName: Host.current().localizedName ?? "Mac",
+            timestamp: Date(),
+            rssi: lastRSSI
+        )
+        telegramEventQueue.async { [weak self] in
+            self?.telegramService.handle(context)
+        }
+    }
+
     func pauseNowPlaying() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
         MRMediaRemoteGetNowPlayingApplicationIsPlaying(
@@ -238,7 +273,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
                 pauseNowPlaying()
                 lockOrSaveScreen()
                 notifyUser(reason)
-                runScript(reason)
+                dispatchEvent(reason)
             }
             manualLock = false
         }
@@ -302,7 +337,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             self.unlockedAt = Date().timeIntervalSince1970
             self.fakeKeyStrokes(password)
             self.playNowPlaying()
-            self.runScript("unlocked")
+            self.dispatchEvent("unlocked")
         })
     }
 
@@ -344,7 +379,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             print("onUnlock")
             if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
                 if self.ble.unlockRSSI != self.ble.UNLOCK_DISABLED {
-                    self.runScript("intruded")
+                    self.dispatchEvent("intruded")
                 }
                 self.playNowPlaying()
             }
@@ -642,6 +677,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         if prefs.bool(forKey: "sleepDisplay") {
             item.state = .on
         }
+
+        item = mainMenu.addItem(withTitle: t("telegram"), action: nil, keyEquivalent: "")
+        item.submenu = telegramMenuController.menu
         
         mainMenu.addItem(withTitle: t("set_password"), action: #selector(askPassword), keyEquivalent: "")
 

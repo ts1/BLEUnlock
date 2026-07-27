@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "BLEUnlock, elle kilit açmayı fotoğraflamak ve uyarıyı Telegram'a yüklemek için sistemin varsayılan kamerasını kullanır.";
+"NSLocationUsageDescription" = "BLEUnlock fotoğraf çekildiğinde bu Mac'in konumunu alır ve koordinatlarla haritayı Telegram güvenlik bildirimine ekler.";

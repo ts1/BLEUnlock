@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "BLEUnlock uses the system default camera to photograph a manual unlock and upload the alert to Telegram.";
+"NSLocationUsageDescription" = "BLEUnlock gets this Mac's location at capture time and attaches the coordinates and map to the Telegram security notification.";

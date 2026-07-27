@@ -59,6 +59,20 @@ Finally, from the menu bar icon, select *Device*.
 It starts scanning nearby BLE devices.
 Select your device, and you're done!
 
+## Telegram notifications
+
+Telegram notifications are optional and disabled until you configure and enable them:
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy its token.
+2. Send the bot a message, then open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy the numeric Chat ID from the response.
+3. Open *BLEUnlock > Telegram Notifications > Configure…* and save both values.
+4. Send a test notification, choose the event switches, and enable Telegram.
+5. If photo alerts are enabled, approve Camera access when macOS asks.
+
+The approved event defaults are `away`, `lost`, and `intruded` on, with `unlocked` off. Telegram itself starts disabled. Photo capture for `intruded` is on by default; `intruded` is the only event that can include a photo, and all other event notifications are text-only. If Camera access is denied or capture fails, the `intruded` alert is sent as text only. Each temporary intrusion photo is deleted after its send attempt, whether the attempt succeeds or fails.
+
+The legacy `~/Library/Application Scripts/jp.sone.BLEUnlock/event` script remains available and continues to receive all four event arguments independently of Telegram.
+
 ## Options
 
 Option | Description
@@ -150,58 +164,9 @@ An argument is passed depending on the type of event:
 
 > NOTE: for `intruded` event works properly, you have to set *Require password **immediately** after sleep* in *Security & Privacy* preference pane.
 
-### Example
+### Historical LINE Notify example (unsupported)
 
-Here is an example script which sends a LINE Notify message, with a photo of the person in front of the Mac when it is unlocked manually.
-
-```sh
-#!/bin/bash
-
-set -eo pipefail
-
-LINE_TOKEN=xxxxx
-
-notify() {
-    local message=$1
-    local image=$2
-    if [ "$image" ]; then
-        img_arg="-F imageFile=@$image"
-    else
-        img_arg=""
-    fi
-    curl -X POST -H "Authorization: Bearer $LINE_TOKEN" -F "message=$message" \
-        $img_arg https://notify-api.line.me/api/notify
-}
-
-capture() {
-    open -Wa SnapshotUnlocker
-    ls -t /tmp/unlock-*.jpg | head -1
-}
-
-case $1 in
-    away)
-        notify "$(hostname -s) is locked by BLEUnlock because iPhone is away."
-        ;;
-    lost)
-        notify "$(hostname -s) is locked by BLEUnlock because signal is lost."
-        ;;
-    unlocked)
-        #notify "$(hostname -s) is unlocked by BLEUnlock."
-        ;;
-    intruded)
-        notify "$(hostname -s) is manually unlocked." $(capture)
-        ;;
-esac
-```
-
-`SnapshotUnlocker` is an .app created with Script Editor with this script:
-
-```
-do shell script "/usr/local/bin/ffmpeg -f avfoundation -r 30 -i 0 -frames:v 1 -y /tmp/unlock-$(date +%Y%m%d_%H%M%S).jpg"
-```
-
-This app is required because BLEUnlock does not have Camera permission.
-Giving permission to this app resolves the problem.
+Older versions of this README showed a LINE Notify and SnapshotUnlocker script here. LINE Notify has been discontinued, so that historical endpoint and example are unsupported and no longer functional. Use BLEUnlock's built-in Telegram notifications or connect another current service through the legacy `event` script.
 
 ## Funding
 

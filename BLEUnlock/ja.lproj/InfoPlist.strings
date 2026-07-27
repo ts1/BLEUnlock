@@ -1,0 +1,2 @@
+"NSCameraUsageDescription" = "BLEUnlockはシステムのデフォルトカメラで手動ロック解除を撮影し、その警告をTelegramへアップロードします。";
+"NSLocationUsageDescription" = "BLEUnlockは撮影時のこのMacの位置情報を取得し、座標と地図をTelegramのセキュリティ通知に添付します。";
