@@ -2,6 +2,56 @@ import Cocoa
 import Quartz
 import ServiceManagement
 
+// MediaRemote private framework — directional play/pause (not toggle)
+// MRCommandPlay = 0, MRCommandPause = 1
+@_silgen_name("MRMediaRemoteSendCommand")
+func MRMediaRemoteSendCommand(_ command: Int32, _ userInfo: CFDictionary?) -> Bool
+
+// MARK: - Media Controller
+
+/// Controls media via MRMediaRemoteSendCommand (private framework).
+/// Sends directional Pause/Play commands — targets Now Playing app only,
+/// won't accidentally resume background media like NX toggle does.
+class MediaController {
+    private(set) var didPause = false
+    
+    func pauseAll() {
+        guard !didPause else { return }
+        // MRCommandPause = 1 (directional, not toggle)
+        if MRMediaRemoteSendCommand(1, nil) {
+            didPause = true
+            NSLog("[MediaController] Paused media")
+        } else {
+            NSLog("[MediaController] Pause command failed")
+        }
+    }
+    
+    func resumeAll() {
+        guard didPause else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            // MRCommandPlay = 0
+            MRMediaRemoteSendCommand(0, nil)
+            self?.didPause = false
+            NSLog("[MediaController] Resumed media")
+        }
+    }
+}
+
+/// Bark icon URL — uses BLEUnlock's lock icon from the repo.
+let barkIconURL = "https://raw.githubusercontent.com/ts1/BLEUnlock/master/BLEUnlock/Images.xcassets/AppIcon.appiconset/mac-128x128.png"
+
+// MARK: - Helpers
+
+/// NSTextField subclass that properly handles Cmd+V paste in NSAlert context.
+class PasteableTextField: NSTextField {
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "v" {
+            return NSApp.sendAction(#selector(NSText.paste(_:)), to: window?.firstResponder, from: self)
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+}
+
 func t(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
 }
@@ -23,13 +73,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var systemSleep = false
     var connected = false
     var userNotification: NSUserNotification?
-    var nowPlayingWasPlaying = false
     var aboutBox: AboutBox? = nil
     var wakeTimer: Timer?
     var manualLock = false
     var unlockedAt = 0.0
     var inScreensaver = false
     var lastRSSI: Int? = nil
+    let mediaController = MediaController()
+    var screenLocked = false          // macOS 26: CGSSessionScreenIsLocked key removed; track manually
+    var barkKey: String? { prefs.string(forKey: "barkKey") }
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -178,28 +230,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func pauseNowPlaying() {
-        guard prefs.bool(forKey: "pauseItunes") else { return }
-        MRMediaRemoteGetNowPlayingApplicationIsPlaying(
-            DispatchQueue.main,
-            { (playing) in
-                self.nowPlayingWasPlaying = playing
-                if self.nowPlayingWasPlaying {
-                    print("pause")
-                    MRMediaRemoteSendCommand(MRCommandPause, nil)
-                }
-            }
-        )
+        let enabled = prefs.bool(forKey: "pauseItunes")
+        let locked = isScreenLocked()
+        NSLog("[MediaController] pauseNowPlaying called: pauseItunes=\(enabled) screenLocked=\(locked)")
+        guard enabled else { return }
+        mediaController.pauseAll()
     }
     
     func playNowPlaying() {
         guard prefs.bool(forKey: "pauseItunes") else { return }
-        if nowPlayingWasPlaying {
-            print("play")
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
-                MRMediaRemoteSendCommand(MRCommandPlay, nil)
-                self.nowPlayingWasPlaying = false
-            })
-        }
+        mediaController.resumeAll()
     }
 
     func lockOrSaveScreen() {
@@ -234,10 +274,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
                 tryUnlockScreen()
             }
         } else {
+            NSLog("[MediaController] updatePresence: away, screenLocked=\(isScreenLocked()) lockRSSI=\(ble.lockRSSI) LOCK_DISABLED=\(ble.LOCK_DISABLED)")
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseNowPlaying()
                 lockOrSaveScreen()
                 notifyUser(reason)
+                sendBarkNotification(reason)
                 runScript(reason)
             }
             manualLock = false
@@ -269,12 +311,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func isScreenLocked() -> Bool {
-        if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
-            if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
-                return locked == 1
-            }
-        }
-        return false
+        return screenLocked  // macOS 26: CGSSessionScreenIsLocked key removed from CGSessionCopyCurrentDictionary
     }
     
     func tryUnlockScreen() {
@@ -340,6 +377,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     @objc func onUnlock() {
+        screenLocked = false
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             print("onUnlock")
             if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
@@ -353,6 +391,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             checkUpdate()
         })
+    }
+
+    @objc func onLock() {
+        screenLocked = true
     }
 
     @objc func onScreensaverStart() {
@@ -460,6 +502,91 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             let pw = txt.stringValue
             storePassword(pw)
         }
+    }
+    
+    @objc func askBarkKey() {
+        let msg = NSAlert()
+        msg.addButton(withTitle: t("ok"))
+        msg.addButton(withTitle: t("cancel"))
+        msg.messageText = t("bark_dialog_title")
+        msg.informativeText = t("bark_dialog_info")
+        msg.window.title = "BLEUnlock"
+
+        let txt = PasteableTextField(frame: NSRect(x: 0, y: 0, width: 420, height: 22))
+        txt.placeholderString = barkKey ?? "Bark Key"
+        msg.accessoryView = txt
+        txt.becomeFirstResponder()
+        NSApp.activate(ignoringOtherApps: true)
+        let response = msg.runModal()
+
+        if response == .alertFirstButtonReturn {
+            let input = txt.stringValue.trimmingCharacters(in: .whitespaces)
+            if !input.isEmpty {
+                // Auto-extract key from URL if user pasted full URL
+                let key = extractBarkKey(from: input)
+                prefs.set(key, forKey: "barkKey")
+            }
+        }
+    }
+
+    /// Extracts Bark device key from a full URL like https://api.day.app/KEY/...
+    /// Falls back to treating the input as a raw key if it doesn't look like a URL.
+    func extractBarkKey(from input: String) -> String {
+        if input.hasPrefix("https://api.day.app/") || input.hasPrefix("http://api.day.app/") {
+            // Extract the key segment after the host
+            let withoutScheme = input.replacingOccurrences(of: "https://api.day.app/", with: "")
+                .replacingOccurrences(of: "http://api.day.app/", with: "")
+            let key = withoutScheme.split(separator: "/").first ?? ""
+            return String(key)
+        }
+        return input
+    }
+
+    @objc func toggleBarkNotification(_ menuItem: NSMenuItem) {
+        // If no key configured, show config dialog instead of toggling
+        guard let key = barkKey, !key.isEmpty else {
+            askBarkKey()
+            menuItem.state = prefs.bool(forKey: "barkNotification") ? .on : .off
+            return
+        }
+        let value = !prefs.bool(forKey: "barkNotification")
+        prefs.set(value, forKey: "barkNotification")
+        menuItem.state = value ? .on : .off
+        // Send test notification when enabling
+        if value {
+            sendBarkTest()
+        }
+    }
+
+    func barkURL(key: String, title: String, body: String, sound: String? = nil) -> URL? {
+        var comps = URLComponents(string: "https://api.day.app/\(key)/\(title)/\(body)")
+        comps?.queryItems = [
+            URLQueryItem(name: "group", value: "BLEUnlock"),
+            URLQueryItem(name: "level", value: "timeSensitive"),
+            URLQueryItem(name: "icon", value: barkIconURL),
+        ]
+        if let s = sound { comps?.queryItems?.append(URLQueryItem(name: "sound", value: s)) }
+        return comps?.url
+    }
+
+    func sendBarkTest() {
+        guard let key = barkKey, !key.isEmpty,
+              let url = barkURL(key: key, title: "BLEUnlock", body: "锁定通知已开启 ✅", sound: "complete") else { return }
+        URLSession.shared.dataTask(with: url).resume()
+        let un = NSUserNotification()
+        un.title = "BLEUnlock"
+        un.informativeText = "测试通知已发送到手机，请核对是否收到。"
+        un.deliveryDate = Date().addingTimeInterval(0.5)
+        NSUserNotificationCenter.default.scheduleNotification(un)
+    }
+
+    func sendBarkNotification(_ reason: String) {
+        guard prefs.bool(forKey: "barkNotification"),
+              let key = barkKey, !key.isEmpty else { return }
+        let mediaPaused = prefs.bool(forKey: "pauseItunes") && mediaController.didPause
+        let body = mediaPaused ? "您的电脑已锁定，媒体已暂停" : "您的电脑已锁定"
+        guard let url = barkURL(key: key, title: "BLEUnlock", body: body) else { return }
+        URLSession.shared.dataTask(with: url).resume()
     }
     
     @objc func setRSSIThreshold() {
@@ -655,6 +782,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
                          keyEquivalent: "")
 
         mainMenu.addItem(NSMenuItem.separator())
+        mainMenu.addItem(withTitle: t("bark_set_key"), action: #selector(askBarkKey), keyEquivalent: "")
+        item = mainMenu.addItem(withTitle: t("bark_lock_notification"), action: #selector(toggleBarkNotification), keyEquivalent: "")
+        item.state = prefs.bool(forKey: "barkNotification") ? .on : .off
+
+        mainMenu.addItem(NSMenuItem.separator())
         mainMenu.addItem(withTitle: t("about"), action: #selector(showAboutBox), keyEquivalent: "")
         mainMenu.addItem(NSMenuItem.separator())
         mainMenu.addItem(withTitle: t("quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
@@ -670,6 +802,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             // "Fn" key down and up
             CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: true)?.post(tap: .cghidEventTap)
             CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: false)?.post(tap: .cghidEventTap)
+        }
+    }
+
+    func checkAllPermissions() {
+        var issues: [String] = []
+        
+        // Accessibility
+        let axTrusted = AXIsProcessTrusted()
+        if !axTrusted {
+            issues.append("• 辅助功能 (Accessibility)：未授权 — 锁定/解锁和媒体控制需要此权限")
+        }
+        
+        // Bluetooth
+        if ble.centralMgr?.state != .poweredOn {
+            issues.append("• 蓝牙：未开启 — 无法检测设备")
+        }
+        
+        if !issues.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                let alert = NSAlert()
+                alert.messageText = "⚠️ 权限未就绪"
+                alert.informativeText = "以下权限未正确配置，可能导致功能异常：\n\n\(issues.joined(separator: "\n"))\n\n请前往 系统设置 > 隐私与安全性 中授权。"
+                alert.window.title = "BLEUnlock"
+                alert.addButton(withTitle: "打开系统设置")
+                alert.addButton(withTitle: "稍后")
+                NSApp.setActivationPolicy(.regular)
+                NSApp.activate(ignoringOtherApps: true)
+                if alert.runModal() == .alertFirstButtonReturn {
+                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+                }
+                NSApp.setActivationPolicy(.accessory)
+            }
         }
     }
 
@@ -716,6 +880,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         let dnc = DistributedNotificationCenter.default
         dnc.addObserver(self, selector: #selector(onUnlock), name: NSNotification.Name(rawValue: "com.apple.screenIsUnlocked"), object: nil)
+        dnc.addObserver(self, selector: #selector(onLock), name: NSNotification.Name(rawValue: "com.apple.screenIsLocked"), object: nil)
         dnc.addObserver(self, selector: #selector(onScreensaverStart), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstart"), object: nil)
         dnc.addObserver(self, selector: #selector(onScreensaverStop), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstop"), object: nil)
 
@@ -723,6 +888,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             askPassword()
         }
         checkAccessibility()
+        checkAllPermissions()
         checkUpdate()
 
         // Hide dock icon.

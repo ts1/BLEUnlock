@@ -1,4 +1,8 @@
 "about" = "关于BLEUnlock";
+"bark_dialog_info" = "请输入 Bark 设备密钥，也可直接粘贴完整 URL（如 https://api.day.app/密钥/...）";
+"bark_dialog_title" = "Bark 设备密钥";
+"bark_lock_notification" = "锁定通知 (Bark)";
+"bark_set_key" = "设置 Bark 密钥…";
 "bluetooth_power_warn" = "蓝牙已关闭。要使BLEUnlock正常工作，请将其打开。";
 "cancel" = "取消";
 "closer" = "⬆接近";

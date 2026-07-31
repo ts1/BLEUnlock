@@ -1,4 +1,8 @@
 "about" = "About BLEUnlock";
+"bark_dialog_info" = "Enter your Bark device key, or paste the full URL (e.g. https://api.day.app/KEY/...)";
+"bark_dialog_title" = "Bark Device Key";
+"bark_lock_notification" = "Lock Notification (Bark)";
+"bark_set_key" = "Set Bark Key…";
 "bluetooth_power_warn" = "Bluetooth is turned off. For BLEUnlock to work, turn it on.";
 "cancel" = "Cancel";
 "closer" = "⬆Closer";
