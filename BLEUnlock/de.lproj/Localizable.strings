@@ -12,6 +12,7 @@
 "launch_at_login" = "Beim Login starten";
 "lock_delay" = "Sperrverzögerung";
 "lock_now" = "Jetzt sperren";
+"lock_only_on_battery" = "Nur im Batteriebetrieb automatisch sperren";
 "lock_rssi" = "RSSI Sperren";
 "minute" = "Minute";
 "minutes" = "Minuten";

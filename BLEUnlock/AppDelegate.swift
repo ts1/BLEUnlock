@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var deviceDict: [UUID: NSMenuItem] = [:]
     var monitorMenuItem : NSMenuItem?
     let prefs = UserDefaults.standard
+    let powerSourceMonitor = PowerSourceMonitor()
     var displaySleep = false
     var systemSleep = false
     var connected = false
@@ -217,6 +218,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func updatePresence(presence: Bool, reason: String) {
+        // If this event discovers a power change, let the freshly re-armed timers decide.
+        let resumed = refreshAutomaticLockPolicy()
         if presence {
             if ble.unlockRSSI != ble.UNLOCK_DISABLED {
                 if let un = userNotification {
@@ -234,7 +237,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
                 tryUnlockScreen()
             }
         } else {
-            if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
+            if (!resumed && !isScreenLocked() && ble.automaticLockEnabled) {
                 pauseNowPlaying()
                 lockOrSaveScreen()
                 notifyUser(reason)
@@ -326,6 +329,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             print("delayed system wake job")
             NSApp.setActivationPolicy(.accessory) // Hide Dock icon again
             self.systemSleep = false
+            self.refreshAutomaticLockPolicy()
             self.tryUnlockScreen()
         })
     }
@@ -333,6 +337,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     @objc func onSystemSleep() {
         print("system sleep")
         systemSleep = true
+        refreshAutomaticLockPolicy()
         // Set activation policy to regular, so the CBCentralManager can scan for peripherals
         // when the Bluetooth will become on again.
         // This enables Dock icon but the screen is off anyway.
@@ -552,6 +557,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         menuItem.state = wakeWithoutUnlocking ? .on : .off
     }
 
+    @discardableResult
+    func refreshAutomaticLockPolicy() -> Bool {
+        let wasPaused = ble.automaticLockPaused
+        let batteryOnly = prefs.bool(forKey: "lockOnlyOnBattery")
+        let paused = PowerSourceMonitor.shouldPauseAutomaticLock(
+            batteryOnly: batteryOnly, source: PowerSourceMonitor.currentSource())
+        ble.setAutomaticLockPaused(paused || (batteryOnly && systemSleep))
+        return wasPaused && !ble.automaticLockPaused
+    }
+
+    @objc func toggleLockOnlyOnBattery(_ menuItem: NSMenuItem) {
+        let value = !prefs.bool(forKey: "lockOnlyOnBattery")
+        prefs.set(value, forKey: "lockOnlyOnBattery")
+        menuItem.state = value ? .on : .off
+        refreshAutomaticLockPolicy()
+    }
+
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
         manualLock = true
@@ -597,6 +619,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         constructRSSIMenu(lockRSSIMenu, #selector(setLockRSSI))
         item = lockRSSIMenu.addItem(withTitle: t("disabled"), action: #selector(setLockRSSI), keyEquivalent: "")
         item.tag = ble.LOCK_DISABLED
+
+        item = mainMenu.addItem(withTitle: t("lock_only_on_battery"), action: #selector(toggleLockOnlyOnBattery), keyEquivalent: "")
+        item.state = prefs.bool(forKey: "lockOnlyOnBattery") ? .on : .off
 
         let lockDelayItem = mainMenu.addItem(withTitle: t("lock_delay"), action: nil, keyEquivalent: "")
         lockDelayItem.submenu = lockDelayMenu
@@ -674,6 +699,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        powerSourceMonitor.onChange = { [weak self] in
+            self?.refreshAutomaticLockPolicy()
+        }
+        powerSourceMonitor.start()
+        refreshAutomaticLockPolicy()
         if let button = statusItem.button {
             button.image = NSImage(named: "StatusBarDisconnected")
             constructMenu()
@@ -732,5 +762,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
+        powerSourceMonitor.stop()
     }
 }

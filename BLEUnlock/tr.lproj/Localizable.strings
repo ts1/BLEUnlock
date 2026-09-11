@@ -12,6 +12,7 @@
 "launch_at_login" = "Başlangıçta çalıştır";
 "lock_delay" = "Kilitleme gecikmesi";
 "lock_now" = "Ekranı şimdi kilitle";
+"lock_only_on_battery" = "Yalnızca pildeyken otomatik kilitle";
 "lock_rssi" = "Kilitleme RSSI değeri";
 "minute" = "dakika";
 "minutes" = "dakika";

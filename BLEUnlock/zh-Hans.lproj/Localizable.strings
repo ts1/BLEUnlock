@@ -12,6 +12,7 @@
 "launch_at_login" = "开机启动";
 "lock_delay" = "延迟锁定";
 "lock_now" = "立刻锁定屏幕";
+"lock_only_on_battery" = "仅在使用电池时自动锁定";
 "lock_rssi" = "锁定 RSSI";
 "minute" = "分钟";
 "minutes" = "分钟";

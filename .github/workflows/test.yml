@@ -9,5 +9,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@master
+    - name: Test battery-only automatic locking
+      run: bash Tests/run-power-source-tests.sh
     - name: Start xcodebuild test
       run: xcodebuild clean build -project BLEUnlock.xcodeproj -scheme BLEUnlock

@@ -12,6 +12,7 @@
 "launch_at_login" = "Launch at Login";
 "lock_delay" = "Delay to Lock";
 "lock_now" = "Lock Screen Now";
+"lock_only_on_battery" = "Automatically Lock Only on Battery";
 "lock_rssi" = "Lock RSSI";
 "minute" = "minute";
 "minutes" = "minutes";
