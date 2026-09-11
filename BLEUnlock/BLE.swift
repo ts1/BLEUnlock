@@ -127,7 +127,12 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var proximityTimer : Timer?
     var signalTimer: Timer?
     var presence = false
+    private(set) var automaticLockPaused = false
+    private var reevaluateAbsence = false
     var lockRSSI = -80
+    var automaticLockEnabled: Bool {
+        return lockRSSI != LOCK_DISABLED && !automaticLockPaused
+    }
     var unlockRSSI = -60
     var proximityTimeout = 5.0
     var signalTimeout = 60.0
@@ -178,10 +183,23 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         proximityTimer?.invalidate()
         resetSignalTimer()
         presence = true
+        reevaluateAbsence = false
         monitoredPeripheral = nil
         activeModeTimer?.invalidate()
         activeModeTimer = nil
         scanForPeripherals()
+    }
+
+    func setAutomaticLockPaused(_ paused: Bool) {
+        guard paused != automaticLockPaused else { return }
+        automaticLockPaused = paused
+        guard !paused, monitoredUUID != nil else { return }
+        // Presence also drives unlocking. Re-arm absence detection without faking arrival.
+        reevaluateAbsence = true
+        proximityTimer?.invalidate()
+        proximityTimer = nil
+        latestRSSIs.removeAll()
+        resetSignalTimer()
     }
 
     func resetSignalTimer() {
@@ -189,8 +207,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         signalTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { _ in
             print("Device is lost")
             self.delegate?.updateRSSI(rssi: nil, active: false)
-            if self.presence {
+            if self.presence || self.reevaluateAbsence {
                 self.presence = false
+                self.reevaluateAbsence = false
                 self.delegate?.updatePresence(presence: self.presence, reason: "lost")
             }
         })
@@ -210,6 +229,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         case .poweredOff:
             print("Bluetooth powered off")
             presence = false
+            reevaluateAbsence = false
             signalTimer?.invalidate()
             signalTimer = nil
             if powerWarn {
@@ -250,10 +270,11 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 print("Proximity timer canceled")
                 proximityTimer = nil
             }
-        } else if presence && proximityTimer == nil {
+        } else if (presence || reevaluateAbsence) && proximityTimer == nil {
             proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { _ in
                 print("Device is away")
                 self.presence = false
+                self.reevaluateAbsence = false
                 self.delegate?.updatePresence(presence: self.presence, reason: "away")
                 self.proximityTimer = nil
             })
@@ -456,5 +477,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     override init() {
         super.init()
         centralMgr = CBCentralManager(delegate: self, queue: nil)
+    }
+
+    init(centralManager: CBCentralManager?) {
+        super.init()
+        self.centralMgr = centralManager
     }
 }

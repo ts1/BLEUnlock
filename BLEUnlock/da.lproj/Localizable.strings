@@ -12,6 +12,7 @@
 "launch_at_login" = "Start ved login";
 "lock_delay" = "Forsinkelse til låsning";
 "lock_now" = "Lås skærm nu";
+"lock_only_on_battery" = "Lås kun automatisk ved batteridrift";
 "lock_rssi" = "Lås RSSI";
 "minute" = "minut";
 "minutes" = "minutter";
