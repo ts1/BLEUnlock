@@ -36,9 +36,50 @@ final class DeviceSetPolicyTests: XCTestCase {
     func testPendingDeviceDoesNotCauseEarlyLockOrUnlock() {
         var policy = DeviceSetPolicy(uuids: [a, b], mode: .weakest, timeout: 10, now: 0)
         policy.record(-40, for: a, now: 1)
-        XCTAssertEqual(policy.signal(at: 9.999), .waiting)
+        XCTAssertEqual(policy.signal(at: 9.999), .partial(raw: -40, estimated: -40, mode: .weakest))
+        XCTAssertFalse(policy.signal(at: 9.999).isClose(unlockRSSI: -60, lockRSSI: -80, unlockDisabled: 1))
         XCTAssertFalse(policy.signal(at: 9.999).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
         XCTAssertEqual(policy.signal(at: 10), .lost)
+    }
+
+    func testWeakestKnownAwayRemainsAwayWhenAnotherDeviceIsPending() {
+        var policy = DeviceSetPolicy(uuids: [a, b], mode: .weakest, timeout: 10, now: 0)
+        policy.record(-81, for: a, now: 1)
+        XCTAssertTrue(policy.signal(at: 2).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
+        policy.record(-50, for: a, now: 3)
+        XCTAssertFalse(policy.signal(at: 3).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
+        XCTAssertFalse(policy.signal(at: 3).isClose(unlockRSSI: -60, lockRSSI: -80, unlockDisabled: 1))
+    }
+
+    func testStrongestPendingCannotCauseEarlyLockButKnownStrongSignalCanUnlock() {
+        var policy = DeviceSetPolicy(uuids: [a, b], mode: .strongest, timeout: 10, now: 0)
+        policy.record(-81, for: a, now: 1)
+        XCTAssertFalse(policy.signal(at: 2).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
+        policy.record(-60, for: a, now: 3)
+        XCTAssertTrue(policy.signal(at: 3).isClose(unlockRSSI: -60, lockRSSI: -80, unlockDisabled: 1))
+        policy.record(-81, for: b, now: 4)
+        XCTAssertFalse(policy.signal(at: 4).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
+    }
+
+    func testSequentialLossAndRecoveryUsesCurrentWeakestSignal() {
+        var policy = DeviceSetPolicy(uuids: [a, b], mode: .weakest, timeout: 10, now: 0)
+        policy.record(-40, for: a, now: 0)
+        policy.record(-40, for: b, now: 0)
+        for _ in 0..<5 { policy.record(-90, for: b, now: 5) }
+        XCTAssertTrue(policy.signal(at: 5).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
+        for _ in 0..<5 { policy.record(-50, for: b, now: 9) }
+        XCTAssertFalse(policy.signal(at: 9).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
+        XCTAssertEqual(policy.signal(at: 10), .lost)
+        XCTAssertTrue(policy.signal(at: 10).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
+    }
+
+    func testSequentialLossAndRecoveryUsesCurrentStrongestSignal() {
+        var policy = DeviceSetPolicy(uuids: [a, b], mode: .strongest, timeout: 10, now: 0)
+        policy.record(-40, for: a, now: 0)
+        policy.record(-90, for: b, now: 5)
+        policy.record(-50, for: b, now: 9)
+        XCTAssertEqual(policy.signal(at: 10), .value(raw: -50, estimated: -70))
+        XCTAssertFalse(policy.signal(at: 10).isAway(lockRSSI: -80, unlockRSSI: -60, lockDisabled: -100))
     }
 
     func testModeSwitchChangesAggregationWithoutLosingReadings() {
@@ -54,7 +95,7 @@ final class DeviceSetPolicyTests: XCTestCase {
         var policy = DeviceSetPolicy(uuids: [a], mode: .weakest, timeout: 10, now: 0)
         policy.record(-55, for: a, now: 1)
         policy.setSelected([a, b], now: 2)
-        XCTAssertEqual(policy.signal(at: 2), .waiting)
+        XCTAssertEqual(policy.signal(at: 2), .partial(raw: -55, estimated: -55, mode: .weakest))
         policy.record(-70, for: b, now: 3)
         XCTAssertEqual(policy.signal(at: 3), .value(raw: -70, estimated: -70))
         policy.setSelected([a], now: 4)
@@ -81,6 +122,40 @@ final class DeviceSetPolicyTests: XCTestCase {
         let signal = GroupSignal.value(raw: -70, estimated: -70)
         XCTAssertTrue(signal.isClose(unlockRSSI: 1, lockRSSI: -80, unlockDisabled: 1))
         XCTAssertTrue(signal.isAway(lockRSSI: -100, unlockRSSI: -60, lockDisabled: -100))
+    }
+
+    func testIncreasingTimeoutDoesNotReviveExpiredReadings() {
+        var policy = DeviceSetPolicy(uuids: [a, b], mode: .weakest, timeout: 10, now: 0)
+        policy.record(-40, for: a, now: 0)
+        policy.record(-50, for: b, now: 5)
+        XCTAssertEqual(policy.signal(at: 10), .lost)
+        policy.setTimeout(30, now: 11)
+        XCTAssertEqual(policy.signal(at: 11), .lost)
+        policy.mode = .strongest
+        XCTAssertEqual(policy.signal(at: 11), .value(raw: -50, estimated: -50))
+        policy.record(-55, for: a, now: 12)
+        policy.mode = .weakest
+        XCTAssertEqual(policy.signal(at: 12), .value(raw: -55, estimated: -55))
+    }
+
+    func testIncreasingTimeoutBeforeExpiryExtendsExistingReading() {
+        var policy = DeviceSetPolicy(uuids: [a], mode: .weakest, timeout: 10, now: 0)
+        policy.record(-50, for: a, now: 0)
+        policy.setTimeout(20, now: 9)
+        XCTAssertEqual(policy.signal(at: 19.999), .value(raw: -50, estimated: -50))
+        XCTAssertEqual(policy.signal(at: 20), .lost)
+        policy.setTimeout(30, now: 20)
+        XCTAssertEqual(policy.signal(at: 20), .lost)
+        XCTAssertNil(policy.nextDeadline(after: 20))
+    }
+
+    func testIncreasingTimeoutDoesNotReviveUnseenDevice() {
+        var policy = DeviceSetPolicy(uuids: [a, b], mode: .weakest, timeout: 10, now: 0)
+        policy.record(-50, for: a, now: 5)
+        policy.setTimeout(30, now: 10)
+        XCTAssertEqual(policy.signal(at: 10), .lost)
+        policy.record(-60, for: b, now: 11)
+        XCTAssertEqual(policy.signal(at: 11), .value(raw: -60, estimated: -60))
     }
 
     func testSmoothingIsPerDeviceAndResetsAfterExpiry() {

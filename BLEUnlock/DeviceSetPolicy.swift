@@ -37,14 +37,20 @@ enum GroupSignal: Equatable {
     case waiting
     case lost
     case value(raw: Int, estimated: Int)
+    case partial(raw: Int, estimated: Int, mode: SignalMode)
 
     var estimatedRSSI: Int? {
         if case .value(_, let estimated) = self { return estimated }
+        if case .partial(_, let estimated, _) = self { return estimated }
         return nil
     }
 
     func isClose(unlockRSSI: Int, lockRSSI: Int, unlockDisabled: Int) -> Bool {
-        guard case .value(let raw, _) = self else { return false }
+        let raw: Int
+        switch self {
+        case .value(let value, _), .partial(let value, _, .strongest): raw = value
+        default: return false
+        }
         return raw >= (unlockRSSI == unlockDisabled ? lockRSSI : unlockRSSI)
     }
 
@@ -52,7 +58,8 @@ enum GroupSignal: Equatable {
         switch self {
         case .waiting: return false
         case .lost: return true
-        case .value(_, let estimated):
+        case .partial(_, _, .strongest): return false
+        case .value(_, let estimated), .partial(_, let estimated, .weakest):
             return estimated < (lockRSSI == lockDisabled ? unlockRSSI : lockRSSI)
         }
     }
@@ -64,13 +71,14 @@ struct DeviceSetPolicy {
         var receivedAt: TimeInterval?
         var raw: Int = 0
         var samples: [Int] = []
+        var expired = false
 
         var estimated: Int { samples.reduce(0, +) / samples.count }
     }
 
     private var readings: [UUID: Reading] = [:]
     var mode: SignalMode
-    var timeout: TimeInterval
+    private(set) var timeout: TimeInterval
 
     init(uuids: Set<UUID>, mode: SignalMode, timeout: TimeInterval, now: TimeInterval) {
         self.mode = mode
@@ -89,14 +97,25 @@ struct DeviceSetPolicy {
 
     mutating func record(_ rssi: Int, for uuid: UUID, now: TimeInterval) {
         guard var reading = readings[uuid] else { return }
-        if let last = reading.receivedAt, now >= last + timeout {
+        if reading.expired || (reading.receivedAt.map { now >= $0 + timeout } ?? false) {
             reading.samples.removeAll()
         }
         reading.receivedAt = now
         reading.raw = rssi
+        reading.expired = false
         reading.samples.append(rssi)
         if reading.samples.count > 5 { reading.samples.removeFirst() }
         readings[uuid] = reading
+    }
+
+    mutating func setTimeout(_ value: TimeInterval, now: TimeInterval) {
+        for uuid in readings.keys {
+            guard let reading = readings[uuid] else { continue }
+            if now >= (reading.receivedAt ?? reading.selectedAt) + timeout {
+                readings[uuid]?.expired = true
+            }
+        }
+        timeout = value
     }
 
     mutating func clearSmoothing() {
@@ -108,7 +127,8 @@ struct DeviceSetPolicy {
     }
 
     func nextDeadline(after now: TimeInterval) -> TimeInterval? {
-        readings.values.map { ($0.receivedAt ?? $0.selectedAt) + timeout }
+        readings.values.filter { !$0.expired }
+            .map { ($0.receivedAt ?? $0.selectedAt) + timeout }
             .filter { $0 > now }.min()
     }
 
@@ -119,7 +139,7 @@ struct DeviceSetPolicy {
         var lost = false
         for reading in readings.values {
             let deadline = (reading.receivedAt ?? reading.selectedAt) + timeout
-            if now >= deadline {
+            if reading.expired || now >= deadline {
                 lost = true
             } else if reading.receivedAt == nil {
                 pending = true
@@ -129,11 +149,17 @@ struct DeviceSetPolicy {
         }
         if mode == .weakest {
             if lost { return .lost }
-            if pending { return .waiting }
-            return .value(raw: values.map(\.raw).min()!, estimated: values.map(\.estimated).min()!)
+            guard !values.isEmpty else { return .waiting }
+            let raw = values.map(\.raw).min()!
+            let estimated = values.map(\.estimated).min()!
+            return pending ? .partial(raw: raw, estimated: estimated, mode: .weakest)
+                : .value(raw: raw, estimated: estimated)
         }
         if !values.isEmpty {
-            return .value(raw: values.map(\.raw).max()!, estimated: values.map(\.estimated).max()!)
+            let raw = values.map(\.raw).max()!
+            let estimated = values.map(\.estimated).max()!
+            return pending ? .partial(raw: raw, estimated: estimated, mode: .strongest)
+                : .value(raw: raw, estimated: estimated)
         }
         return pending ? .waiting : .lost
     }

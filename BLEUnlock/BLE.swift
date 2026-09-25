@@ -153,6 +153,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     private var groupPolicy: DeviceSetPolicy?
     private var groupPeripherals: [UUID: GroupPeripheral] = [:]
     private var groupSignalTimer: Timer?
+    private var groupNow: TimeInterval { ProcessInfo.processInfo.systemUptime }
 
     func scanForPeripherals() {
         guard !centralMgr.isScanning else { return }
@@ -231,7 +232,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     func startMonitorGroup(uuids: Set<UUID>, mode: SignalMode) {
         precondition(uuids.count > 1)
-        let now = Date().timeIntervalSince1970
+        let now = groupNow
         if groupPolicy == nil {
             if let p = monitoredPeripheral { centralMgr.cancelPeripheralConnection(p) }
             monitoredUUID = nil
@@ -248,6 +249,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             presence = true
             groupPolicy = DeviceSetPolicy(uuids: uuids, mode: mode, timeout: signalTimeout, now: now)
         } else {
+            if groupPolicy?.uuids != uuids || groupPolicy?.mode != mode {
+                proximityTimer?.invalidate()
+                proximityTimer = nil
+            }
             for uuid in Set(groupPeripherals.keys).subtracting(uuids) {
                 if let state = groupPeripherals.removeValue(forKey: uuid) {
                     cancelGroupPeripheral(state)
@@ -262,15 +267,18 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func setSignalMode(_ mode: SignalMode) {
+        guard let policy = groupPolicy, policy.mode != mode else { return }
+        proximityTimer?.invalidate()
+        proximityTimer = nil
         groupPolicy?.mode = mode
-        evaluateGroupSignal(now: Date().timeIntervalSince1970)
+        evaluateGroupSignal(now: groupNow)
     }
 
     func setSignalTimeout(_ timeout: TimeInterval) {
         signalTimeout = timeout
         guard groupPolicy != nil else { return }
-        groupPolicy?.timeout = timeout
-        let now = Date().timeIntervalSince1970
+        let now = groupNow
+        groupPolicy?.setTimeout(timeout, now: now)
         evaluateGroupSignal(now: now)
         resetGroupSignalTimer(now: now)
     }
@@ -293,7 +301,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         groupSignalTimer?.invalidate()
         guard let deadline = groupPolicy?.nextDeadline(after: now) else { return }
         groupSignalTimer = Timer.scheduledTimer(withTimeInterval: max(0.001, deadline - now), repeats: false) { _ in
-            let current = Date().timeIntervalSince1970
+            let current = self.groupNow
             self.evaluateGroupSignal(now: current)
             self.resetGroupSignalTimer(now: current)
         }
@@ -301,7 +309,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     private func updateGroupRSSI(_ rssi: Int, uuid: UUID) {
-        let now = Date().timeIntervalSince1970
+        let now = groupNow
         groupPolicy?.record(rssi, for: uuid, now: now)
         evaluateGroupSignal(now: now)
         resetGroupSignalTimer(now: now)
@@ -329,7 +337,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             proximityTimer = nil
         } else if presence && proximityTimer == nil {
             proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false) { _ in
-                guard let current = self.groupPolicy?.signal(at: Date().timeIntervalSince1970),
+                guard let current = self.groupPolicy?.signal(at: self.groupNow),
                       current.isAway(lockRSSI: self.lockRSSI, unlockRSSI: self.unlockRSSI, lockDisabled: self.LOCK_DISABLED) else {
                     self.proximityTimer = nil
                     return
@@ -380,7 +388,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                 scanForPeripherals()
             }
             if groupPolicy != nil {
-                let now = Date().timeIntervalSince1970
+                let now = groupNow
                 evaluateGroupSignal(now: now)
                 resetGroupSignalTimer(now: now)
             }
@@ -401,7 +409,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             groupPeripherals.removeAll()
             if let group = groupPolicy {
                 groupPolicy = DeviceSetPolicy(uuids: group.uuids, mode: group.mode,
-                                              timeout: group.timeout, now: Date().timeIntervalSince1970)
+                                              timeout: group.timeout, now: groupNow)
             }
             if powerWarn {
                 powerWarn = false
@@ -589,10 +597,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             guard error == nil else { return }
             let rssi = RSSI.intValue > 0 ? 0 : RSSI.intValue
             updateGroupRSSI(rssi, uuid: peripheral.identifier)
-            state.lastReadAt = Date().timeIntervalSince1970
+            state.lastReadAt = groupNow
             if state.readTimer == nil && !passiveMode {
                 state.readTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
-                    if Date().timeIntervalSince1970 > state.lastReadAt + 10 {
+                    if self.groupNow > state.lastReadAt + 10 {
                         state.readTimer?.invalidate()
                         state.readTimer = nil
                         self.centralMgr.cancelPeripheralConnection(peripheral)
