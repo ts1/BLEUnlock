@@ -48,7 +48,11 @@ final class PersistentMenuItemView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if highlighted {
-            NSColor.controlAccentColor.setFill()
+            if #available(macOS 10.14, *) {
+                NSColor.controlAccentColor.setFill()
+            } else {
+                NSColor.selectedControlColor.setFill()
+            }
             NSBezierPath(roundedRect: bounds.insetBy(dx: 4, dy: 1), xRadius: 6, yRadius: 6).fill()
         }
         let color = highlighted ? NSColor.selectedMenuItemTextColor : NSColor.labelColor
