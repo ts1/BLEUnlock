@@ -36,3 +36,7 @@
 "use_screensaver_to_lock" = "Använd skärmsläckare för att låsa";
 "wake_on_proximity" = "Väck om i närheten";
 "wake_without_unlocking" = "Vakna utan att låsa upp";
+
+"signal_mode" = "Enhetsgrupp: signal";
+"strongest_signal" = "Starkaste signal";
+"weakest_signal" = "Svagaste signal";

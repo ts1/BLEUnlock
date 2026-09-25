@@ -115,6 +115,17 @@ protocol BLEDelegate {
     func bluetoothPowerWarn()
 }
 
+private class GroupPeripheral {
+    var peripheral: CBPeripheral
+    var readTimer: Timer?
+    var connectionTimer: Timer?
+    var lastReadAt: TimeInterval = 0
+
+    init(_ peripheral: CBPeripheral) {
+        self.peripheral = peripheral
+    }
+}
+
 class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     let UNLOCK_DISABLED = 1
     let LOCK_DISABLED = -100
@@ -139,6 +150,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var latestN: Int = 5
     var activeModeTimer : Timer? = nil
     var connectionTimer : Timer? = nil
+    private var groupPolicy: DeviceSetPolicy?
+    private var groupPeripherals: [UUID: GroupPeripheral] = [:]
+    private var groupSignalTimer: Timer?
 
     func scanForPeripherals() {
         guard !centralMgr.isScanning else { return }
@@ -153,7 +167,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     func stopScanning() {
         scanMode = false
-        if activeModeTimer != nil {
+        if activeModeTimer != nil || (monitoredUUID == nil && groupPolicy == nil) {
             centralMgr.stopScan()
         }
     }
@@ -166,14 +180,28 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             if let p = monitoredPeripheral {
                 centralMgr.cancelPeripheralConnection(p)
             }
+            for state in groupPeripherals.values {
+                state.readTimer?.invalidate()
+                state.readTimer = nil
+                state.connectionTimer?.invalidate()
+                state.connectionTimer = nil
+                centralMgr.cancelPeripheralConnection(state.peripheral)
+            }
+        } else {
+            for state in groupPeripherals.values {
+                connectGroupPeripheral(state)
+            }
         }
         scanForPeripherals()
     }
 
     func startMonitor(uuid: UUID) {
+        stopGroupMonitor()
         if let p = monitoredPeripheral {
             centralMgr.cancelPeripheralConnection(p)
         }
+        connectionTimer?.invalidate()
+        connectionTimer = nil
         monitoredUUID = uuid
         proximityTimer?.invalidate()
         resetSignalTimer()
@@ -182,6 +210,151 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         activeModeTimer?.invalidate()
         activeModeTimer = nil
         scanForPeripherals()
+    }
+
+    func stopMonitor() {
+        stopGroupMonitor()
+        if let p = monitoredPeripheral { centralMgr.cancelPeripheralConnection(p) }
+        monitoredUUID = nil
+        monitoredPeripheral = nil
+        proximityTimer?.invalidate()
+        proximityTimer = nil
+        signalTimer?.invalidate()
+        signalTimer = nil
+        activeModeTimer?.invalidate()
+        activeModeTimer = nil
+        connectionTimer?.invalidate()
+        connectionTimer = nil
+        presence = false
+        if !scanMode { centralMgr.stopScan() }
+    }
+
+    func startMonitorGroup(uuids: Set<UUID>, mode: SignalMode) {
+        precondition(uuids.count > 1)
+        let now = Date().timeIntervalSince1970
+        if groupPolicy == nil {
+            if let p = monitoredPeripheral { centralMgr.cancelPeripheralConnection(p) }
+            monitoredUUID = nil
+            monitoredPeripheral = nil
+            signalTimer?.invalidate()
+            signalTimer = nil
+            activeModeTimer?.invalidate()
+            activeModeTimer = nil
+            connectionTimer?.invalidate()
+            connectionTimer = nil
+            proximityTimer?.invalidate()
+            proximityTimer = nil
+            latestRSSIs.removeAll()
+            presence = true
+            groupPolicy = DeviceSetPolicy(uuids: uuids, mode: mode, timeout: signalTimeout, now: now)
+        } else {
+            for uuid in Set(groupPeripherals.keys).subtracting(uuids) {
+                if let state = groupPeripherals.removeValue(forKey: uuid) {
+                    cancelGroupPeripheral(state)
+                }
+            }
+            groupPolicy?.setSelected(uuids, now: now)
+            groupPolicy?.mode = mode
+        }
+        evaluateGroupSignal(now: now)
+        resetGroupSignalTimer(now: now)
+        scanForPeripherals()
+    }
+
+    func setSignalMode(_ mode: SignalMode) {
+        groupPolicy?.mode = mode
+        evaluateGroupSignal(now: Date().timeIntervalSince1970)
+    }
+
+    func setSignalTimeout(_ timeout: TimeInterval) {
+        signalTimeout = timeout
+        guard groupPolicy != nil else { return }
+        groupPolicy?.timeout = timeout
+        let now = Date().timeIntervalSince1970
+        evaluateGroupSignal(now: now)
+        resetGroupSignalTimer(now: now)
+    }
+
+    private func cancelGroupPeripheral(_ state: GroupPeripheral) {
+        state.readTimer?.invalidate()
+        state.connectionTimer?.invalidate()
+        centralMgr.cancelPeripheralConnection(state.peripheral)
+    }
+
+    private func stopGroupMonitor() {
+        groupSignalTimer?.invalidate()
+        groupSignalTimer = nil
+        for state in groupPeripherals.values { cancelGroupPeripheral(state) }
+        groupPeripherals.removeAll()
+        groupPolicy = nil
+    }
+
+    private func resetGroupSignalTimer(now: TimeInterval) {
+        groupSignalTimer?.invalidate()
+        guard let deadline = groupPolicy?.nextDeadline(after: now) else { return }
+        groupSignalTimer = Timer.scheduledTimer(withTimeInterval: max(0.001, deadline - now), repeats: false) { _ in
+            let current = Date().timeIntervalSince1970
+            self.evaluateGroupSignal(now: current)
+            self.resetGroupSignalTimer(now: current)
+        }
+        RunLoop.main.add(groupSignalTimer!, forMode: .common)
+    }
+
+    private func updateGroupRSSI(_ rssi: Int, uuid: UUID) {
+        let now = Date().timeIntervalSince1970
+        groupPolicy?.record(rssi, for: uuid, now: now)
+        evaluateGroupSignal(now: now)
+        resetGroupSignalTimer(now: now)
+    }
+
+    private func evaluateGroupSignal(now: TimeInterval) {
+        guard var signal = groupPolicy?.signal(at: now) else { return }
+        if signal == .waiting {
+            proximityTimer?.invalidate()
+            proximityTimer = nil
+            delegate?.updateRSSI(rssi: nil, active: false)
+            return
+        }
+        if signal.isClose(unlockRSSI: unlockRSSI, lockRSSI: lockRSSI, unlockDisabled: UNLOCK_DISABLED), !presence {
+            presence = true
+            delegate?.updatePresence(presence: true, reason: "close")
+            groupPolicy?.clearSmoothing()
+            signal = groupPolicy!.signal(at: now)
+        }
+        delegate?.updateRSSI(rssi: signal.estimatedRSSI,
+                             active: groupPeripherals.values.contains { $0.readTimer != nil })
+
+        if !signal.isAway(lockRSSI: lockRSSI, unlockRSSI: unlockRSSI, lockDisabled: LOCK_DISABLED) {
+            proximityTimer?.invalidate()
+            proximityTimer = nil
+        } else if presence && proximityTimer == nil {
+            proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false) { _ in
+                guard let current = self.groupPolicy?.signal(at: Date().timeIntervalSince1970),
+                      current.isAway(lockRSSI: self.lockRSSI, unlockRSSI: self.unlockRSSI, lockDisabled: self.LOCK_DISABLED) else {
+                    self.proximityTimer = nil
+                    return
+                }
+                self.presence = false
+                self.delegate?.updatePresence(presence: false, reason: current == .lost ? "lost" : "away")
+                self.proximityTimer = nil
+            }
+            RunLoop.main.add(proximityTimer!, forMode: .common)
+        }
+    }
+
+    private func connectGroupPeripheral(_ state: GroupPeripheral) {
+        guard !passiveMode else { return }
+        let peripheral = state.peripheral
+        peripheral.readRSSI()
+        guard peripheral.state == .disconnected, state.connectionTimer == nil else { return }
+        centralMgr.connect(peripheral, options: nil)
+        state.connectionTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: false) { _ in
+            state.connectionTimer = nil
+            if peripheral.state == .connecting {
+                self.centralMgr.cancelPeripheralConnection(peripheral)
+            }
+        }
+        RunLoop.main.add(state.connectionTimer!, forMode: .common)
     }
 
     func resetSignalTimer() {
@@ -206,12 +379,30 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             if activeModeTimer == nil {
                 scanForPeripherals()
             }
+            if groupPolicy != nil {
+                let now = Date().timeIntervalSince1970
+                evaluateGroupSignal(now: now)
+                resetGroupSignalTimer(now: now)
+            }
             powerWarn = false
         case .poweredOff:
             print("Bluetooth powered off")
             presence = false
             signalTimer?.invalidate()
             signalTimer = nil
+            groupSignalTimer?.invalidate()
+            groupSignalTimer = nil
+            for state in groupPeripherals.values {
+                state.readTimer?.invalidate()
+                state.readTimer = nil
+                state.connectionTimer?.invalidate()
+                state.connectionTimer = nil
+            }
+            groupPeripherals.removeAll()
+            if let group = groupPolicy {
+                groupPolicy = DeviceSetPolicy(uuids: group.uuids, mode: group.mode,
+                                              timeout: group.timeout, now: Date().timeIntervalSince1970)
+            }
             if powerWarn {
                 powerWarn = false
                 delegate?.bluetoothPowerWarn()
@@ -305,6 +496,25 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                         rssi RSSI: NSNumber)
     {
         let rssi = RSSI.intValue > 0 ? 0 : RSSI.intValue
+        if groupPolicy?.uuids.contains(peripheral.identifier) == true {
+            let state: GroupPeripheral
+            if let existing = groupPeripherals[peripheral.identifier] {
+                state = existing
+                if state.peripheral !== peripheral {
+                    cancelGroupPeripheral(state)
+                    state.peripheral = peripheral
+                    state.readTimer = nil
+                    state.connectionTimer = nil
+                }
+            } else {
+                state = GroupPeripheral(peripheral)
+                groupPeripherals[peripheral.identifier] = state
+            }
+            if state.readTimer == nil {
+                updateGroupRSSI(rssi, uuid: peripheral.identifier)
+                connectGroupPeripheral(state)
+            }
+        }
         if let uuid = monitoredUUID {
             if peripheral.identifier.description == uuid.description {
                 if monitoredPeripheral == nil {
@@ -357,6 +567,11 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         if scanMode {
             peripheral.discoverServices([DeviceInformation])
         }
+        if let state = groupPeripherals[peripheral.identifier], state.peripheral == peripheral {
+            state.connectionTimer?.invalidate()
+            state.connectionTimer = nil
+            if !passiveMode { peripheral.readRSSI() }
+        }
         if peripheral == monitoredPeripheral && !passiveMode {
             print("Connected")
             connectionTimer?.invalidate()
@@ -370,6 +585,28 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     //MARK:- CBPeripheralDelegate start
 
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        if let state = groupPeripherals[peripheral.identifier], state.peripheral == peripheral {
+            guard error == nil else { return }
+            let rssi = RSSI.intValue > 0 ? 0 : RSSI.intValue
+            updateGroupRSSI(rssi, uuid: peripheral.identifier)
+            state.lastReadAt = Date().timeIntervalSince1970
+            if state.readTimer == nil && !passiveMode {
+                state.readTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
+                    if Date().timeIntervalSince1970 > state.lastReadAt + 10 {
+                        state.readTimer?.invalidate()
+                        state.readTimer = nil
+                        self.centralMgr.cancelPeripheralConnection(peripheral)
+                        self.scanForPeripherals()
+                    } else if peripheral.state == .connected {
+                        peripheral.readRSSI()
+                    } else {
+                        self.connectGroupPeripheral(state)
+                    }
+                }
+                RunLoop.main.add(state.readTimer!, forMode: .common)
+            }
+            return
+        }
         guard peripheral == monitoredPeripheral else { return }
         let rssi = RSSI.intValue > 0 ? 0 : RSSI.intValue
         //print("readRSSI \(rssi)dBm")

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA0000000000000000000001 /* DeviceSetPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000003 /* DeviceSetPolicy.swift */; };
+		AA0000000000000000000002 /* DeviceSetPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000003 /* DeviceSetPolicy.swift */; };
+		AA0000000000000000000004 /* DeviceSetPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000005 /* DeviceSetPolicyTests.swift */; };
+		AA000000000000000000000D /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000E /* XCTest.framework */; };
 		3D2CF85B255102B300157996 /* MediaRemote.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D2CF85A255102B300157996 /* MediaRemote.framework */; };
 		3D2FCF08226C99CB007A06E7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D2FCF07226C99CB007A06E7 /* Images.xcassets */; };
 		3D4EE4112279E55A00AF9E93 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D4EE4102279E55A00AF9E93 /* AppDelegate.m */; };
@@ -40,6 +44,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA0000000000000000000003 /* DeviceSetPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSetPolicy.swift; sourceTree = "<group>"; };
+		AA0000000000000000000005 /* DeviceSetPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSetPolicyTests.swift; sourceTree = "<group>"; };
+		AA0000000000000000000006 /* BLEUnlockTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BLEUnlockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000000000000000000000E /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		3D2CF85A255102B300157996 /* MediaRemote.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaRemote.framework; path = ../../../../System/Library/PrivateFrameworks/MediaRemote.framework; sourceTree = "<group>"; };
 		3D2FCF07226C99CB007A06E7 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		3D43D0112765FCCB00D15991 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/AboutBox.strings; sourceTree = "<group>"; };
@@ -82,6 +90,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AA000000000000000000000F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000000000000000000000D /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3D600A3D22701A5A0068FB7B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -101,6 +117,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA0000000000000000000007 /* BLEUnlockTests */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000005 /* DeviceSetPolicyTests.swift */,
+			);
+			path = BLEUnlockTests;
+			sourceTree = "<group>";
+		};
 		3D600A4122701A5B0068FB7B /* Launcher */ = {
 			isa = PBXGroup;
 			children = (
@@ -119,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				3DD4B652226C1C3200451B7B /* BLEUnlock */,
+				AA0000000000000000000007 /* BLEUnlockTests */,
 				3D600A4122701A5B0068FB7B /* Launcher */,
 				3DD4B651226C1C3200451B7B /* Products */,
 				3DD4B667226C1E3700451B7B /* Frameworks */,
@@ -130,6 +155,7 @@
 			children = (
 				3DD4B650226C1C3200451B7B /* BLEUnlock.app */,
 				3D600A4022701A5A0068FB7B /* Launcher.app */,
+				AA0000000000000000000006 /* BLEUnlockTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -141,6 +167,7 @@
 				3D953799227853E20017D8B9 /* AboutBox.xib */,
 				3D600A35226CC1A40068FB7B /* Localizable.strings */,
 				3DD4B665226C1DF200451B7B /* BLE.swift */,
+				AA0000000000000000000003 /* DeviceSetPolicy.swift */,
 				3D6070E126DBC68E00EE4E48 /* LEDeviceInfo.swift */,
 				3DD4B653226C1C3200451B7B /* AppDelegate.swift */,
 				3DC0BC6922728FF1001145EC /* Info.plist */,
@@ -159,6 +186,7 @@
 		3DD4B667226C1E3700451B7B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AA000000000000000000000E /* XCTest.framework */,
 				3D2CF85A255102B300157996 /* MediaRemote.framework */,
 				3DD4B668226C1E3700451B7B /* login.framework */,
 			);
@@ -168,6 +196,22 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		AA0000000000000000000008 /* BLEUnlockTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA0000000000000000000009 /* Build configuration list for PBXNativeTarget "BLEUnlockTests" */;
+			buildPhases = (
+				AA000000000000000000000A /* Sources */,
+				AA000000000000000000000F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BLEUnlockTests;
+			productName = BLEUnlockTests;
+			productReference = AA0000000000000000000006 /* BLEUnlockTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		3D600A3F22701A5A0068FB7B /* Launcher */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3D600A4B22701A5C0068FB7B /* Build configuration list for PBXNativeTarget "Launcher" */;
@@ -265,6 +309,7 @@
 			targets = (
 				3DD4B64F226C1C3200451B7B /* BLEUnlock */,
 				3D600A3F22701A5A0068FB7B /* Launcher */,
+				AA0000000000000000000008 /* BLEUnlockTests */,
 			);
 		};
 /* End PBXProject section */
@@ -312,6 +357,15 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AA000000000000000000000A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA0000000000000000000002 /* DeviceSetPolicy.swift in Sources */,
+				AA0000000000000000000004 /* DeviceSetPolicyTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3D600A3C22701A5A0068FB7B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -327,6 +381,7 @@
 			files = (
 				3DD4B654226C1C3200451B7B /* AppDelegate.swift in Sources */,
 				3DD4B666226C1DF200451B7B /* BLE.swift in Sources */,
+				AA0000000000000000000001 /* DeviceSetPolicy.swift in Sources */,
 				3DD4B664226C1CF000451B7B /* lowlevel.c in Sources */,
 				3DCAAA7D22ADE9830011A2DA /* checkUpdate.swift in Sources */,
 				3D95379522784D550017D8B9 /* AboutBox.swift in Sources */,
@@ -379,6 +434,32 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		AA000000000000000000000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				DEFINES_MODULE = YES;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.BLEUnlockTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+		};
+			name = Debug;
+		};
+		AA000000000000000000000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				DEFINES_MODULE = YES;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.sone.BLEUnlockTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+		};
+			name = Release;
+		};
 		3D600A4C22701A5C0068FB7B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -608,6 +689,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AA0000000000000000000009 /* Build configuration list for PBXNativeTarget "BLEUnlockTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000000000000000000000B /* Debug */,
+				AA000000000000000000000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3D600A4B22701A5C0068FB7B /* Build configuration list for PBXNativeTarget "Launcher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

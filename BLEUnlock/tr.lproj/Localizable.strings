@@ -36,3 +36,7 @@
 "use_screensaver_to_lock" = "Kilit ekranı için ekran kuruyucu kullan";
 "wake_on_proximity" = "Uyandırma yakınlığı";
 "wake_without_unlocking" = "Kilidi açmadan uyanın";
+
+"signal_mode" = "Cihaz grubu sinyali";
+"strongest_signal" = "En güçlü sinyal";
+"weakest_signal" = "En zayıf sinyal";

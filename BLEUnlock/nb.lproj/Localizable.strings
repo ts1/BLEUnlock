@@ -36,3 +36,7 @@
 "use_screensaver_to_lock" = "Bruke skjermsparer til å låse";
 "wake_on_proximity" = "Vekk ved nærhet";
 "wake_without_unlocking" = "Våkne uten å låse opp";
+
+"signal_mode" = "Enhetsgruppe: signal";
+"strongest_signal" = "Sterkeste signal";
+"weakest_signal" = "Svakeste signal";

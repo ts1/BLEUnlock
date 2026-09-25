@@ -6,12 +6,79 @@ func t(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
 }
 
+final class PersistentMenuItemView: NSView {
+    let button: NSButton
+    private(set) var fittingWidth: CGFloat = 0
+    var highlighted = false {
+        didSet {
+            if highlighted != oldValue { needsDisplay = true }
+        }
+    }
+
+    init(button: NSButton) {
+        self.button = button
+        super.init(frame: .zero)
+        addSubview(button)
+        updateTitle(button.title)
+    }
+
+    required init?(coder: NSCoder) { return nil }
+
+    func updateTitle(_ title: String) {
+        button.title = title
+        let width = min(500, max(100, button.intrinsicContentSize.width + 12))
+        fittingWidth = width + 24
+        if frame.width == 0 { setMenuWidth(fittingWidth) }
+        needsDisplay = true
+    }
+
+    func setSelected(_ state: NSControl.StateValue) {
+        button.state = state
+        needsDisplay = true
+    }
+
+    func setMenuWidth(_ width: CGFloat) {
+        if frame.width != width {
+            frame.size = NSSize(width: width, height: 26)
+            button.frame = NSRect(x: 12, y: 0, width: width - 24, height: 26)
+            needsDisplay = true
+        }
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        if highlighted {
+            NSColor.controlAccentColor.setFill()
+            NSBezierPath(roundedRect: bounds.insetBy(dx: 4, dy: 1), xRadius: 6, yRadius: 6).fill()
+        }
+        let color = highlighted ? NSColor.selectedMenuItemTextColor : NSColor.labelColor
+        let font = NSFont.menuFont(ofSize: 0)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byTruncatingTail
+        let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color,
+                                                          .paragraphStyle: paragraph]
+        let title = button.title as NSString
+        let titleHeight = title.size(withAttributes: attributes).height
+        title.draw(in: NSRect(x: 44, y: (bounds.height - titleHeight) / 2,
+                              width: bounds.width - 56, height: titleHeight), withAttributes: attributes)
+        if button.state == .on {
+            let check = "✓" as NSString
+            let checkFont = NSFont.systemFont(ofSize: 16, weight: .semibold)
+            let checkAttributes: [NSAttributedString.Key: Any] = [.font: checkFont, .foregroundColor: color]
+            let checkHeight = check.size(withAttributes: checkAttributes).height
+            check.draw(in: NSRect(x: 17, y: (bounds.height - checkHeight) / 2,
+                                  width: 20, height: checkHeight), withAttributes: checkAttributes)
+        }
+    }
+}
+
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemValidation, NSUserNotificationCenterDelegate, BLEDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     let ble = BLE()
     let mainMenu = NSMenu()
     let deviceMenu = NSMenu()
+    let signalModeMenu = NSMenu()
     let lockRSSIMenu = NSMenu()
     let unlockRSSIMenu = NSMenu()
     let timeoutMenu = NSMenu()
@@ -19,6 +86,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var deviceDict: [UUID: NSMenuItem] = [:]
     var monitorMenuItem : NSMenuItem?
     let prefs = UserDefaults.standard
+    lazy var deviceSet = DeviceSetSettings.load(from: prefs)
+    var hoverMenu: NSMenu?
+    var hoverTimer: Timer?
     var displaySleep = false
     var systemSleep = false
     var connected = false
@@ -33,7 +103,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
+            synchronizeMenuWidths(deviceMenu)
+            startHoverTracking(deviceMenu)
             ble.startScanning()
+        } else if menu == signalModeMenu {
+            startHoverTracking(signalModeMenu)
+            for item in menu.items {
+                let state: NSControl.StateValue = item.representedObject as? String == deviceSet.mode.rawValue ? .on : .off
+                item.state = state
+                (item.view as? PersistentMenuItemView)?.setSelected(state)
+            }
         } else if menu == lockRSSIMenu {
             for item in menu.items {
                 if item.tag == ble.lockRSSI {
@@ -69,6 +148,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
+    func updateMenuHighlight(_ menu: NSMenu, item: NSMenuItem?) {
+        for candidate in menu.items {
+            (candidate.view as? PersistentMenuItemView)?.highlighted = candidate === item
+        }
+    }
+
+    func startHoverTracking(_ menu: NSMenu) {
+        hoverTimer?.invalidate()
+        hoverMenu = menu
+        let timer = Timer(timeInterval: 0.04, repeats: true) { [weak self, weak menu] _ in
+            guard let self = self, let menu = menu else { return }
+            let mouse = NSEvent.mouseLocation
+            let item = menu.items.first { candidate in
+                guard let view = candidate.view as? PersistentMenuItemView,
+                      let window = view.window else { return false }
+                let point = view.convert(window.convertPoint(fromScreen: mouse), from: nil)
+                return view.bounds.contains(point)
+            }
+            self.updateMenuHighlight(menu, item: item)
+        }
+        RunLoop.main.add(timer, forMode: .default)
+        RunLoop.main.add(timer, forMode: .eventTracking)
+        hoverTimer = timer
+    }
+
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.menu == lockRSSIMenu {
             return menuItem.tag <= ble.unlockRSSI
@@ -79,6 +183,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
     
     func menuDidClose(_ menu: NSMenu) {
+        if hoverMenu === menu {
+            hoverTimer?.invalidate()
+            hoverTimer = nil
+            hoverMenu = nil
+        }
+        if menu == deviceMenu || menu == signalModeMenu {
+            for item in menu.items {
+                (item.view as? PersistentMenuItemView)?.highlighted = false
+            }
+        }
         if menu == deviceMenu {
             ble.stopScanning()
         }
@@ -94,18 +208,44 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
         return String(format: "%@ (%ddBm)", desc, device.rssi)
     }
+
+    func persistentMenuView(title: String, identifier: String,
+                            type: NSButton.ButtonType, action: Selector) -> PersistentMenuItemView {
+        let button = NSButton(title: title, target: self, action: action)
+        button.identifier = NSUserInterfaceItemIdentifier(identifier)
+        button.setButtonType(type)
+        button.cell?.lineBreakMode = .byTruncatingTail
+        button.isTransparent = true
+        return PersistentMenuItemView(button: button)
+    }
+
+    func synchronizeMenuWidths(_ menu: NSMenu) {
+        let views = menu.items.compactMap { $0.view as? PersistentMenuItemView }
+        guard let width = views.map({ $0.fittingWidth }).max() else { return }
+        for view in views { view.setMenuWidth(width) }
+    }
     
     func newDevice(device: Device) {
-        let menuItem = deviceMenu.addItem(withTitle: menuItemTitle(device: device), action:#selector(selectDevice), keyEquivalent: "")
+        let title = menuItemTitle(device: device)
+        let menuItem = deviceMenu.addItem(withTitle: title, action: nil, keyEquivalent: "")
+        let view = persistentMenuView(title: title, identifier: device.uuid.uuidString,
+                                      type: .switch, action: #selector(selectDevice))
+        menuItem.view = view
         deviceDict[device.uuid] = menuItem
-        if (device.uuid == ble.monitoredUUID) {
+        synchronizeMenuWidths(deviceMenu)
+        if deviceSet.uuids.contains(device.uuid) {
             menuItem.state = .on
+            view.setSelected(.on)
         }
     }
     
     func updateDevice(device: Device) {
         if let menu = deviceDict[device.uuid] {
-            menu.title = menuItemTitle(device: device)
+            let title = menuItemTitle(device: device)
+            if let view = menu.view as? PersistentMenuItemView, view.button.title != title {
+                view.updateTitle(title)
+                if view.fittingWidth > view.frame.width { synchronizeMenuWidths(deviceMenu) }
+            }
         }
     }
     
@@ -365,23 +505,41 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         inScreensaver = false
     }
 
-    @objc func selectDevice(item: NSMenuItem) {
-        for (uuid, menuItem) in deviceDict {
-            if menuItem == item {
-                monitorDevice(uuid: uuid)
-                prefs.set(uuid.uuidString, forKey: "device")
-                menuItem.state = .on
-            } else {
-                menuItem.state = .off
-            }
+    @objc func selectDevice(_ button: NSButton) {
+        guard let raw = button.identifier?.rawValue, let uuid = UUID(uuidString: raw) else { return }
+        if !deviceSet.uuids.insert(uuid).inserted {
+            deviceSet.uuids.remove(uuid)
+        }
+        let state: NSControl.StateValue = deviceSet.uuids.contains(uuid) ? .on : .off
+        (deviceDict[uuid]?.view as? PersistentMenuItemView)?.setSelected(state)
+        deviceDict[uuid]?.state = state
+        deviceSet.save(to: prefs)
+        monitorSelectedDevices()
+    }
+
+    func monitorSelectedDevices() {
+        connected = false
+        statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
+        monitorMenuItem?.title = deviceSet.uuids.isEmpty ? t("device_not_set") : t("not_detected")
+        if deviceSet.uuids.count > 1 {
+            ble.startMonitorGroup(uuids: deviceSet.uuids, mode: deviceSet.mode)
+        } else if let uuid = deviceSet.uuids.first {
+            ble.startMonitor(uuid: uuid)
+        } else {
+            ble.stopMonitor()
         }
     }
 
-    func monitorDevice(uuid: UUID) {
-        connected = false
-        statusItem.button?.image = NSImage(named: "StatusBarDisconnected")
-        monitorMenuItem?.title = t("not_detected")
-        ble.startMonitor(uuid: uuid)
+    @objc func selectSignalMode(_ button: NSButton) {
+        guard let raw = button.identifier?.rawValue, let mode = SignalMode(rawValue: raw) else { return }
+        deviceSet.mode = mode
+        deviceSet.save(to: prefs)
+        ble.setSignalMode(mode)
+        for item in signalModeMenu.items {
+            let state: NSControl.StateValue = item.representedObject as? String == raw ? .on : .off
+            item.state = state
+            (item.view as? PersistentMenuItemView)?.setSelected(state)
+        }
     }
 
     func errorModal(_ msg: String, info: String? = nil) {
@@ -505,7 +663,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     @objc func setTimeout(_ menuItem: NSMenuItem) {
         let value = menuItem.tag
         prefs.set(value, forKey: "timeout")
-        ble.signalTimeout = Double(value)
+        ble.setSignalTimeout(Double(value))
     }
 
     @objc func setLockDelay(_ menuItem: NSMenuItem) {
@@ -585,6 +743,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         item.submenu = deviceMenu
         deviceMenu.delegate = self
         deviceMenu.addItem(withTitle: t("scanning"), action: nil, keyEquivalent: "")
+
+        item = mainMenu.addItem(withTitle: t("signal_mode"), action: nil, keyEquivalent: "")
+        item.submenu = signalModeMenu
+        let strongest = signalModeMenu.addItem(withTitle: t("strongest_signal"), action: nil, keyEquivalent: "")
+        strongest.representedObject = SignalMode.strongest.rawValue
+        strongest.view = persistentMenuView(title: strongest.title, identifier: SignalMode.strongest.rawValue,
+                                            type: .radio, action: #selector(selectSignalMode))
+        let weakest = signalModeMenu.addItem(withTitle: t("weakest_signal"), action: nil, keyEquivalent: "")
+        weakest.representedObject = SignalMode.weakest.rawValue
+        weakest.view = persistentMenuView(title: weakest.title, identifier: SignalMode.weakest.rawValue,
+                                          type: .radio, action: #selector(selectSignalMode))
+        synchronizeMenuWidths(signalModeMenu)
+        signalModeMenu.delegate = self
 
         let unlockRSSIItem = mainMenu.addItem(withTitle: t("unlock_rssi"), action: nil, keyEquivalent: "")
         unlockRSSIItem.submenu = unlockRSSIMenu
@@ -679,11 +850,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             constructMenu()
         }
         ble.delegate = self
-        if let str = prefs.string(forKey: "device") {
-            if let uuid = UUID(uuidString: str) {
-                monitorDevice(uuid: uuid)
-            }
-        }
         let lockRSSI = prefs.integer(forKey: "lockRSSI")
         if lockRSSI != 0 {
             ble.lockRSSI = lockRSSI
@@ -705,6 +871,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         if lockDelay != 0 {
             ble.proximityTimeout = Double(lockDelay)
         }
+        if prefs.object(forKey: "devices") == nil {
+            deviceSet.save(to: prefs)
+        }
+        monitorSelectedDevices()
 
         NSUserNotificationCenter.default.delegate = self
 

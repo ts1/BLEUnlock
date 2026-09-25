@@ -36,3 +36,7 @@
 "use_screensaver_to_lock" = "Den Bildschirmschoner verwenden zum Sperren";
 "wake_on_proximity" = "Aufwachen bei Annäherung";
 "wake_without_unlocking" = "Aufwachen ohne Entsperren";
+
+"signal_mode" = "Gerätegruppe: Signal";
+"strongest_signal" = "Stärkstes Signal";
+"weakest_signal" = "Schwächstes Signal";

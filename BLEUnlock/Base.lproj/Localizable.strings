@@ -36,3 +36,7 @@
 "use_screensaver_to_lock" = "Use Screensaver to Lock";
 "wake_on_proximity" = "Wake on Proximity";
 "wake_without_unlocking" = "Wake without Unlocking";
+
+"signal_mode" = "Device Set Signal";
+"strongest_signal" = "Strongest Signal";
+"weakest_signal" = "Weakest Signal";
