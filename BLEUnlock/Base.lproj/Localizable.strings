@@ -36,3 +36,5 @@
 "use_screensaver_to_lock" = "Use Screensaver to Lock";
 "wake_on_proximity" = "Wake on Proximity";
 "wake_without_unlocking" = "Wake without Unlocking";
+"allow_platform_sso_unlock" = "Use Platform SSO Lock Screen";
+"platform_sso_unlock_help" = "Enable only for the native Mac lock screen that accepts your Mac login password.";

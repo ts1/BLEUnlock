@@ -36,3 +36,5 @@
 "use_screensaver_to_lock" = "用屏保来锁定它";
 "wake_on_proximity" = "靠近唤醒";
 "wake_without_unlocking" = "唤醒时不需解锁";
+"allow_platform_sso_unlock" = "使用 Platform SSO 锁屏界面";
+"platform_sso_unlock_help" = "仅用于接受本机登录密码的 Mac 原生锁屏界面。";
