@@ -1,6 +1,6 @@
 name: CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -10,4 +10,6 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Start xcodebuild test
-      run: xcodebuild clean build -project BLEUnlock.xcodeproj -scheme BLEUnlock
+      # Current SDKs require macOS 12+ for CI builds. Keep the project's
+      # deployment target unchanged for developers using older toolchains.
+      run: xcodebuild clean build -project BLEUnlock.xcodeproj -scheme BLEUnlock MACOSX_DEPLOYMENT_TARGET=12.0 CODE_SIGNING_ALLOWED=NO
