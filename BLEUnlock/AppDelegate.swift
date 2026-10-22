@@ -1,6 +1,7 @@
 import Cocoa
 import Quartz
 import ServiceManagement
+import os.log
 
 func t(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
@@ -30,6 +31,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     var unlockedAt = 0.0
     var inScreensaver = false
     var lastRSSI: Int? = nil
+    var unlockTimer: Timer?
+    var unlockSubmissionAt: TimeInterval?
+    var unlockAttemptInProgress = false
+    var unlockGeneration: UInt = 0
+    var screenStateTimer: Timer?
+    var lastScreenLocked: Bool?
+    var lastUnlockHandledAt = 0.0
+    private let unlockLogger = OSLog(subsystem: "jp.sone.BLEUnlock", category: "Unlock")
+    private var lastDiagnosticScreenState: String?
+    private var lastDiagnosticSnapshotAt = 0.0
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == deviceMenu {
@@ -217,6 +228,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func updatePresence(presence: Bool, reason: String) {
+        let diagnosticReason = ["close", "away", "lost"].contains(reason) ? reason : "other"
+        logUnlock("Presence edge: present=\(presence) reason=\(diagnosticReason)")
         if presence {
             if ble.unlockRSSI != ble.UNLOCK_DISABLED {
                 if let un = userNotification {
@@ -224,17 +237,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
                     userNotification = nil
                 }
                 if displaySleep && !systemSleep && prefs.bool(forKey: "wakeOnProximity") {
-                    print("Waking display")
+                    logUnlock("Presence requested display wake")
                     wakeDisplay()
                     wakeTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
                         print("Retrying waking display")
                         wakeDisplay()
                     })
                 }
-                tryUnlockScreen()
+                tryUnlockScreen(trigger: "presence-\(diagnosticReason)")
+            } else {
+                logUnlock("Presence did not request unlock: unlock-disabled")
             }
         } else {
-            if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
+            cancelUnlockAttempt(reason: "presence-\(diagnosticReason)")
+            if (ScreenLockState.current() == false && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseNowPlaying()
                 lockOrSaveScreen()
                 notifyUser(reason)
@@ -244,95 +260,245 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
-    func fakeKeyStrokes(_ string: String) {
-        let src = CGEventSource(stateID: .hidSystemState)
-        // Send 20 characters per keyboard event. That seems to be the limit.
-        let PER = 20
-        let uniCharCount = string.utf16.count
-        var strIndex = string.utf16.startIndex
-        for offset in stride(from: 0, to: uniCharCount, by: PER) {
-            let pressEvent = CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: true)
-            let len = offset + PER < uniCharCount ? PER : uniCharCount - offset
-            let buffer = UnsafeMutablePointer<UniChar>.allocate(capacity: len)
-            for i in 0..<len {
-                buffer[i] = string.utf16[strIndex]
-                strIndex = string.utf16.index(after: strIndex)
-            }
-            pressEvent?.keyboardSetUnicodeString(stringLength: len, unicodeString: buffer)
-            pressEvent?.post(tap: .cghidEventTap)
-            CGEvent(keyboardEventSource: src, virtualKey: 49, keyDown: false)?.post(tap: .cghidEventTap)
+    func logUnlock(_ message: String) {
+        os_log("%{public}@", log: unlockLogger, type: .default, message)
+    }
+
+    private func lockStateDescription(_ state: Bool?) -> String {
+        guard let state = state else { return "unknown" }
+        return state ? "locked" : "unlocked"
+    }
+
+    private func unlockEligibilityReasons() -> [String] {
+        var reasons: [String] = []
+        if manualLock { reasons.append("manual-lock") }
+        if !ble.presence { reasons.append("presence-absent") }
+        if ble.unlockRSSI == ble.UNLOCK_DISABLED { reasons.append("unlock-disabled") }
+        if systemSleep { reasons.append("system-asleep") }
+        if displaySleep { reasons.append("display-asleep") }
+        if prefs.bool(forKey: "wakeWithoutUnlocking") { reasons.append("wake-only") }
+        return reasons
+    }
+
+    private func logUnlockSnapshot(reason: String) {
+        guard prefs.bool(forKey: "unlockDiagnostics") else { return }
+        lastDiagnosticSnapshotAt = Date().timeIntervalSince1970
+        let trusted = AXIsProcessTrusted()
+        let postAccess: Bool
+        if #available(macOS 10.15, *) {
+            postAccess = CGPreflightPostEventAccess()
+        } else {
+            postAccess = trusted
         }
-        
-        // Return key
-        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: true)?.post(tap: .cghidEventTap)
-        CGEvent(keyboardEventSource: src, virtualKey: 52, keyDown: false)?.post(tap: .cghidEventTap)
+        let rssi = lastRSSI.map { String($0) } ?? "unknown"
+        let bluetoothState = ble.centralMgr?.state.rawValue ?? -1
+        logUnlock("Snapshot reason=\(reason) configured=\(ble.monitoredUUID != nil) " +
+            "btState=\(bluetoothState) presence=\(ble.presence) rssi=\(rssi) " +
+            "lockRSSI=\(ble.lockRSSI) unlockRSSI=\(ble.unlockRSSI) " +
+            "screen=\(lockStateDescription(ScreenLockState.current())) manualLock=\(manualLock) " +
+            "systemSleep=\(systemSleep) displaySleep=\(displaySleep) " +
+            "wakeOnly=\(prefs.bool(forKey: "wakeWithoutUnlocking")) " +
+            "timerPending=\(unlockTimer != nil) submissionPending=\(unlockSubmissionAt != nil) " +
+            "attemptInProgress=\(unlockAttemptInProgress) axTrusted=\(trusted) " +
+            "postEvents=\(postAccess) inputTargetReady=\(systemUnlockTarget() != nil)")
     }
 
     func isScreenLocked() -> Bool {
-        if let dict = CGSessionCopyCurrentDictionary() as? [String : Any] {
-            if let locked = dict["CGSSessionScreenIsLocked"] as? Int {
-                return locked == 1
-            }
+        return ScreenLockState.current() == true
+    }
+
+    func cancelUnlockAttempt(reason: String = "unspecified") {
+        if unlockTimer != nil || unlockSubmissionAt != nil || unlockAttemptInProgress {
+            logUnlock("Cancel attempt: reason=\(reason) timerPending=\(unlockTimer != nil) " +
+                "submissionPending=\(unlockSubmissionAt != nil) inProgress=\(unlockAttemptInProgress)")
         }
-        return false
+        unlockGeneration &+= 1
+        unlockTimer?.invalidate()
+        unlockTimer = nil
+        unlockSubmissionAt = nil
+    }
+
+    func unlockIsEligible() -> Bool {
+        return !manualLock && ble.presence && ble.unlockRSSI != ble.UNLOCK_DISABLED &&
+            !systemSleep && !displaySleep && !prefs.bool(forKey: "wakeWithoutUnlocking")
+    }
+
+    func systemUnlockTarget() -> SystemUnlockTarget? {
+        return SystemUnlockTarget.frontmost(allowPlatformSSO: prefs.bool(forKey: "allowPlatformSSOUnlock"))
+    }
+
+    func canSendUnlock(to target: SystemUnlockTarget) -> Bool {
+        return unlockIsEligible() && isScreenLocked() &&
+            (!target.isPlatformSSO || prefs.bool(forKey: "allowPlatformSSOUnlock")) && target.isCurrent()
+    }
+
+    func canPostKeyboardEvents() -> Bool {
+        if #available(macOS 10.15, *) { return CGPreflightPostEventAccess() }
+        return AXIsProcessTrusted()
+    }
+
+    func sendPassword(_ password: String, to target: SystemUnlockTarget) -> Bool {
+        do {
+            logUnlock("Constructing input events")
+            let events = try UnlockKeyboard.events(for: password)
+            logUnlock("Input events constructed; starting directed delivery")
+            let generation = unlockGeneration
+            let delivered = UnlockKeyboard.deliver(events, canContinue: {
+                generation == self.unlockGeneration && self.canSendUnlock(to: target)
+            }, willSubmit: {
+                self.lastScreenLocked = true
+                self.unlockSubmissionAt = Date().timeIntervalSince1970
+            }, post: { event in
+                // Never route credentials through the system-wide foreground event stream.
+                event.postToPid(target.processIdentifier)
+            })
+            if !delivered { logUnlock("Cancelled: lock, proximity, or login window changed") }
+            return delivered
+        } catch UnlockKeyboard.InputError.emptyPassword {
+            logUnlock("Cancelled: stored credential is empty")
+            return false
+        } catch {
+            logUnlock("Cancelled: could not construct keyboard events")
+            return false
+        }
+    }
+
+    func refreshScreenLockState() {
+        let observedState = ScreenLockState.current()
+        let description = lockStateDescription(observedState)
+        if description != lastDiagnosticScreenState {
+            logUnlock("Screen state changed: \(lastDiagnosticScreenState ?? "initial") -> \(description)")
+            lastDiagnosticScreenState = description
+        }
+        if prefs.bool(forKey: "unlockDiagnostics"),
+           Date().timeIntervalSince1970 - lastDiagnosticSnapshotAt >= 15 {
+            logUnlockSnapshot(reason: "periodic")
+        }
+        guard let locked = observedState else { return }
+        let wasLocked = lastScreenLocked
+        lastScreenLocked = locked
+        if !locked && (wasLocked == true || unlockSubmissionAt != nil) { onUnlock() }
+        if let submittedAt = unlockSubmissionAt,
+           Date().timeIntervalSince1970 - submittedAt > 10 {
+            logUnlock("No unlock confirmation received; password will not be retried automatically")
+            unlockSubmissionAt = nil
+        }
     }
     
-    func tryUnlockScreen() {
-        guard !manualLock else { return }
-        guard ble.presence else { return }
-        guard ble.unlockRSSI != ble.UNLOCK_DISABLED else { return }
-        guard !systemSleep else { return }
-        guard !displaySleep else { return }
+    func tryUnlockScreen(trigger: String = "unspecified", readinessDeadline: TimeInterval? = nil) {
+        var blockers = unlockEligibilityReasons()
+        if unlockTimer != nil { blockers.append("timer-pending") }
+        if unlockSubmissionAt != nil { blockers.append("submission-pending") }
+        if unlockAttemptInProgress { blockers.append("attempt-in-progress") }
+        logUnlock("Attempt requested: trigger=\(trigger) blockers=\(blockers.isEmpty ? "none" : blockers.joined(separator: ","))")
+        guard blockers.isEmpty else { return }
 
-        if inScreensaver {
+        if readinessDeadline == nil, inScreensaver, isScreenLocked(), canPostKeyboardEvents(),
+           let target = systemUnlockTarget() {
             // In screensaver, make sure Login panel is displayed
             let src = CGEventSource(stateID: .hidSystemState)
             // Esc key down and up
-            CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: true)?.post(tap: .cghidEventTap)
-            CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: false)?.post(tap: .cghidEventTap)
+            CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: true)?.postToPid(target.processIdentifier)
+            CGEvent(keyboardEventSource: src, virtualKey: 0x35, keyDown: false)?.postToPid(target.processIdentifier)
         }
 
-        guard !self.prefs.bool(forKey: "wakeWithoutUnlocking") else { return }
-
-        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
-            guard self.isScreenLocked() else { return }
-            guard let password = self.fetchPassword(warn: true) else { return }
-            
-            print("Entering password")
-            self.unlockedAt = Date().timeIntervalSince1970
-            self.fakeKeyStrokes(password)
-            self.playNowPlaying()
-            self.runScript("unlocked")
+        let readyBy = readinessDeadline ?? Date().timeIntervalSince1970 + 5
+        let generation = unlockGeneration
+        logUnlock("Attempt timer scheduled: trigger=\(trigger) generation=\(generation)")
+        unlockTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { [weak self] _ in
+            guard let self = self else { return }
+            self.unlockTimer = nil
+            self.logUnlock("Attempt timer fired: trigger=\(trigger) generation=\(generation)")
+            guard !self.unlockAttemptInProgress else {
+                self.logUnlock("Cancelled before fetch: attempt-in-progress")
+                return
+            }
+            self.unlockAttemptInProgress = true
+            defer { self.unlockAttemptInProgress = false }
+            guard generation == self.unlockGeneration else {
+                self.logUnlock("Cancelled before fetch: generation-changed")
+                return
+            }
+            let eligibilityReasons = self.unlockEligibilityReasons()
+            guard eligibilityReasons.isEmpty else {
+                self.logUnlock("Cancelled before fetch: \(eligibilityReasons.joined(separator: ","))")
+                return
+            }
+            let state = ScreenLockState.current()
+            guard state == true else {
+                self.logUnlock("Skipped: console is not confirmed locked; screen=\(self.lockStateDescription(state))")
+                return
+            }
+            guard self.canPostKeyboardEvents() else {
+                self.logUnlock("Skipped: keyboard event permission is missing")
+                return
+            }
+            guard let target = self.systemUnlockTarget() else {
+                self.logUnlock("Input target not ready: \(SystemUnlockTarget.diagnostic())")
+                if generation == self.unlockGeneration, self.unlockIsEligible(),
+                   self.isScreenLocked(), Date().timeIntervalSince1970 < readyBy {
+                    // Only wait for a ready UI before reading or submitting any credential.
+                    self.unlockAttemptInProgress = false
+                    self.tryUnlockScreen(trigger: trigger, readinessDeadline: readyBy)
+                } else {
+                    self.logUnlock("Skipped: no verified input target became ready within five seconds")
+                }
+                return
+            }
+            self.logUnlock("Automatic Keychain fetch starting: allowUI=false")
+            guard let password = self.fetchPassword(warn: false, allowUI: false) else {
+                self.logUnlock("Cancelled after fetch: no usable stored credential")
+                return
+            }
+            self.logUnlock("Automatic Keychain fetch returned a credential")
+            guard generation == self.unlockGeneration else {
+                self.logUnlock("Cancelled after fetch: generation-changed")
+                return
+            }
+            let remainingReasons = self.unlockEligibilityReasons()
+            guard remainingReasons.isEmpty else {
+                self.logUnlock("Cancelled after fetch: \(remainingReasons.joined(separator: ","))")
+                return
+            }
+            guard self.canSendUnlock(to: target) else {
+                self.logUnlock("Cancelled after fetch: confirmed lock or verified active login window changed")
+                return
+            }
+            if self.sendPassword(password, to: target) {
+                self.logUnlock("Password submitted to verified system UI; awaiting confirmation")
+            }
         })
     }
 
     @objc func onDisplayWake() {
-        print("display wake")
+        logUnlock("Display wake observed")
         //unlockedAt = Date().timeIntervalSince1970
         displaySleep = false
         wakeTimer?.invalidate()
         wakeTimer = nil
-        tryUnlockScreen()
+        tryUnlockScreen(trigger: "display-wake")
     }
 
     @objc func onDisplaySleep() {
-        print("display sleep")
+        logUnlock("Display sleep observed")
         displaySleep = true
+        cancelUnlockAttempt(reason: "display-sleep")
     }
 
     @objc func onSystemWake() {
-        print("system wake")
+        logUnlock("System wake observed")
         Timer.scheduledTimer(withTimeInterval: 1, repeats: false, block: { _ in
-            print("delayed system wake job")
+            self.logUnlock("System wake delay completed")
             NSApp.setActivationPolicy(.accessory) // Hide Dock icon again
             self.systemSleep = false
-            self.tryUnlockScreen()
+            self.tryUnlockScreen(trigger: "system-wake")
         })
     }
     
     @objc func onSystemSleep() {
-        print("system sleep")
+        logUnlock("System sleep observed")
         systemSleep = true
+        cancelUnlockAttempt(reason: "system-sleep")
         // Set activation policy to regular, so the CBCentralManager can scan for peripherals
         // when the Bluetooth will become on again.
         // This enables Dock icon but the screen is off anyway.
@@ -340,6 +506,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     @objc func onUnlock() {
+        let state = ScreenLockState.current()
+        guard state == false else {
+            logUnlock("Unlock handler skipped: screen=\(lockStateDescription(state))")
+            return
+        }
+        let now = Date().timeIntervalSince1970
+        guard now - lastUnlockHandledAt > 1 else { return }
+        lastUnlockHandledAt = now
+        lastScreenLocked = false
+        let submitted = unlockSubmissionAt.map { now - $0 <= 10 } ?? false
+        cancelUnlockAttempt(reason: "unlock-observed")
+        if submitted {
+            unlockedAt = now
+            logUnlock("Unlock confirmed")
+            playNowPlaying()
+            runScript("unlocked")
+        } else {
+            logUnlock("Unlock observed without a pending submission")
+        }
         Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
             print("onUnlock")
             if Date().timeIntervalSince1970 >= self.unlockedAt + 10 {
@@ -412,34 +597,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         }
     }
 
-    func fetchPassword(warn: Bool = false) -> String? {
-        let query: [String: Any] = [
+    func fetchPassword(warn: Bool = false, allowUI: Bool = true) -> String? {
+        var query: [String: Any] = [
             String(kSecClass): kSecClassGenericPassword,
             String(kSecAttrAccount): NSUserName(),
             String(kSecAttrService): Bundle.main.bundleIdentifier ?? "BLEUnlock",
             String(kSecReturnData): kCFBooleanTrue!,
             String(kSecMatchLimit): kSecMatchLimitOne,
         ]
+        if !allowUI {
+            query[String(kSecUseAuthenticationUI)] = kSecUseAuthenticationUIFail
+        }
         
         var item: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &item)
+        logUnlock("Keychain fetch completed: status=\(status) allowUI=\(allowUI)")
         if (status == errSecItemNotFound) {
-            print("Password is not stored")
-            if warn {
+            if allowUI && warn {
                 errorModal(t("password_not_set"))
             }
             return nil
         }
         guard status == errSecSuccess else {
-            let info = SecCopyErrorMessageString(status, nil)
-            errorModal("Failed to retrieve password", info: info as String? ?? "Status \(status)")
+            if allowUI {
+                let info = SecCopyErrorMessageString(status, nil)
+                errorModal("Failed to retrieve password", info: info as String? ?? "Status \(status)")
+            }
             return nil
         }
         guard let data = item as? Data else {
-            errorModal("Failed to convert password")
+            logUnlock("Keychain fetch cancelled: unexpected result type")
+            if allowUI { errorModal("Failed to convert password") }
             return nil
         }
-        return String(data: data, encoding: .utf8)!
+        guard let password = String(data: data, encoding: .utf8) else {
+            logUnlock("Keychain fetch cancelled: invalid UTF-8 data")
+            if allowUI { errorModal("Failed to convert password") }
+            return nil
+        }
+        return password
     }
     
     @objc func askPassword() {
@@ -552,6 +748,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         menuItem.state = wakeWithoutUnlocking ? .on : .off
     }
 
+    @objc func togglePlatformSSOUnlock(_ menuItem: NSMenuItem) {
+        let enabled = !prefs.bool(forKey: "allowPlatformSSOUnlock")
+        prefs.set(enabled, forKey: "allowPlatformSSOUnlock")
+        menuItem.state = enabled ? .on : .off
+        cancelUnlockAttempt(reason: "platform-sso-setting-changed")
+    }
+
     @objc func lockNow() {
         guard !isScreenLocked() else { return }
         manualLock = true
@@ -628,6 +831,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
             item.state = .on
         }
 
+        item = mainMenu.addItem(withTitle: NSLocalizedString("allow_platform_sso_unlock",
+            value: "Use Platform SSO Lock Screen", comment: "Opt in to native Platform SSO Mac unlock"),
+            action: #selector(togglePlatformSSOUnlock), keyEquivalent: "")
+        item.state = prefs.bool(forKey: "allowPlatformSSOUnlock") ? .on : .off
+        item.toolTip = NSLocalizedString("platform_sso_unlock_help",
+            value: "Enable only for the native Mac lock screen that accepts your Mac login password.",
+            comment: "Scope of the native Platform SSO unlock option")
+
         item = mainMenu.addItem(withTitle: t("pause_now_playing"), action: #selector(togglePauseNowPlaying), keyEquivalent: "")
         if prefs.bool(forKey: "pauseItunes") {
             item.state = .on
@@ -662,18 +873,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
     }
 
     func checkAccessibility() {
+        // Platform SSO target validation reads only AX focus roles and ownership.
         let key = kAXTrustedCheckOptionPrompt.takeRetainedValue() as String
-        if (!AXIsProcessTrustedWithOptions([key: true] as CFDictionary)) {
-            // Sometimes Prompt option above doesn't work.
-            // Actually trying to send key may open that dialog.
-            let src = CGEventSource(stateID: .hidSystemState)
-            // "Fn" key down and up
-            CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: true)?.post(tap: .cghidEventTap)
-            CGEvent(keyboardEventSource: src, virtualKey: 63, keyDown: false)?.post(tap: .cghidEventTap)
+        _ = AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
+        if #available(macOS 10.15, *) {
+            if !CGPreflightPostEventAccess() {
+                // This requests consent without posting a synthetic key.
+                // Its immediate result can precede the user's decision.
+                let granted = CGRequestPostEventAccess()
+                logUnlock("Event-posting permission requested: immediateResult=\(granted)")
+            }
         }
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
+        logUnlock("Startup version=\(version) build=\(build)")
         if let button = statusItem.button {
             button.image = NSImage(named: "StatusBarDisconnected")
             constructMenu()
@@ -716,8 +932,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
 
         let dnc = DistributedNotificationCenter.default
         dnc.addObserver(self, selector: #selector(onUnlock), name: NSNotification.Name(rawValue: "com.apple.screenIsUnlocked"), object: nil)
+        dnc.addObserver(self, selector: #selector(onUnlock), name: NSNotification.Name(rawValue: "com.apple.sessionagent.screenIsUnlocked"), object: nil)
         dnc.addObserver(self, selector: #selector(onScreensaverStart), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstart"), object: nil)
         dnc.addObserver(self, selector: #selector(onScreensaverStop), name: NSNotification.Name(rawValue: "com.apple.screensaver.didstop"), object: nil)
+
+        lastScreenLocked = ScreenLockState.current()
+        lastDiagnosticScreenState = lockStateDescription(lastScreenLocked)
+        screenStateTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { [weak self] _ in
+            self?.refreshScreenLockState()
+        })
+        if let timer = screenStateTimer { RunLoop.main.add(timer, forMode: .common) }
 
         if ble.unlockRSSI != ble.UNLOCK_DISABLED && !prefs.bool(forKey: "wakeWithoutUnlocking") && fetchPassword() == nil {
             askPassword()
@@ -729,8 +953,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSMenuItemVa
         // This is required because we can't have LSUIElement set to true in Info.plist,
         // otherwise CBCentralManager.scanForPeripherals won't work.
         NSApp.setActivationPolicy(.accessory)
+        logUnlockSnapshot(reason: "startup-ready")
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
+        logUnlock("Application terminating")
+        cancelUnlockAttempt(reason: "application-terminate")
+        screenStateTimer?.invalidate()
     }
 }

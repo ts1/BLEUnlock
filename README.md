@@ -90,6 +90,9 @@ If you don't see *any* device in the list, try resetting the Bluetooth module as
 
 ### It fails to unlock
 
+See [Unlocking on recent macOS versions](docs/macos-unlock.md) for permission
+setup, optional Platform SSO lock-screen support, and diagnostic logs.
+
 Make sure BLEUnlock is turned on in *System Preferences* > *Security & Privacy* > *Privacy* > *Accessibility*.
 If it is already on, try turning it off and on again.
 
