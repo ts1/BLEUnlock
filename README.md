@@ -192,6 +192,8 @@ An argument is passed depending on the type of event:
 |Unlocked by BLEUnlock|`unlocked`|
 |Unlocked manually|`intruded`|
 
+The second argument is the latest RSSI, omitted if none has been received. The third argument is the name of the monitored device whose state change triggered the event: always for `away` and `lost`, and for `unlocked` when a device came close. It is omitted when no device change triggered the event, such as an unlock attempt after the Mac wakes. When the third argument is passed without an RSSI, the second argument is an empty string.
+
 > NOTE: for `intruded` event works properly, you have to set *Require password **immediately** after sleep* in *Security & Privacy* preference pane.
 
 ### Example

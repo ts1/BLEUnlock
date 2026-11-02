@@ -1236,16 +1236,22 @@ struct DeviceMenuItemView {
         completionHandler()
     }
 
-    func runScript(_ arg: String) {
+    func runScript(_ arg: String, device: UUID? = nil) {
         guard let directory = try? FileManager.default.url(for: .applicationScriptsDirectory, in: .userDomainMask, appropriateFor: nil, create: true) else { return }
         let file = directory.appendingPathComponent("event")
         let process = Process()
         process.executableURL = file
+        var arguments = [arg]
         if let r = lastRSSI {
-            process.arguments = [arg, String(r)]
-        } else {
-            process.arguments = [arg]
+            arguments.append(String(r))
         }
+        if let device = device {
+            if lastRSSI == nil {
+                arguments.append("")
+            }
+            arguments.append(monitoredDeviceTitle(uuid: device))
+        }
+        process.arguments = arguments
         try? process.run()
     }
 
@@ -1540,7 +1546,7 @@ struct DeviceMenuItemView {
         }
     }
 
-    func updatePresence(shouldUnlock: Bool, shouldLock: Bool, reason: String) {
+    func updatePresence(shouldUnlock: Bool, shouldLock: Bool, reason: String, device: UUID?) {
         if manualLock && shouldLock {
             manualLock = false
             if shouldUnlock {
@@ -1568,14 +1574,14 @@ struct DeviceMenuItemView {
                         print("Skipping wake display retry while display wake is still pending")
                     }
                 }
-                tryUnlockScreen()
+                tryUnlockScreen(device: device)
             }
         } else if shouldLock {
             if (!isScreenLocked() && ble.lockRSSI != ble.LOCK_DISABLED) {
                 pauseNowPlaying()
                 lockOrSaveScreenAsync()
                 notifyUser(reason)
-                runScript(reason)
+                runScript(reason, device: device)
             }
             manualLock = false
         }
@@ -1641,7 +1647,7 @@ struct DeviceMenuItemView {
         return now - sleepReference >= conservativeWakeSleepThreshold
     }
     
-    func tryUnlockScreen(retryCount: Int = 0) {
+    func tryUnlockScreen(retryCount: Int = 0, device: UUID? = nil) {
         guard !manualLock else { return }
         guard ble.presence else { return }
         guard ble.unlockRSSI != ble.UNLOCK_DISABLED else { return }
@@ -1657,11 +1663,11 @@ struct DeviceMenuItemView {
             // Only dismiss a live screensaver outside the fragile wake window.
             if triggerWatchUnlock {
                 // Counted and throttled like every other Watch-unlock input.
-                triggerWatchUnlockInput(retryCount: retryCount)
+                triggerWatchUnlockInput(retryCount: retryCount, device: device)
                 return
             }
             sendEscapeKey()
-            scheduleWakeUnlock(after: screensaverEscapeRetryDelay, retryCount: retryCount + 1)
+            scheduleWakeUnlock(after: screensaverEscapeRetryDelay, retryCount: retryCount + 1, device: device)
             return
         } else if inScreensaver && recentlyWoke {
             print("Skipping Escape key during wake recovery")
@@ -1669,13 +1675,13 @@ struct DeviceMenuItemView {
 
         guard isScreenLocked() else {
             if (recentlyWoke || inScreensaver) && retryCount < wakeUnlockMaxRetries {
-                scheduleWakeUnlock(after: wakeUnlockRetryDelay, retryCount: retryCount + 1)
+                scheduleWakeUnlock(after: wakeUnlockRetryDelay, retryCount: retryCount + 1, device: device)
             }
             return
         }
 
         if triggerWatchUnlock {
-            triggerWatchUnlockInput(retryCount: retryCount)
+            triggerWatchUnlockInput(retryCount: retryCount, device: device)
             return
         }
 
@@ -1686,7 +1692,7 @@ struct DeviceMenuItemView {
             self.wakeUnlockTimer = nil
             guard self.isScreenLocked() else {
                 if (recentlyWoke || self.inScreensaver) && retryCount < self.wakeUnlockMaxRetries {
-                    self.scheduleWakeUnlock(after: self.wakeUnlockRetryDelay, retryCount: retryCount + 1)
+                    self.scheduleWakeUnlock(after: self.wakeUnlockRetryDelay, retryCount: retryCount + 1, device: device)
                 }
                 return
             }
@@ -1695,7 +1701,7 @@ struct DeviceMenuItemView {
             self.unlockedAt = Date().timeIntervalSince1970
             self.fakeKeyStrokes(password)
             self.playNowPlaying()
-            self.runScript("unlocked")
+            self.runScript("unlocked", device: device)
 
             // On wake, the first attempt can land before the login UI is fully ready.
             if (recentlyWoke || self.inScreensaver) && retryCount < self.wakeUnlockMaxRetries {
@@ -1705,7 +1711,7 @@ struct DeviceMenuItemView {
                     guard let self = self else { return }
                     self.postUnlockRetryTimer = nil
                     guard self.isScreenLocked() else { return }
-                    self.scheduleWakeUnlock(after: self.wakeUnlockRetryDelay, retryCount: retryCount + 1)
+                    self.scheduleWakeUnlock(after: self.wakeUnlockRetryDelay, retryCount: retryCount + 1, device: device)
                 })
             }
         })
@@ -1714,7 +1720,7 @@ struct DeviceMenuItemView {
     /// "Wake without unlocking" + "Trigger Apple Watch unlock": never type the
     /// password, only send a few harmless input events so the lock screen
     /// notices user activity and Apple Watch can unlock the Mac.
-    func triggerWatchUnlockInput(retryCount: Int) {
+    func triggerWatchUnlockInput(retryCount: Int, device: UUID?) {
         let now = Date().timeIntervalSince1970
         if now - lastWatchUnlockTriggerAt >= watchUnlockSessionWindow {
             watchUnlockAttempts = 0
@@ -1724,7 +1730,7 @@ struct DeviceMenuItemView {
         if inScreensaver && recentlyWoke() {
             print("Skipping Escape key during wake recovery")
             if retryCount < wakeUnlockMaxRetries {
-                scheduleWakeUnlock(after: watchUnlockRetryDelay, retryCount: retryCount + 1)
+                scheduleWakeUnlock(after: watchUnlockRetryDelay, retryCount: retryCount + 1, device: device)
             }
             return
         }
@@ -1733,7 +1739,7 @@ struct DeviceMenuItemView {
         // at most one input event per retry interval.
         let sinceLast = now - lastWatchUnlockTriggerAt
         if sinceLast < watchUnlockRetryDelay {
-            scheduleWakeUnlock(after: watchUnlockRetryDelay - sinceLast, retryCount: retryCount)
+            scheduleWakeUnlock(after: watchUnlockRetryDelay - sinceLast, retryCount: retryCount, device: device)
             return
         }
 
@@ -1743,7 +1749,7 @@ struct DeviceMenuItemView {
         sendWakeInputEvent()
         if watchUnlockAttempts < watchUnlockMaxAttempts {
             // tryUnlockScreen re-checks isScreenLocked() and stops once unlocked.
-            scheduleWakeUnlock(after: watchUnlockRetryDelay, retryCount: retryCount + 1)
+            scheduleWakeUnlock(after: watchUnlockRetryDelay, retryCount: retryCount + 1, device: device)
         }
     }
 
@@ -1789,12 +1795,12 @@ struct DeviceMenuItemView {
         completeSystemWakeRecovery()
     }
 
-    func scheduleWakeUnlock(after delay: TimeInterval, retryCount: Int = 0) {
+    func scheduleWakeUnlock(after delay: TimeInterval, retryCount: Int = 0, device: UUID? = nil) {
         wakeUnlockTimer?.invalidate()
         wakeUnlockTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false, block: { [weak self] _ in
             guard let self = self else { return }
             self.wakeUnlockTimer = nil
-            self.tryUnlockScreen(retryCount: retryCount)
+            self.tryUnlockScreen(retryCount: retryCount, device: device)
         })
     }
 
