@@ -100,6 +100,8 @@ Unlock Settings | Groups the unlock logic and unlock RSSI settings in one submen
 Lock Settings | Groups the lock logic and lock RSSI settings in one submenu. The logic chooses whether locking happens when *any* selected device goes away or only when *all* selected devices are away. The RSSI value controls how far the BLE device needs to be before locking. Choose *Disable* there to disable locking.
 Delay to Lock | Duration of time before it locks the Mac when it detects that the BLE device is away. If the BLE device comes closer within that time, no lock will occur.
 No-Signal Timeout | Time between last signal reception and locking. If you experience frequent "Signal is lost" locking, increase this value.
+Lock When Signal Is Lost | Enabled by default. Disable for devices that stop advertising while asleep; signal loss then updates detection status without locking. If a device disappears without sustained weak signals, it will no longer cause an automatic lock.
+Prevent Locking While Mac Is in Use | Disabled by default. When enabled, measured-distance locking also requires keyboard/mouse idle time of at least Delay to Lock; signal-loss locking requires idle time of at least No-Signal Timeout. Pending locks are rechecked against current signal and activity.
 Wake on Proximity | Wakes up the display from sleep when the BLE device approaches while locking.
 Wake without Unlocking | BLEUnlock will not unlock the Mac when the display wakes up from sleep, whether automatically via "Wake on Proximity" or manually. This allows for compatibility with the macOS built-in unlock with Apple Watch feature (which can operate immediately after BLEUnlock wakes the screen), or if you just prefer the lock screen to appear more quickly but don't want it to auto-unlock.
 Pause "Now Playing" while Locked | On lock/unlock, BLEUnlock pauses/unpauses playback of music or video (including Apple Music, QuickTime Player and Spotify) that is controlled by *Now Playing* widget or the ⏯ key on the keyboard.
@@ -136,6 +138,8 @@ If it is already on, try turning it off and on again.
 If it asks for permission to access its own password in Keychain, you must choose *Always Allow*, because it is needed while the screen is locked.
 
 ### "Signal is lost" occurs frequently
+
+Some Android phones stop BLE advertising when the phone sleeps. If increasing the timeout is insufficient, disable *Lock When Signal Is Lost*. This makes missing advertisements an unknown state instead of evidence of departure. Sustained weak signals can still lock the Mac. Enable *Prevent Locking While Mac Is in Use* to defer automatic locking while you are using the keyboard or mouse. These options preserve the existing signal-loss and activity behavior until changed.
 
 Increase *No-Signal Timeout*.
 Or try *Passive Mode*.

@@ -1,6 +1,9 @@
 name: CI
 
 on:
+  pull_request:
+    branches:
+      - master
   push:
     branches:
       - master
@@ -13,6 +16,8 @@ jobs:
     runs-on: macOS-latest
     
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v7
+    - name: Test proximity and activity decisions
+      run: bash scripts/test-proximity.sh
     - name: Start xcodebuild test
-      run: xcodebuild clean build -project BLEUnlock.xcodeproj -scheme BLEUnlock CODE_SIGNING_ALLOWED=NO
+      run: xcodebuild clean build -project BLEUnlock.xcodeproj -scheme BLEUnlock CODE_SIGNING_ALLOWED=NO MACOSX_DEPLOYMENT_TARGET=12.0

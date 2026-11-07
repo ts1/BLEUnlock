@@ -1,4 +1,5 @@
 #include "lowlevel.h"
+#include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <IOKit/IOKitLib.h>
 

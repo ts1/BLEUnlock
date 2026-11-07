@@ -53,6 +53,9 @@
 "set_rssi_threshold" = "设置最小 RSSI…";
 "sleep_display" = "锁定时关闭屏幕";
 "timeout" = "无信号超时";
+"lock_on_signal_loss" = "信号丢失时锁屏";
+"lock_on_signal_loss_help" = "手机息屏停止广播时可关闭此项。关闭后，如果离开时信号直接消失，也不会仅凭断讯自动锁屏。";
+"prevent_lock_while_active" = "使用键鼠时暂缓锁屏";
 "update_available_message" = "发现 BLEUnlock %1$@ 新版本。";
 "update_available_title" = "发现更新";
 "update_check_failed" = "检查更新失败";

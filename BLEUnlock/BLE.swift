@@ -328,7 +328,7 @@ class MonitoredDeviceState {
     weak var peripheral: CBPeripheral?
     var proximityTimer: Timer?
     var signalTimer: Timer?
-    var rssiWindow: [Int] = []
+    var evidence = ProximityEvidence()
     var lastReadAt = 0.0
     var activeModeTimer: Timer?
     var connectionTimer: Timer?
@@ -456,6 +456,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var unlockRSSI = -60
     var proximityTimeout = 5.0
     var signalTimeout = 60.0
+    var lockOnSignalLoss = true
     var powerWarn = true
     var passiveMode = false
     var thresholdRSSI = -70
@@ -539,7 +540,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             state.invalidateTimers()
             state.lastRSSI = nil
             state.lastReadAt = 0
-            state.rssiWindow.removeAll()
+            state.evidence = ProximityEvidence()
             state.presence = false
             if let peripheral = state.peripheral, peripheral.state != .disconnected {
                 centralMgr.cancelPeripheralConnection(peripheral)
@@ -596,14 +597,13 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         for uuid in uuids {
             let state = monitoredStates[uuid] ?? MonitoredDeviceState(uuid: uuid)
             state.presence = true
-            state.rssiWindow.removeAll()
+            state.evidence = ProximityEvidence(startedAt: ProcessInfo.processInfo.systemUptime)
             state.proximityTimer?.invalidate()
             state.proximityTimer = nil
 
             if let device = devices[uuid] {
                 state.peripheral = device.peripheral ?? state.peripheral
-                                state.lastRSSI = device.rssi < 0 ? device.rssi : nil
-                                state.rssiWindow = device.rssi < 0 ? [device.rssi] : []
+                state.lastRSSI = nil
             } else {
                 state.lastRSSI = nil
             }
@@ -667,6 +667,32 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         delegate?.updateRSSI(rssi: bestRSSI, active: active)
     }
 
+    func hasStableUnlockEvidence() -> Bool {
+        let now = ProcessInfo.processInfo.systemUptime
+        let states = monitoredUUIDs.compactMap { monitoredStates[$0] }
+        guard !states.isEmpty else { return false }
+        switch unlockDeviceLogic {
+        case .anyClose: return states.contains { $0.evidence.isStablyClose(now: now) }
+        case .allClose: return states.allSatisfy { $0.evidence.isStablyClose(now: now) }
+        }
+    }
+
+    func hasFreshWeakEvidence() -> Bool {
+        let now = ProcessInfo.processInfo.systemUptime
+        return monitoredUUIDs.compactMap { monitoredStates[$0] }.contains {
+            $0.evidence.isWeak(now: now, delay: 0)
+        }
+    }
+
+    func automaticLockReason(idleSeconds: TimeInterval, protectWhileActive: Bool) -> ProximityLockReason? {
+        AutomaticLockSafety.reason(
+            evidence: monitoredUUIDs.compactMap { monitoredStates[$0]?.evidence },
+            requireAllAway: lockDeviceLogic == .allAway,
+            now: ProcessInfo.processInfo.systemUptime, idleSeconds: idleSeconds,
+            awayDelay: proximityTimeout, signalTimeout: signalTimeout,
+            lockOnSignalLoss: lockOnSignalLoss, protectWhileActive: protectWhileActive)
+    }
+
     func resetSignalTimer(for state: MonitoredDeviceState) {
         state.signalTimer?.invalidate()
         state.signalTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { [weak self, weak state] _ in
@@ -678,7 +704,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             state.activeModeTimer = nil
             state.connectionTimer?.invalidate()
             state.connectionTimer = nil
-            state.rssiWindow.removeAll()
+            state.proximityTimer?.invalidate()
+            state.proximityTimer = nil
+            state.evidence.expireSignal()
             self.updateAggregateRSSI()
             if state.presence {
                 state.presence = false
@@ -705,7 +733,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             for state in monitoredStates.values {
                 state.invalidateTimers()
                 state.lastRSSI = nil
-                state.rssiWindow.removeAll()
+                state.evidence = ProximityEvidence()
                 state.presence = false
             }
             presence = false
@@ -720,31 +748,26 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
     }
     
-    /// Median-of-5 filter: maintains a sliding window of the 3 most recent raw RSSI
-    /// values and outputs the median. Single outliers (±20 dBm spikes) are completely
-    /// eliminated, while real trends track within 2 samples.
-    func getEstimatedRSSI(state: MonitoredDeviceState, rssi: Int) -> Int {
-        // Ignore invalid readings that would corrupt the median window
-        guard rssi < 0 else { return state.lastRSSI ?? rssi }
-        state.rssiWindow.append(rssi)
-        if state.rssiWindow.count > 5 {
-            state.rssiWindow.removeFirst()
-        }
-        let sorted = state.rssiWindow.sorted()
-        return sorted[state.rssiWindow.count / 2]
-    }
-
     func updateMonitoredState(_ state: MonitoredDeviceState, rssi: Int) {
-        if rssi >= (unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI) && !state.presence {
-            print("Device \(state.uuid) is close")
-            state.presence = true
-            state.rssiWindow.removeAll()
-            updateAggregatePresence(reason: "close", device: state.uuid, deviceRSSI: rssi)
-        }
-
-        let estimatedRSSI = getEstimatedRSSI(state: state, rssi: rssi)
+        let now = ProcessInfo.processInfo.systemUptime
+        let wasStablyClose = state.evidence.isStablyClose(now: now)
+        guard state.evidence.observe(rssi: rssi, now: now,
+                                     unlockRSSI: unlockRSSI == UNLOCK_DISABLED ? lockRSSI : unlockRSSI,
+                                     lockRSSI: lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI),
+              let estimatedRSSI = state.evidence.filteredRSSI else { return }
         state.lastRSSI = estimatedRSSI
         updateAggregateRSSI()
+
+        if state.evidence.isStablyClose(now: now) {
+            if !state.presence {
+                print("Device \(state.uuid) is stably close")
+                state.presence = true
+                updateAggregatePresence(reason: "close", device: state.uuid, deviceRSSI: rssi)
+            } else if !wasStablyClose {
+                // Fresh close evidence can arrive after display wake or a short dropout.
+                delegate?.updatePresence(shouldUnlock: presence, shouldLock: shouldLock, reason: "close", device: state.uuid, deviceRSSI: estimatedRSSI)
+            }
+        }
 
         if estimatedRSSI >= (lockRSSI == LOCK_DISABLED ? unlockRSSI : lockRSSI) {
             if let timer = state.proximityTimer {
@@ -755,11 +778,14 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         } else if state.presence && state.proximityTimer == nil {
             state.proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { [weak self, weak state] _ in
                 guard let self = self, let state = state else { return }
+                state.proximityTimer = nil
+                // A weak sample followed by silence does not prove continued distance.
+                guard state.evidence.isWeak(now: ProcessInfo.processInfo.systemUptime,
+                                            delay: self.proximityTimeout) else { return }
                 print("Device \(state.uuid) is away")
                 let lastRSSI = state.lastRSSI
                 state.presence = false
                 self.updateAggregatePresence(reason: "away", device: state.uuid, deviceRSSI: lastRSSI)
-                state.proximityTimer = nil
             })
             if let timer = state.proximityTimer {
                 RunLoop.main.add(timer, forMode: .common)
@@ -949,7 +975,8 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
                         advertisementData: [String : Any],
                         rssi RSSI: NSNumber)
     {
-        let rssi = RSSI.intValue >= 0 ? -100 : RSSI.intValue
+        let rssi = RSSI.intValue
+        guard (-126..<0).contains(rssi) else { return }
         if let state = monitoredStates[peripheral.identifier], !monitoringSuspended {
             state.peripheral = peripheral
             updateMonitoredState(state, rssi: rssi)
@@ -1167,7 +1194,8 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         guard !monitoringSuspended else { return }
         guard let state = monitoredState(for: peripheral) else { return }
-        let rssi = RSSI.intValue >= 0 ? -100 : RSSI.intValue
+        let rssi = RSSI.intValue
+        guard error == nil, (-126..<0).contains(rssi) else { return }
         updateMonitoredState(state, rssi: rssi)
         state.lastReadAt = Date().timeIntervalSince1970
 
