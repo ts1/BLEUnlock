@@ -1,12 +1,18 @@
 # Release Notes
 
 
-## Unreleased
+## 1.14.5
 
-- **Feat:** Event scripts now receive the triggering device name, stable identifier, and device RSSI as `$3`–`$5`. Device attribution is preserved when proximity wake wakes the display.
-- **Fix:** Proximity decisions now require fresh, stable RSSI evidence; signal-loss locking is configurable for devices that stop advertising while asleep.
-- **Fix:** Automatic locking rechecks proximity and activity, and a manual unlock is no longer immediately undone by an old away state.
-
+- **Feat:** Added an optional "Trigger Apple Watch Unlock" action for the "Wake without Unlocking" mode. BLEUnlock can send a harmless input event so the macOS Apple Watch unlock prompt appears, without reading or typing the Mac password. Accessibility event-posting permission is required.
+- **Feat:** Reorganized wake controls into a "Wake Settings" submenu. "Wake on Proximity" remains the main switch; "Wake without Unlocking" and "Trigger Apple Watch Unlock" are grouped beneath it, and the Apple Watch option is disabled when its prerequisite is off.
+- **Feat:** Event scripts now receive the triggering monitored device as `$3` (display name), `$4` (stable MAC or CoreBluetooth UUID), and `$5` (that device's RSSI). The existing `$2` remains the aggregate strongest RSSI. Device attribution is preserved through proximity display wake and deferred automatic locking.
+- **Feat:** Added configurable signal-loss locking and activity protection. "Lock When Signal Is Lost" is enabled by default; "Prevent Locking While Mac Is in Use" is disabled by default and defers automatic locking until the configured keyboard/mouse idle period is reached.
+- **Fix:** Proximity and unlock decisions now require valid, fresh, stable RSSI evidence. Invalid readings are ignored, a five-sample median is used, at least two close observations over 0.6 seconds are required to unlock, and a weak sample followed by silence no longer completes the distance timer.
+- **Fix:** Automatic locking now rechecks proximity, lock state, sleep state, unlock settings, and Accessibility permission before committing. Repeated close events no longer postpone an already queued unlock.
+- **Fix:** Fixed a wake race where unlocking shortly after system wake could leave BLE monitoring suspended, producing an empty device list until the app was restarted.
+- **Fix:** A manual unlock is no longer immediately undone by an old away state, and automatic-lock checks stop when no lock can be triggered.
+- **Fix:** Password submission now uses the standard Return key code (36) instead of keypad Enter for better login-window compatibility.
+- **Build:** Added 63 deterministic proximity/activity regression checks and CI coverage.
 
 ## 1.14.4
 
