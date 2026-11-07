@@ -4,7 +4,7 @@
 ## Unreleased
 
 - **Feat:** Event scripts now receive the triggering device name, stable identifier, and device RSSI as `$3`–`$5`. Device attribution is preserved when proximity wake wakes the display.
-- **Fix:** Proximity decisions now require fresh, stable RSSI evidence; signal-loss locking is configurable for devices that stop advertising while asleep.
+- **Fix:** Proximity decisions now require fresh, stable RSSI evidence; the No-Signal Timeout menu can be set to Do Not Lock for devices that stop advertising while asleep.
 - **Fix:** Automatic locking rechecks proximity and activity, and a manual unlock is no longer immediately undone by an old away state.
 
 

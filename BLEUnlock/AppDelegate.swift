@@ -18,6 +18,7 @@ private let unlockLogicMenuItemKind = "unlockLogic"
 private let lockLogicMenuItemKind = "lockLogic"
 private let unlockRSSIMenuItemKind = "unlockRSSI"
 private let lockRSSIMenuItemKind = "lockRSSI"
+private let signalLossLockDisabledTag = -1
 private let pauseNowPlayingNoticeShownKey = "pauseNowPlayingNoticeShown"
 private let autoCheckUpdatesKey = "autoCheckUpdates"
 private let legacyBundleIDMigrationKey = "legacyBundleIDMigrationComplete"
@@ -260,11 +261,13 @@ struct DeviceMenuItemView {
                                selectedRSSI: ble.lockRSSI)
         } else if menu == timeoutMenu {
             for item in menu.items {
-                if item.tag == Int(ble.signalTimeout) {
-                    item.state = .on
+                let selected: Bool
+                if ble.lockOnSignalLoss {
+                    selected = item.tag == Int(ble.signalTimeout)
                 } else {
-                    item.state = .off
+                    selected = item.tag == signalLossLockDisabledTag
                 }
+                item.state = selected ? .on : .off
             }
         } else if menu == lockDelayMenu {
             for item in menu.items {
@@ -2254,13 +2257,21 @@ struct DeviceMenuItemView {
         let value = menuItem.tag
         prefs.set(value, forKey: "timeout")
         ble.signalTimeout = Double(value)
+        ble.lockOnSignalLoss = true
+        prefs.set(true, forKey: "lockOnSignalLoss")
+        if ble.shouldLock { startAutomaticLockChecks() }
     }
 
-    @objc func toggleLockOnSignalLoss(_ menuItem: NSMenuItem) {
-        ble.lockOnSignalLoss.toggle()
-        prefs.set(ble.lockOnSignalLoss, forKey: "lockOnSignalLoss")
-        menuItem.state = ble.lockOnSignalLoss ? .on : .off
-        if ble.shouldLock { startAutomaticLockChecks() }
+    @objc func disableSignalLossLocking(_ menuItem: NSMenuItem) {
+        ble.lockOnSignalLoss = false
+        prefs.set(false, forKey: "lockOnSignalLoss")
+        if ble.shouldLock {
+            if automaticLockTimer == nil {
+                startAutomaticLockChecks()
+            } else {
+                evaluateAutomaticLock()
+            }
+        }
     }
 
     @objc func togglePreventLockWhileActive(_ menuItem: NSMenuItem) {
@@ -2566,6 +2577,10 @@ struct DeviceMenuItemView {
 
         let timeoutItem = mainMenu.addItem(withTitle: t("timeout"), action: nil, keyEquivalent: "")
         timeoutItem.submenu = timeoutMenu
+        let doNotLockItem = timeoutMenu.addItem(withTitle: NSLocalizedString("do_not_lock", value: "Do Not Lock", comment: "Disable locking when the no-signal timeout expires"),
+                                                action: #selector(disableSignalLossLocking), keyEquivalent: "")
+        doNotLockItem.tag = signalLossLockDisabledTag
+        doNotLockItem.toolTip = NSLocalizedString("do_not_lock_help", value: "Missing advertisements only update device status. Sustained weak signals can still trigger distance-based locking.", comment: "No-signal timeout do-not-lock tradeoff")
         timeoutMenu.addItem(withTitle: "30 " + t("seconds"), action: #selector(setTimeout), keyEquivalent: "").tag = 30
         timeoutMenu.addItem(withTitle: "1 " + t("minute"), action: #selector(setTimeout), keyEquivalent: "").tag = 60
         timeoutMenu.addItem(withTitle: "2 " + t("minutes"), action: #selector(setTimeout), keyEquivalent: "").tag = 120
@@ -2573,10 +2588,6 @@ struct DeviceMenuItemView {
         timeoutMenu.addItem(withTitle: "10 " + t("minutes"), action: #selector(setTimeout), keyEquivalent: "").tag = 600
         timeoutMenu.delegate = self
 
-        item = mainMenu.addItem(withTitle: NSLocalizedString("lock_on_signal_loss", value: "Lock When Signal Is Lost", comment: "Signal-loss locking option"),
-                                action: #selector(toggleLockOnSignalLoss), keyEquivalent: "")
-        item.state = ble.lockOnSignalLoss ? .on : .off
-        item.toolTip = NSLocalizedString("lock_on_signal_loss_help", value: "Turn off for devices that stop advertising while asleep. A device that goes out of range without weak signals will then not trigger locking.", comment: "Signal-loss locking tradeoff")
         item = mainMenu.addItem(withTitle: NSLocalizedString("prevent_lock_while_active", value: "Prevent Locking While Mac Is in Use", comment: "Keyboard and mouse activity protection"),
                                 action: #selector(togglePreventLockWhileActive), keyEquivalent: "")
         item.state = prefs.bool(forKey: "preventLockWhileActive") ? .on : .off
