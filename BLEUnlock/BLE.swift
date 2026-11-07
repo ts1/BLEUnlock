@@ -309,7 +309,7 @@ protocol BLEDelegate {
     func removeDevice(device: Device)
     func replaceMonitoredDevice(oldUUID: UUID, with newDevice: Device)
     func updateRSSI(rssi: Int?, active: Bool)
-    func updatePresence(shouldUnlock: Bool, shouldLock: Bool, reason: String)
+    func updatePresence(shouldUnlock: Bool, shouldLock: Bool, reason: String, device: UUID?, deviceRSSI: Int?)
     func bluetoothPowerWarn()
 }
 
@@ -631,7 +631,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         updateAggregatePresence(reason: "logic")
     }
 
-    func updateAggregatePresence(reason: String, notify: Bool = true) {
+    func updateAggregatePresence(reason: String, device: UUID? = nil, deviceRSSI: Int? = nil, notify: Bool = true) {
         let states = monitoredUUIDs.compactMap { monitoredStates[$0] }
         let newPresence: Bool
         let newShouldLock: Bool
@@ -656,7 +656,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         presence = newPresence
         shouldLock = newShouldLock
         if notify {
-            delegate?.updatePresence(shouldUnlock: newPresence, shouldLock: newShouldLock, reason: reason)
+            delegate?.updatePresence(shouldUnlock: newPresence, shouldLock: newShouldLock, reason: reason, device: device, deviceRSSI: deviceRSSI)
         }
     }
 
@@ -672,6 +672,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         state.signalTimer = Timer.scheduledTimer(withTimeInterval: signalTimeout, repeats: false, block: { [weak self, weak state] _ in
             guard let self = self, let state = state else { return }
             print("Device \(state.uuid) is lost")
+            let lastRSSI = state.lastRSSI
             state.lastRSSI = nil
             state.activeModeTimer?.invalidate()
             state.activeModeTimer = nil
@@ -681,7 +682,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             self.updateAggregateRSSI()
             if state.presence {
                 state.presence = false
-                self.updateAggregatePresence(reason: "lost")
+                self.updateAggregatePresence(reason: "lost", device: state.uuid, deviceRSSI: lastRSSI)
             }
         })
         if let timer = state.signalTimer {
@@ -738,7 +739,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             print("Device \(state.uuid) is close")
             state.presence = true
             state.rssiWindow.removeAll()
-            updateAggregatePresence(reason: "close")
+            updateAggregatePresence(reason: "close", device: state.uuid, deviceRSSI: rssi)
         }
 
         let estimatedRSSI = getEstimatedRSSI(state: state, rssi: rssi)
@@ -755,8 +756,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             state.proximityTimer = Timer.scheduledTimer(withTimeInterval: proximityTimeout, repeats: false, block: { [weak self, weak state] _ in
                 guard let self = self, let state = state else { return }
                 print("Device \(state.uuid) is away")
+                let lastRSSI = state.lastRSSI
                 state.presence = false
-                self.updateAggregatePresence(reason: "away")
+                self.updateAggregatePresence(reason: "away", device: state.uuid, deviceRSSI: lastRSSI)
                 state.proximityTimer = nil
             })
             if let timer = state.proximityTimer {

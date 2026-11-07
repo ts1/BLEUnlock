@@ -1,6 +1,11 @@
 # Release Notes
 
 
+## Unreleased
+
+- **Feat:** Event scripts now receive the triggering device name, stable identifier, and device RSSI as `$3`–`$5`. Device attribution is preserved when proximity wake wakes the display.
+
+
 ## 1.14.4
 
 - **Fix:** GATT device-info connections during scanning are now limited to monitored devices (or devices whose name/MAC matches a monitored device), connected one at a time with per-device backoff. This prevents Bluetooth resource contention — such as audio dropouts — in environments with many nearby BLE devices.

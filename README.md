@@ -192,6 +192,16 @@ An argument is passed depending on the type of event:
 |Unlocked by BLEUnlock|`unlocked`|
 |Unlocked manually|`intruded`|
 
+Script arguments are:
+
+- `$1`: event type.
+- `$2`: latest aggregate RSSI (the strongest among visible monitored devices), omitted if none has been received.
+- `$3`: display name of the monitored device whose state change triggered the event. Passed for `away` and `lost`, and for `unlocked` when a device came close. Omitted when no device-triggered event occurred, such as an unlock attempt after the Mac wakes.
+- `$4`: stable identifier for that device: its MAC address when available, otherwise its CoreBluetooth UUID.
+- `$5`: RSSI of the triggering device, or an empty string if unavailable.
+
+When `$3` is present without `$2`, `$2` is an empty string so that `$3` keeps its position. Device names can be duplicated or unresolved; use `$4` when a stable identifier is needed. `$3`–`$5` are omitted when no device triggered the event.
+
 > NOTE: for `intruded` event works properly, you have to set *Require password **immediately** after sleep* in *Security & Privacy* preference pane.
 
 ### Example
