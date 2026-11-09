@@ -230,6 +230,7 @@ struct DeviceMenuItemView {
             triggerWatchUnlockMenuItem?.state = prefs.bool(forKey: "triggerWatchUnlock") ? .on : .off
         } else if menu == deviceMenu {
             deviceMenuIsOpen = false
+            addMissingDeviceRows()
             refreshDeviceMenuSelectionStates(removeStale: false)
             deviceMenuNeedsRefresh = false
             ensureGroupSeparatorExists()
@@ -769,6 +770,14 @@ struct DeviceMenuItemView {
         deviceCheckboxDict[device.uuid] = checkbox
     }
 
+    /// Builds the rows that newDevice and updateDevice skip while the menu is closed.
+    func addMissingDeviceRows() {
+        for uuid in deviceInsertionOrder where deviceDict[uuid] == nil {
+            guard let device = ble.devices[uuid] else { continue }
+            addDeviceRow(for: device)
+        }
+    }
+
     func newDevice(device: Device) {
         if let checkbox = deviceCheckboxDict[device.uuid] {
             updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
@@ -826,9 +835,11 @@ struct DeviceMenuItemView {
                 }
             }
         }
-        addDeviceRow(for: device)
         if !deviceInsertionOrder.contains(device.uuid) {
             deviceInsertionOrder.append(device.uuid)
+        }
+        if deviceMenuIsOpen {
+            addDeviceRow(for: device)
         }
         updateMonitorStatusItems()
         scheduleDeviceMenuReorder()
@@ -871,9 +882,11 @@ struct DeviceMenuItemView {
         if let checkbox = deviceCheckboxDict[device.uuid] {
             updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
         } else {
-            addDeviceRow(for: device)
             if !deviceInsertionOrder.contains(device.uuid) {
                 deviceInsertionOrder.append(device.uuid)
+            }
+            if deviceMenuIsOpen {
+                addDeviceRow(for: device)
             }
         }
         updateMonitorStatusItems()
