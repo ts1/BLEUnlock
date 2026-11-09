@@ -193,6 +193,7 @@ struct DeviceMenuItemView {
     var pendingUnlockDeviceRSSI: Int?
     var pendingLockDevice: UUID?
     var pendingLockDeviceRSSI: Int?
+    var mainMenuIsOpen = false
     var deviceMenuIsOpen = false
     var deviceMenuNeedsRefresh = false
     var deviceMenuShowDetails = false
@@ -223,6 +224,8 @@ struct DeviceMenuItemView {
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == mainMenu {
+            mainMenuIsOpen = true
+            updateMonitorStatusItems()
             wakeOnProximityMenuItem?.state = prefs.bool(forKey: "wakeOnProximity") ? .on : .off
         } else if menu == wakeSettingsMenu {
             wakeWithoutUnlockingMenuItem?.state = prefs.bool(forKey: "wakeWithoutUnlocking") ? .on : .off
@@ -313,7 +316,9 @@ struct DeviceMenuItemView {
     }
     
     func menuDidClose(_ menu: NSMenu) {
-        if menu == deviceMenu {
+        if menu == mainMenu {
+            mainMenuIsOpen = false
+        } else if menu == deviceMenu {
             deviceMenuIsOpen = false
             ble.stopScanning()
             refreshDeviceMenuSelectionStates(removeStale: true)
@@ -1149,6 +1154,8 @@ struct DeviceMenuItemView {
     }
 
     func updateMonitorStatusItems() {
+        // NOTE: menuWillOpen refreshes the summary, so a closed menu skips the per-advertisement rebuild.
+        guard mainMenuIsOpen else { return }
         monitorMenuItem?.title = monitoredSummaryTitle()
     }
 
