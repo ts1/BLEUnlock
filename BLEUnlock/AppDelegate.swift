@@ -168,7 +168,6 @@ struct DeviceMenuItemView {
 }
 
     var deviceCheckboxDict: [UUID: DeviceMenuItemView] = [:]
-    var monitorDetailItems: [UUID: NSMenuItem] = [:]
     var monitorMenuItem : NSMenuItem?
     var lockNowMenuItem: NSMenuItem?
     var deviceMenuItem: NSMenuItem?
@@ -1147,26 +1146,8 @@ struct DeviceMenuItemView {
         return String(format: t("monitor_status_not_detected"), 0, orderedUUIDs.count)
     }
 
-    func refreshMonitorStatusItems() {
-        for item in monitorDetailItems.values {
-            mainMenu.removeItem(item)
-        }
-        monitorDetailItems.removeAll()
-
-        monitorMenuItem?.title = monitoredSummaryTitle()
-        if let monitorMenuItem, mainMenu.index(of: monitorMenuItem) == -1 {
-            mainMenu.insertItem(monitorMenuItem, at: 0)
-        }
-    }
-
     func updateMonitorStatusItems() {
-        if !monitorDetailItems.isEmpty {
-            refreshMonitorStatusItems()
-            return
-        }
-        if let monitorMenuItem {
-            monitorMenuItem.title = monitoredSummaryTitle()
-        }
+        monitorMenuItem?.title = monitoredSummaryTitle()
     }
 
     func updateRSSI(rssi: Int?, active: Bool) {
@@ -2024,7 +2005,7 @@ struct DeviceMenuItemView {
         ble.startMonitor(uuids: uuids)
         refreshDeviceMenuSelectionStates()
         refreshSettingsMenus()
-        refreshMonitorStatusItems()
+        updateMonitorStatusItems()
         performDeviceMenuReorder()
     }
 
