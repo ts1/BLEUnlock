@@ -762,6 +762,13 @@ struct DeviceMenuItemView {
         return item
     }
 
+    func addDeviceRow(for device: Device) {
+        let menuItem = addDeviceMenuItem(title: "", uuid: device.uuid)
+        let checkbox = configureDeviceMenuView(menuItem, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
+        deviceDict[device.uuid] = menuItem
+        deviceCheckboxDict[device.uuid] = checkbox
+    }
+
     func newDevice(device: Device) {
         if let checkbox = deviceCheckboxDict[device.uuid] {
             updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
@@ -819,10 +826,7 @@ struct DeviceMenuItemView {
                 }
             }
         }
-        let menuItem = addDeviceMenuItem(title: "", uuid: device.uuid)
-        let checkbox = configureDeviceMenuView(menuItem, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
-        deviceDict[device.uuid] = menuItem
-        deviceCheckboxDict[device.uuid] = checkbox
+        addDeviceRow(for: device)
         if !deviceInsertionOrder.contains(device.uuid) {
             deviceInsertionOrder.append(device.uuid)
         }
@@ -867,10 +871,7 @@ struct DeviceMenuItemView {
         if let checkbox = deviceCheckboxDict[device.uuid] {
             updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
         } else {
-            let menuItem = addDeviceMenuItem(title: "", uuid: device.uuid)
-            let checkbox = configureDeviceMenuView(menuItem, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
-            deviceDict[device.uuid] = menuItem
-            deviceCheckboxDict[device.uuid] = checkbox
+            addDeviceRow(for: device)
             if !deviceInsertionOrder.contains(device.uuid) {
                 deviceInsertionOrder.append(device.uuid)
             }
@@ -943,10 +944,7 @@ struct DeviceMenuItemView {
         }
         deviceCheckboxDict.removeValue(forKey: newDevice.uuid)
         // Add new menu entry
-        let menuItem = addDeviceMenuItem(title: "", uuid: newDevice.uuid)
-        let checkbox = configureDeviceMenuView(menuItem, uuid: newDevice.uuid, title: menuItemTitle(device: newDevice, showDetails: deviceMenuShowDetails))
-        deviceDict[newDevice.uuid] = menuItem
-        deviceCheckboxDict[newDevice.uuid] = checkbox
+        addDeviceRow(for: newDevice)
         scheduleDeviceMenuReorder()
         updateMonitorStatusItems()
         persistDeviceMACs()
