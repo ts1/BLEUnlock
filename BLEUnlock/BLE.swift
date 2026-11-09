@@ -269,10 +269,7 @@ class Device: NSObject {
             finalSource = "UUID fallback"
         }
 
-        let snapshot = [
-            "uuid=\(uuid!.uuidString)",
-            "context=\(context)",
-            "rssi=\(rssi)",
+        let resolution = [
             "advLocalName=\(advertisedLocalName ?? "<nil>")",
             "peripheralName=\(peripheralName ?? "<nil>")",
             "manufacturer=\(manufacture ?? "<nil>")",
@@ -285,9 +282,9 @@ class Device: NSObject {
             "finalValue=\(resolvedName ?? uuid.uuidString)"
         ].joined(separator: " | ")
 
-        guard snapshot != lastNameDebugSnapshot else { return }
-        lastNameDebugSnapshot = snapshot
-        let message = "[BLEUnlock][NameResolution] \(snapshot)"
+        guard resolution != lastNameDebugSnapshot else { return }
+        lastNameDebugSnapshot = resolution
+        let message = "[BLEUnlock][NameResolution] uuid=\(uuid!.uuidString) | context=\(context) | rssi=\(rssi) | \(resolution)"
         NSLog("%@", message)
         appendNameResolutionLog(message)
     }
