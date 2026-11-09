@@ -1,6 +1,7 @@
 import Foundation
 import CoreBluetooth
 import IOBluetooth
+import os
 
 func macInheritLog(_ message: String) {}
 
@@ -10,24 +11,8 @@ let ManufacturerName = CBUUID(string:"2A29")
 let ModelName = CBUUID(string:"2A24")
 let ExposureNotification = CBUUID(string:"FD6F")
 
-func nameResolutionLogURL() -> URL? {
-    let fileManager = FileManager.default
-    guard let logsDirectory = fileManager.urls(for: .libraryDirectory, in: .userDomainMask).first?
-        .appendingPathComponent("Logs", isDirectory: true)
-        .appendingPathComponent("BLEUnlock", isDirectory: true) else {
-        return nil
-    }
-
-    do {
-        try fileManager.createDirectory(at: logsDirectory, withIntermediateDirectories: true)
-    } catch {
-        return nil
-    }
-
-    return logsDirectory.appendingPathComponent("name-resolution.log", isDirectory: false)
-}
-
-func appendNameResolutionLog(_ message: String) {}
+private let nameResolutionLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "NameResolution")
+private let nameResolutionLogger = Logger(nameResolutionLog)
 
 // MARK: - Cached system lookups (avoid redundant disk I/O)
 
@@ -242,6 +227,8 @@ class Device: NSObject {
     }
 
     func logNameResolutionIfNeeded(context: String) {
+        // NOTE: Called for every advertisement. The lookups below only run while debug logs are collected, e.g. by `log stream --level debug`.
+        guard nameResolutionLog.isEnabled(type: .debug) else { return }
         let peripheralName = normalizedName(peripheral?.name)
         let leInfo = getLEDeviceInfoFromUUID(uuid.description)
         let leName = normalizedName(leInfo?.name)
@@ -269,7 +256,7 @@ class Device: NSObject {
             finalSource = "UUID fallback"
         }
 
-        let resolution = [
+        let details = [
             "advLocalName=\(advertisedLocalName ?? "<nil>")",
             "peripheralName=\(peripheralName ?? "<nil>")",
             "manufacturer=\(manufacture ?? "<nil>")",
@@ -278,15 +265,13 @@ class Device: NSObject {
             "dbMac=\(leMac ?? "<nil>")",
             "plistMac=\(plistMac ?? "<nil>")",
             "plistName=\(plistName ?? "<nil>")",
-            "finalSource=\(finalSource)",
             "finalValue=\(resolvedName ?? uuid.uuidString)"
         ].joined(separator: " | ")
 
+        let resolution = "\(finalSource) | \(details)"
         guard resolution != lastNameDebugSnapshot else { return }
         lastNameDebugSnapshot = resolution
-        let message = "[BLEUnlock][NameResolution] uuid=\(uuid!.uuidString) | context=\(context) | rssi=\(rssi) | \(resolution)"
-        NSLog("%@", message)
-        appendNameResolutionLog(message)
+        nameResolutionLogger.debug("uuid=\(self.uuid.uuidString, privacy: .private) | context=\(context, privacy: .public) | rssi=\(self.rssi, privacy: .public) | finalSource=\(finalSource, privacy: .public) | \(details, privacy: .private)")
     }
     
     override var description: String {
