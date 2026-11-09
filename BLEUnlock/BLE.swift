@@ -401,6 +401,13 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     var devices : [UUID : Device] = [:]
     var delegate: BLEDelegate?
     var scanMode = false
+    /// The device menu is open and lists nearby devices.
+    var menuScanning = false
+
+    /// A scan is needed while the device menu lists nearby devices, or while a monitored device has no active-mode connection to read RSSI from.
+    var needsScan: Bool {
+        menuScanning || monitoredStates.values.contains { !$0.active }
+    }
     var monitoredUUIDs: Set<UUID> = [] {
         didSet {
             macInheritLog("monitoredUUIDs changed: oldCount=\(oldValue.count) newCount=\(monitoredUUIDs.count) uuids=\(monitoredUUIDs.map(\.uuidString).sorted().joined(separator: ", "))")
@@ -492,6 +499,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
     func scanForPeripherals() {
         guard !monitoringSuspended else { return }
+        guard needsScan else { return }
         guard !centralMgr.isScanning else { return }
         guard centralMgr.state == .poweredOn else { return }
         centralMgr.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: true])
@@ -499,14 +507,19 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
     }
 
     func startScanning() {
+        menuScanning = true
         scanMode = true
         scanForPeripherals()
     }
 
     func stopScanning() {
+        menuScanning = false
         // Keep scanMode true when devices are monitored so UUID rotations
         // are still detected during background/locked-screen operation.
-        if !monitoredUUIDs.isEmpty { return }
+        if !monitoredUUIDs.isEmpty {
+            if !needsScan { centralMgr.stopScan() }
+            return
+        }
         scanMode = false
         resetGATTInfoConnectState()
         if monitoredStates.values.contains(where: { $0.active }) {
@@ -1201,9 +1214,6 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
 
         if state.activeModeTimer == nil && !passiveMode {
             print("Entering active mode for \(state.uuid)")
-            if !scanMode {
-                centralMgr.stopScan()
-            }
             state.activeModeTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { [weak self, weak state, weak peripheral] _ in
                 guard let self = self, let state = state, let peripheral = peripheral else { return }
                 if Date().timeIntervalSince1970 > state.lastReadAt + 10 {
@@ -1220,6 +1230,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
             })
             if let timer = state.activeModeTimer {
                 RunLoop.main.add(timer, forMode: .common)
+            }
+            // NOTE: A connected peripheral keeps its identifier, so UUID rotation only needs the scan again after the fallback above.
+            if !needsScan {
+                centralMgr.stopScan()
             }
         }
     }
