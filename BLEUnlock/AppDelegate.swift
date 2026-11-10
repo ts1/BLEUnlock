@@ -168,7 +168,6 @@ struct DeviceMenuItemView {
 }
 
     var deviceCheckboxDict: [UUID: DeviceMenuItemView] = [:]
-    var monitorDetailItems: [UUID: NSMenuItem] = [:]
     var monitorMenuItem : NSMenuItem?
     var lockNowMenuItem: NSMenuItem?
     var deviceMenuItem: NSMenuItem?
@@ -194,8 +193,8 @@ struct DeviceMenuItemView {
     var pendingUnlockDeviceRSSI: Int?
     var pendingLockDevice: UUID?
     var pendingLockDeviceRSSI: Int?
+    var mainMenuIsOpen = false
     var deviceMenuIsOpen = false
-    var deviceMenuNeedsReorder = false
     var deviceMenuNeedsRefresh = false
     var deviceMenuShowDetails = false
     var flagsEventMonitor: Any?
@@ -225,12 +224,15 @@ struct DeviceMenuItemView {
 
     func menuWillOpen(_ menu: NSMenu) {
         if menu == mainMenu {
+            mainMenuIsOpen = true
+            updateMonitorStatusItems()
             wakeOnProximityMenuItem?.state = prefs.bool(forKey: "wakeOnProximity") ? .on : .off
         } else if menu == wakeSettingsMenu {
             wakeWithoutUnlockingMenuItem?.state = prefs.bool(forKey: "wakeWithoutUnlocking") ? .on : .off
             triggerWatchUnlockMenuItem?.state = prefs.bool(forKey: "triggerWatchUnlock") ? .on : .off
         } else if menu == deviceMenu {
             deviceMenuIsOpen = false
+            addMissingDeviceRows()
             refreshDeviceMenuSelectionStates(removeStale: false)
             deviceMenuNeedsRefresh = false
             ensureGroupSeparatorExists()
@@ -314,9 +316,10 @@ struct DeviceMenuItemView {
     }
     
     func menuDidClose(_ menu: NSMenu) {
-        if menu == deviceMenu {
+        if menu == mainMenu {
+            mainMenuIsOpen = false
+        } else if menu == deviceMenu {
             deviceMenuIsOpen = false
-            deviceMenuNeedsReorder = false
             ble.stopScanning()
             refreshDeviceMenuSelectionStates(removeStale: true)
             performDeviceMenuReorder()
@@ -469,23 +472,10 @@ struct DeviceMenuItemView {
     }
 
     func scheduleDeviceMenuReorder() {
-        // During menu tracking, always update separator visibility (safe); skip the
-        // needsReorder guard so that separator state stays in sync as devices appear.
-        if deviceMenuIsOpen {
-            updateGroupSeparatorVisibility()
-            return
-        }
-        guard !deviceMenuNeedsReorder else { return }
-        deviceMenuNeedsReorder = true
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self, self.deviceMenuNeedsReorder else { return }
-            self.deviceMenuNeedsReorder = false
-            guard !self.deviceMenuIsOpen else {
-                self.updateGroupSeparatorVisibility()
-                return
-            }
-            self.performDeviceMenuReorder()
-        }
+        // NOTE: A closed menu is not reordered here. menuWillOpen rebuilds it before it is shown, and with duplicate-reporting scans this is called for every advertisement.
+        // During menu tracking only separator visibility is updated, so that it stays in sync as devices appear.
+        guard deviceMenuIsOpen else { return }
+        updateGroupSeparatorVisibility()
     }
 
     // MARK: - Device menu ordering
@@ -763,9 +753,27 @@ struct DeviceMenuItemView {
         return item
     }
 
+    func addDeviceRow(for device: Device) {
+        let menuItem = addDeviceMenuItem(title: "", uuid: device.uuid)
+        let checkbox = configureDeviceMenuView(menuItem, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
+        deviceDict[device.uuid] = menuItem
+        deviceCheckboxDict[device.uuid] = checkbox
+    }
+
+    /// Builds the rows that newDevice and updateDevice skip while the menu is closed.
+    func addMissingDeviceRows() {
+        for uuid in deviceInsertionOrder where deviceDict[uuid] == nil {
+            guard let device = ble.devices[uuid] else { continue }
+            addDeviceRow(for: device)
+        }
+    }
+
     func newDevice(device: Device) {
         if let checkbox = deviceCheckboxDict[device.uuid] {
-            updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
+            // NOTE: menuWillOpen refreshes every row, so a closed menu skips the per-advertisement layout.
+            if deviceMenuIsOpen {
+                updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
+            }
             updateMonitorStatusItems()
             return
         }
@@ -820,12 +828,11 @@ struct DeviceMenuItemView {
                 }
             }
         }
-        let menuItem = addDeviceMenuItem(title: "", uuid: device.uuid)
-        let checkbox = configureDeviceMenuView(menuItem, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
-        deviceDict[device.uuid] = menuItem
-        deviceCheckboxDict[device.uuid] = checkbox
         if !deviceInsertionOrder.contains(device.uuid) {
             deviceInsertionOrder.append(device.uuid)
+        }
+        if deviceMenuIsOpen {
+            addDeviceRow(for: device)
         }
         updateMonitorStatusItems()
         scheduleDeviceMenuReorder()
@@ -866,14 +873,16 @@ struct DeviceMenuItemView {
             }
         }
         if let checkbox = deviceCheckboxDict[device.uuid] {
-            updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
+            // NOTE: menuWillOpen refreshes every row, so a closed menu skips the per-advertisement layout.
+            if deviceMenuIsOpen {
+                updateDeviceCheckbox(checkbox, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
+            }
         } else {
-            let menuItem = addDeviceMenuItem(title: "", uuid: device.uuid)
-            let checkbox = configureDeviceMenuView(menuItem, uuid: device.uuid, title: menuItemTitle(device: device, showDetails: deviceMenuShowDetails))
-            deviceDict[device.uuid] = menuItem
-            deviceCheckboxDict[device.uuid] = checkbox
             if !deviceInsertionOrder.contains(device.uuid) {
                 deviceInsertionOrder.append(device.uuid)
+            }
+            if deviceMenuIsOpen {
+                addDeviceRow(for: device)
             }
         }
         updateMonitorStatusItems()
@@ -944,10 +953,7 @@ struct DeviceMenuItemView {
         }
         deviceCheckboxDict.removeValue(forKey: newDevice.uuid)
         // Add new menu entry
-        let menuItem = addDeviceMenuItem(title: "", uuid: newDevice.uuid)
-        let checkbox = configureDeviceMenuView(menuItem, uuid: newDevice.uuid, title: menuItemTitle(device: newDevice, showDetails: deviceMenuShowDetails))
-        deviceDict[newDevice.uuid] = menuItem
-        deviceCheckboxDict[newDevice.uuid] = checkbox
+        addDeviceRow(for: newDevice)
         scheduleDeviceMenuReorder()
         updateMonitorStatusItems()
         persistDeviceMACs()
@@ -1147,26 +1153,10 @@ struct DeviceMenuItemView {
         return String(format: t("monitor_status_not_detected"), 0, orderedUUIDs.count)
     }
 
-    func refreshMonitorStatusItems() {
-        for item in monitorDetailItems.values {
-            mainMenu.removeItem(item)
-        }
-        monitorDetailItems.removeAll()
-
-        monitorMenuItem?.title = monitoredSummaryTitle()
-        if let monitorMenuItem, mainMenu.index(of: monitorMenuItem) == -1 {
-            mainMenu.insertItem(monitorMenuItem, at: 0)
-        }
-    }
-
     func updateMonitorStatusItems() {
-        if !monitorDetailItems.isEmpty {
-            refreshMonitorStatusItems()
-            return
-        }
-        if let monitorMenuItem {
-            monitorMenuItem.title = monitoredSummaryTitle()
-        }
+        // NOTE: menuWillOpen refreshes the summary, so a closed menu skips the per-advertisement rebuild.
+        guard mainMenuIsOpen else { return }
+        monitorMenuItem?.title = monitoredSummaryTitle()
     }
 
     func updateRSSI(rssi: Int?, active: Bool) {
@@ -2024,7 +2014,7 @@ struct DeviceMenuItemView {
         ble.startMonitor(uuids: uuids)
         refreshDeviceMenuSelectionStates()
         refreshSettingsMenus()
-        refreshMonitorStatusItems()
+        updateMonitorStatusItems()
         performDeviceMenuReorder()
     }
 
