@@ -1,0 +1,84 @@
+name: Test Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-build:
+    runs-on: macos-26
+
+    steps:
+      - name: Import Code Signing Certificate
+        env:
+          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          if [ -z "${MACOS_CERT_P12_BASE64}" ]; then
+            echo "MACOS_CERT_P12_BASE64 is not set. Skipping code signing."
+            exit 0
+          fi
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          CERT_PATH="$RUNNER_TEMP/cert.p12"
+
+          echo "${MACOS_CERT_P12_BASE64}" | base64 --decode > "${CERT_PATH}"
+
+          security create-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security set-keychain-settings -lut 21600 "${KEYCHAIN_PATH}"
+          security unlock-keychain -p "${KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
+          security import "${CERT_PATH}" -k "${KEYCHAIN_PATH}" -P "${MACOS_CERT_PASSWORD}" -T /usr/bin/codesign -T /usr/bin/security
+          security list-keychains -d user -s "${KEYCHAIN_PATH}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/master
+
+      - name: Build Release App
+        run: |
+          VERSION="1.14.3"
+          xcodebuild \
+            -project BLEUnlock.xcodeproj \
+            -scheme BLEUnlock \
+            -configuration Release \
+            -derivedDataPath build \
+            MARKETING_VERSION="${VERSION}" \
+            CURRENT_PROJECT_VERSION="${GITHUB_RUN_NUMBER}" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Code Sign App
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          if [ -z "${MACOS_SIGNING_IDENTITY}" ]; then
+            echo "MACOS_SIGNING_IDENTITY is not set. Skipping code signing."
+            exit 0
+          fi
+
+          APP_PATH="build/Build/Products/Release/BLEUnlock.app"
+          ENTITLEMENTS_PATH="BLEUnlock/BLEUnlock.entitlements"
+          /usr/bin/codesign --force --deep --options runtime --entitlements "${ENTITLEMENTS_PATH}" --sign "${MACOS_SIGNING_IDENTITY}" "${APP_PATH}"
+
+      - name: Package DMG
+        run: |
+          npm install -g create-dmg
+          APP_PATH="build/Build/Products/Release/BLEUnlock.app"
+          DEST_DIR="build/Build/Products/Release"
+          create-dmg \
+            --overwrite \
+            --no-code-sign \
+            --no-version-in-filename \
+            "${APP_PATH}" \
+            "${DEST_DIR}"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: BLEUnlock-test
+          path: build/Build/Products/Release/BLEUnlock.dmg
+          retention-days: 3

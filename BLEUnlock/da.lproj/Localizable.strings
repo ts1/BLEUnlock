@@ -21,6 +21,9 @@
 "notification_lost_signal" = "Signalet er tabt";
 "notification_update_available" = "Opdatering er tilgængelig.";
 "ok" = "OK";
+"any_short" = "En";
+"all_short" = "Alle";
+"lock_settings" = "Lock Settings";
 "passive_mode" = "Passiv tilstand";
 "password_info" = "Din adgangskode vil blive gemt sikkert i nøglering.";
 "password_not_set" = "Der er ikke indstillet et kodeord.";
@@ -32,7 +35,11 @@
 "set_rssi_threshold" = "Indstil mindste RSSI…";
 "sleep_display" = "Slå skærmen fra ved låsning";
 "timeout" = "Timeout for manglende signal";
+"unlock_settings" = "Unlock Settings";
 "unlock_rssi" = "Låse op RSSI";
 "use_screensaver_to_lock" = "Brug screensaver til at låse";
+"wake_settings" = "Vågnindstillinger";
 "wake_on_proximity" = "Vågn op på nærhed";
 "wake_without_unlocking" = "Vågn op uden at låse op";
+"trigger_watch_unlock" = "Trigger Apple Watch Unlock";
+"pair_for_mac_hint" = "Pair to stabilize random address tracking →";

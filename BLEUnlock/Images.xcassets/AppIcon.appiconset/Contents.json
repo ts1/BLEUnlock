@@ -1,64 +1,64 @@
 {
   "images" : [
     {
+      "idiom" : "mac",
+      "scale" : "1x",
       "size" : "16x16",
-      "idiom" : "mac",
-      "filename" : "mac-16x16.png",
-      "scale" : "1x"
+      "filename" : "mac-16x16.png"
     },
     {
+      "idiom" : "mac",
+      "scale" : "2x",
       "size" : "16x16",
-      "idiom" : "mac",
-      "filename" : "mac-16x16@2x.png",
-      "scale" : "2x"
+      "filename" : "mac-16x16@2x.png"
     },
     {
+      "idiom" : "mac",
+      "scale" : "1x",
       "size" : "32x32",
-      "idiom" : "mac",
-      "filename" : "mac-32x32.png",
-      "scale" : "1x"
+      "filename" : "mac-32x32.png"
     },
     {
+      "idiom" : "mac",
+      "scale" : "2x",
       "size" : "32x32",
-      "idiom" : "mac",
-      "filename" : "mac-32x32@2x.png",
-      "scale" : "2x"
+      "filename" : "mac-32x32@2x.png"
     },
     {
+      "idiom" : "mac",
+      "scale" : "1x",
       "size" : "128x128",
-      "idiom" : "mac",
-      "filename" : "mac-128x128.png",
-      "scale" : "1x"
+      "filename" : "mac-128x128.png"
     },
     {
+      "idiom" : "mac",
+      "scale" : "2x",
       "size" : "128x128",
-      "idiom" : "mac",
-      "filename" : "mac-128x128@2x.png",
-      "scale" : "2x"
+      "filename" : "mac-128x128@2x.png"
     },
     {
+      "idiom" : "mac",
+      "scale" : "1x",
       "size" : "256x256",
-      "idiom" : "mac",
-      "filename" : "mac-256x256.png",
-      "scale" : "1x"
+      "filename" : "mac-256x256.png"
     },
     {
+      "idiom" : "mac",
+      "scale" : "2x",
       "size" : "256x256",
-      "idiom" : "mac",
-      "filename" : "mac-256x256@2x.png",
-      "scale" : "2x"
+      "filename" : "mac-256x256@2x.png"
     },
     {
-      "size" : "512x512",
       "idiom" : "mac",
-      "filename" : "mac-512x512.png",
-      "scale" : "1x"
+      "scale" : "1x",
+      "size" : "512x512",
+      "filename" : "mac-512x512.png"
     },
     {
-      "size" : "512x512",
       "idiom" : "mac",
-      "filename" : "mac-512x512@2x.png",
-      "scale" : "2x"
+      "scale" : "2x",
+      "size" : "512x512",
+      "filename" : "mac-512x512@2x.png"
     }
   ],
   "info" : {

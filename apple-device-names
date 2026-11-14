@@ -9,7 +9,7 @@ def parse_info(filename):
     p = Popen([
         'plutil',
         '-convert', 'json',
-        f,
+        filename,
         '-o', '-'
     ], stdout=PIPE)
 

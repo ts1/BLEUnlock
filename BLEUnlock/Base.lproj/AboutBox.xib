@@ -35,8 +35,8 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xhw-xw-Rxl">
-                        <rect key="frame" x="134" y="254" width="233" height="16"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="Copyright © 2019-2022 Takeshi Sone" id="GN4-8z-o8I">
+                        <rect key="frame" x="90" y="254" width="320" height="16"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Skyearn fork of BLEUnlock by Takeshi Sone" id="GN4-8z-o8I">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -410,7 +410,7 @@ Included icons are derived from SVGs downloaded from materialdesignicons.com. Th
                     </scrollView>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8gJ-J5-6Ty">
                         <rect key="frame" x="73" y="13" width="130" height="32"/>
-                        <buttonCell key="cell" type="push" title="Visit Homepage" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="fPY-L3-Edh">
+                        <buttonCell key="cell" type="push" title="Fork Homepage" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="fPY-L3-Edh">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -420,7 +420,7 @@ Included icons are derived from SVGs downloaded from materialdesignicons.com. Th
                     </button>
                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AHV-DJ-ucE">
                         <rect key="frame" x="297" y="13" width="130" height="32"/>
-                        <buttonCell key="cell" type="push" title="Check Releases" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="WIg-Gy-UeI">
+                        <buttonCell key="cell" type="push" title="Release Notes" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="WIg-Gy-UeI">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>

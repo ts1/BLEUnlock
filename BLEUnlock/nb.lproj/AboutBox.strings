@@ -3,7 +3,7 @@
 "VLW-23-BX0.title" = "BLEUnlock version #{version}";
 
 /* Class = "NSButtonCell"; title = "Check Releases"; ObjectID = "WIg-Gy-UeI"; */
-"WIg-Gy-UeI.title" = "Sjekk utgivelser";
+"WIg-Gy-UeI.title" = "Versjonsnotater";
 
 /* Class = "NSButtonCell"; title = "Visit Homepage"; ObjectID = "fPY-L3-Edh"; */
 "fPY-L3-Edh.title" = "Besøk hjemmesiden";

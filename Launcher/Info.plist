@@ -23,7 +23,8 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2019 Takeshi Sone. MIT licecnced.</string>
+	<string>Copyright © 2019 Takeshi Sone. MIT Licensed.
+Copyright © 2026 Skyearn. MIT Licensed.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

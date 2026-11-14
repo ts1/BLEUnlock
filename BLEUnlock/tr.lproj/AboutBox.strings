@@ -3,7 +3,7 @@
 "VLW-23-BX0.title" = "BLEUnlock versiyon #{version}";
 
 /* Class = "NSButtonCell"; title = "Check Releases"; ObjectID = "WIg-Gy-UeI"; */
-"WIg-Gy-UeI.title" = "Sürüm Kontrol et";
+"WIg-Gy-UeI.title" = "Sürüm Notları";
 
 /* Class = "NSButtonCell"; title = "Visit Homepage"; ObjectID = "fPY-L3-Edh"; */
 "fPY-L3-Edh.title" = "Anasayfayı ziyaret et";

@@ -12,14 +12,16 @@
         [NSApp terminate:self];
     }
 
-    NSString *path = [[NSBundle mainBundle] bundlePath];
-    NSMutableArray *components = [NSMutableArray arrayWithArray:[path pathComponents]];
-    [components removeLastObject];
-    [components removeLastObject];
-    [components removeLastObject];
-    [components removeLastObject];
-    NSString *mainPath = [NSString pathWithComponents:components];
-    [[NSWorkspace sharedWorkspace] launchApplication:mainPath];
+    NSURL *launcherBundleURL = [[NSBundle mainBundle] bundleURL];
+    NSURL *mainBundleURL = [[[launcherBundleURL URLByDeletingLastPathComponent]
+                             URLByDeletingLastPathComponent]
+                            URLByDeletingLastPathComponent];
+    if (mainBundleURL == nil || ![[NSFileManager defaultManager] fileExistsAtPath:mainBundleURL.path]) {
+        NSLog(@"Failed to locate main app bundle from launcher path: %@", launcherBundleURL.path);
+        [NSApp terminate:self];
+        return;
+    }
+    [[NSWorkspace sharedWorkspace] openURL:mainBundleURL];
     [NSApp terminate:self];
 }
 
