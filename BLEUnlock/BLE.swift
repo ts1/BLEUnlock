@@ -522,7 +522,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate {
         }
         scanMode = false
         resetGATTInfoConnectState()
-        if monitoredStates.values.contains(where: { $0.active }) {
+        if !needsScan {
             centralMgr.stopScan()
         }
     }
