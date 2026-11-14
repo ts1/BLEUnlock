@@ -11,8 +11,10 @@ let ManufacturerName = CBUUID(string:"2A29")
 let ModelName = CBUUID(string:"2A24")
 let ExposureNotification = CBUUID(string:"FD6F")
 
-private let nameResolutionLog = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "NameResolution")
-private let nameResolutionLogger = Logger(nameResolutionLog)
+private let nameResolutionSubsystem = Bundle.main.bundleIdentifier ?? "com.github.Skyearn.BLEUnlock"
+private let nameResolutionLog = OSLog(subsystem: nameResolutionSubsystem, category: "NameResolution")
+private var nameResolutionDebugWasEnabled = false
+private var nameResolutionDebugGeneration = 0
 
 // MARK: - Cached system lookups (avoid redundant disk I/O)
 
@@ -103,6 +105,7 @@ class Device: NSObject {
     var blName: String?
     var advertisedLocalName: String?
     var lastNameDebugSnapshot: String?
+    var lastNameDebugGeneration = 0
     /// Timestamp of last MAC resolution attempt; used to throttle redundant lookups.
     var lastMACLookupTime: TimeInterval = 0
 
@@ -228,7 +231,15 @@ class Device: NSObject {
 
     func logNameResolutionIfNeeded(context: String) {
         // NOTE: Called for every advertisement. The lookups below only run while debug logs are collected, e.g. by `log stream --level debug`.
-        guard nameResolutionLog.isEnabled(type: .debug) else { return }
+        let debugEnabled = nameResolutionLog.isEnabled(type: .debug)
+        if !debugEnabled {
+            nameResolutionDebugWasEnabled = false
+            return
+        }
+        if !nameResolutionDebugWasEnabled {
+            nameResolutionDebugWasEnabled = true
+            nameResolutionDebugGeneration += 1
+        }
         let peripheralName = normalizedName(peripheral?.name)
         let leInfo = getLEDeviceInfoFromUUID(uuid.description)
         let leName = normalizedName(leInfo?.name)
@@ -269,9 +280,21 @@ class Device: NSObject {
         ].joined(separator: " | ")
 
         let resolution = "\(finalSource) | \(details)"
-        guard resolution != lastNameDebugSnapshot else { return }
+        guard resolution != lastNameDebugSnapshot || lastNameDebugGeneration != nameResolutionDebugGeneration else { return }
         lastNameDebugSnapshot = resolution
-        nameResolutionLogger.debug("uuid=\(self.uuid.uuidString, privacy: .private) | context=\(context, privacy: .public) | rssi=\(self.rssi, privacy: .public) | finalSource=\(finalSource, privacy: .public) | \(details, privacy: .private)")
+        lastNameDebugGeneration = nameResolutionDebugGeneration
+        let uuidString = self.uuid.uuidString
+        if #available(macOS 11.0, *) {
+            Logger(nameResolutionLog).debug("uuid=\(uuidString, privacy: .private) | context=\(context, privacy: .public) | rssi=\(self.rssi, privacy: .public) | finalSource=\(finalSource, privacy: .public) | \(details, privacy: .private)")
+        } else if #available(macOS 10.14, *) {
+            os_log(.debug, log: nameResolutionLog,
+                   "uuid=%{private}@ | context=%{public}@ | rssi=%{public}d | finalSource=%{public}@ | %{private}@",
+                   uuidString as NSString, context as NSString, self.rssi,
+                   finalSource as NSString, details as NSString)
+        } else {
+            // macOS 10.13 fallback: os_log's privacy-aware Swift API is unavailable.
+            NSLog("%@", "[BLEUnlock][NameResolution] uuid=\(uuidString) | context=\(context) | rssi=\(self.rssi) | finalSource=\(finalSource) | \(details)")
+        }
     }
     
     override var description: String {
