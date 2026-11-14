@@ -53,8 +53,8 @@
 "set_rssi_threshold" = "Set Minimum RSSI…";
 "sleep_display" = "Turn Off Screen on Lock";
 "timeout" = "No-Signal Timeout";
-"lock_on_signal_loss" = "Lock When Signal Is Lost";
-"lock_on_signal_loss_help" = "Turn off for devices that stop advertising while asleep. A device that goes out of range without weak signals will then not trigger locking.";
+"do_not_lock" = "Do Not Lock";
+"do_not_lock_help" = "Missing advertisements only update device status. Sustained weak signals can still trigger distance-based locking.";
 "prevent_lock_while_active" = "Prevent Locking While Mac Is in Use";
 "update_available_message" = "BLEUnlock %1$@ is available.";
 "update_available_title" = "Update Available";
